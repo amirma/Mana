@@ -1,0 +1,63 @@
+package sienaplus;
+
+message SienaPlusMessage {
+
+    enum message_type_t {
+        SUB = 1;
+        NOT = 2;
+        UNSUB = 3;
+    }
+
+    enum tag_type_t {
+        STRING = 1;
+        INT = 2;
+        DOUBLE = 3;
+        BOOLEAN = 4;
+        ANY_TYPE = 5;
+    };
+
+    required message_type_t type = 1;
+    required string sender = 2;
+    
+    message subscription_t {
+    
+        enum operator_t {
+    		EQUAL = 1;
+    		LESS_THAN = 2;
+    		GREATER_THAN = 3;
+    		SUFFIX = 4;
+            PREFIX = 5;
+            SUB_STRING = 6;
+            ANY = 7;
+            NOT_EQUAL = 8;
+            REGULAR_EXP = 9;
+    	}
+    	
+    	message constraint_t {
+            required tag_type_t type = 1;
+    		required string name = 2;
+    		required operator_t operator = 3;  
+    		required string value = 4;
+    	}
+    
+        repeated constraint_t constraints = 1;
+    }
+    
+    optional subscription_t subscription = 3;
+
+    message notification_t {
+    	message attribute_t {
+            required tag_type_t type = 1;
+    		required string name = 2;
+    		required string value = 3;
+    	}
+    	
+        repeated attribute_t attributes = 1;
+    }
+    
+    optional notification_t notification = 4;
+    
+    optional string unsubscription = 5;
+  
+    optional string payload = 6;
+}
