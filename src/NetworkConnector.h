@@ -8,9 +8,11 @@
 #ifndef NETWORKCONNECTOR_H_
 #define NETWORKCONNECTOR_H_
 
-#include<boost/asio.hpp>
+#include <boost/asio.hpp>
+#include "common.h"
 #include "SienaPlusMessage.pb.h"
 #include <functional>
+
 
 using namespace std;
 
@@ -18,7 +20,7 @@ namespace sienaplus {
 
 class NetworkConnector {
 public:
-	NetworkConnector(boost::asio::io_service&, std::function<void(const char*, int size)>);
+	NetworkConnector(boost::asio::io_service&, const std::function<void(const char*, int size)>&);
 	virtual ~NetworkConnector();
 	virtual void send(const char*, int) = 0;
 	virtual void send(const string&) = 0;
@@ -36,7 +38,7 @@ protected:
 	int port_;
 	string address_;
 	bool flag_is_connected;
-	array<char, 8192> read_buffer_;
+	array<char, MAX_MSG_SIZE> read_buffer_;
 	std::function<void(const char*, int size)> receive_handler;
 	boost::asio::strand strand_;
 };

@@ -10,14 +10,14 @@
 #ifndef MESSAGERECEIVER_H_
 #define MESSAGERECEIVER_H_
 
-#include "ConnectionType.h"
+#include "common.h"
 #include <boost/asio.hpp>
 
 namespace sienaplus {
 
 class MessageReceiver {
 public:
-	MessageReceiver(boost::asio::io_service&, std::function<void(const char*, int)>);
+	MessageReceiver(boost::asio::io_service&, const std::function<void(const char*, int)>&);
 	virtual ~MessageReceiver();
 	virtual void start() = 0;
 	virtual void stop() = 0;

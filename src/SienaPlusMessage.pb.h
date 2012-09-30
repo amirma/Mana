@@ -33,6 +33,7 @@ void protobuf_AssignDesc_SienaPlusMessage_2eproto();
 void protobuf_ShutdownFile_SienaPlusMessage_2eproto();
 
 class SienaPlusMessage;
+class SienaPlusMessage_value_t;
 class SienaPlusMessage_subscription_t;
 class SienaPlusMessage_subscription_t_constraint_t;
 class SienaPlusMessage_notification_t;
@@ -108,6 +109,132 @@ inline bool SienaPlusMessage_tag_type_t_Parse(
 }
 // ===================================================================
 
+class SienaPlusMessage_value_t : public ::google::protobuf::Message {
+ public:
+  SienaPlusMessage_value_t();
+  virtual ~SienaPlusMessage_value_t();
+  
+  SienaPlusMessage_value_t(const SienaPlusMessage_value_t& from);
+  
+  inline SienaPlusMessage_value_t& operator=(const SienaPlusMessage_value_t& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SienaPlusMessage_value_t& default_instance();
+  
+  void Swap(SienaPlusMessage_value_t* other);
+  
+  // implements Message ----------------------------------------------
+  
+  SienaPlusMessage_value_t* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SienaPlusMessage_value_t& from);
+  void MergeFrom(const SienaPlusMessage_value_t& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // required .sienaplus.SienaPlusMessage.tag_type_t type = 1;
+  inline bool has_type() const;
+  inline void clear_type();
+  static const int kTypeFieldNumber = 1;
+  inline ::sienaplus::SienaPlusMessage_tag_type_t type() const;
+  inline void set_type(::sienaplus::SienaPlusMessage_tag_type_t value);
+  
+  // optional string string_value = 2;
+  inline bool has_string_value() const;
+  inline void clear_string_value();
+  static const int kStringValueFieldNumber = 2;
+  inline const ::std::string& string_value() const;
+  inline void set_string_value(const ::std::string& value);
+  inline void set_string_value(const char* value);
+  inline void set_string_value(const char* value, size_t size);
+  inline ::std::string* mutable_string_value();
+  inline ::std::string* release_string_value();
+  
+  // optional int32 int_value = 3;
+  inline bool has_int_value() const;
+  inline void clear_int_value();
+  static const int kIntValueFieldNumber = 3;
+  inline ::google::protobuf::int32 int_value() const;
+  inline void set_int_value(::google::protobuf::int32 value);
+  
+  // optional double double_value = 4;
+  inline bool has_double_value() const;
+  inline void clear_double_value();
+  static const int kDoubleValueFieldNumber = 4;
+  inline double double_value() const;
+  inline void set_double_value(double value);
+  
+  // optional bool bool_value = 5;
+  inline bool has_bool_value() const;
+  inline void clear_bool_value();
+  static const int kBoolValueFieldNumber = 5;
+  inline bool bool_value() const;
+  inline void set_bool_value(bool value);
+  
+  // @@protoc_insertion_point(class_scope:sienaplus.SienaPlusMessage.value_t)
+ private:
+  inline void set_has_type();
+  inline void clear_has_type();
+  inline void set_has_string_value();
+  inline void clear_has_string_value();
+  inline void set_has_int_value();
+  inline void clear_has_int_value();
+  inline void set_has_double_value();
+  inline void clear_has_double_value();
+  inline void set_has_bool_value();
+  inline void clear_has_bool_value();
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  ::std::string* string_value_;
+  int type_;
+  ::google::protobuf::int32 int_value_;
+  double double_value_;
+  bool bool_value_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  
+  friend void  protobuf_AddDesc_SienaPlusMessage_2eproto();
+  friend void protobuf_AssignDesc_SienaPlusMessage_2eproto();
+  friend void protobuf_ShutdownFile_SienaPlusMessage_2eproto();
+  
+  void InitAsDefaultInstance();
+  static SienaPlusMessage_value_t* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class SienaPlusMessage_subscription_t_constraint_t : public ::google::protobuf::Message {
  public:
   SienaPlusMessage_subscription_t_constraint_t();
@@ -162,17 +289,10 @@ class SienaPlusMessage_subscription_t_constraint_t : public ::google::protobuf::
   
   // accessors -------------------------------------------------------
   
-  // required .sienaplus.SienaPlusMessage.tag_type_t type = 1;
-  inline bool has_type() const;
-  inline void clear_type();
-  static const int kTypeFieldNumber = 1;
-  inline ::sienaplus::SienaPlusMessage_tag_type_t type() const;
-  inline void set_type(::sienaplus::SienaPlusMessage_tag_type_t value);
-  
-  // required string name = 2;
+  // required string name = 1;
   inline bool has_name() const;
   inline void clear_name();
-  static const int kNameFieldNumber = 2;
+  static const int kNameFieldNumber = 1;
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
@@ -180,44 +300,38 @@ class SienaPlusMessage_subscription_t_constraint_t : public ::google::protobuf::
   inline ::std::string* mutable_name();
   inline ::std::string* release_name();
   
-  // required .sienaplus.SienaPlusMessage.subscription_t.operator_t operator = 3;
-  inline bool has_operator_() const;
-  inline void clear_operator_();
-  static const int kOperatorFieldNumber = 3;
-  inline ::sienaplus::SienaPlusMessage_subscription_t_operator_t operator_() const;
-  inline void set_operator_(::sienaplus::SienaPlusMessage_subscription_t_operator_t value);
+  // required .sienaplus.SienaPlusMessage.subscription_t.operator_t op = 2;
+  inline bool has_op() const;
+  inline void clear_op();
+  static const int kOpFieldNumber = 2;
+  inline ::sienaplus::SienaPlusMessage_subscription_t_operator_t op() const;
+  inline void set_op(::sienaplus::SienaPlusMessage_subscription_t_operator_t value);
   
-  // required string value = 4;
+  // required .sienaplus.SienaPlusMessage.value_t value = 3;
   inline bool has_value() const;
   inline void clear_value();
-  static const int kValueFieldNumber = 4;
-  inline const ::std::string& value() const;
-  inline void set_value(const ::std::string& value);
-  inline void set_value(const char* value);
-  inline void set_value(const char* value, size_t size);
-  inline ::std::string* mutable_value();
-  inline ::std::string* release_value();
+  static const int kValueFieldNumber = 3;
+  inline const ::sienaplus::SienaPlusMessage_value_t& value() const;
+  inline ::sienaplus::SienaPlusMessage_value_t* mutable_value();
+  inline ::sienaplus::SienaPlusMessage_value_t* release_value();
   
   // @@protoc_insertion_point(class_scope:sienaplus.SienaPlusMessage.subscription_t.constraint_t)
  private:
-  inline void set_has_type();
-  inline void clear_has_type();
   inline void set_has_name();
   inline void clear_has_name();
-  inline void set_has_operator_();
-  inline void clear_has_operator_();
+  inline void set_has_op();
+  inline void clear_has_op();
   inline void set_has_value();
   inline void clear_has_value();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
   ::std::string* name_;
-  int type_;
-  int operator__;
-  ::std::string* value_;
+  ::sienaplus::SienaPlusMessage_value_t* value_;
+  int op_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
   
   friend void  protobuf_AddDesc_SienaPlusMessage_2eproto();
   friend void protobuf_AssignDesc_SienaPlusMessage_2eproto();
@@ -400,17 +514,10 @@ class SienaPlusMessage_notification_t_attribute_t : public ::google::protobuf::M
   
   // accessors -------------------------------------------------------
   
-  // required .sienaplus.SienaPlusMessage.tag_type_t type = 1;
-  inline bool has_type() const;
-  inline void clear_type();
-  static const int kTypeFieldNumber = 1;
-  inline ::sienaplus::SienaPlusMessage_tag_type_t type() const;
-  inline void set_type(::sienaplus::SienaPlusMessage_tag_type_t value);
-  
-  // required string name = 2;
+  // required string name = 1;
   inline bool has_name() const;
   inline void clear_name();
-  static const int kNameFieldNumber = 2;
+  static const int kNameFieldNumber = 1;
   inline const ::std::string& name() const;
   inline void set_name(const ::std::string& value);
   inline void set_name(const char* value);
@@ -418,21 +525,16 @@ class SienaPlusMessage_notification_t_attribute_t : public ::google::protobuf::M
   inline ::std::string* mutable_name();
   inline ::std::string* release_name();
   
-  // required string value = 3;
+  // required .sienaplus.SienaPlusMessage.value_t value = 2;
   inline bool has_value() const;
   inline void clear_value();
-  static const int kValueFieldNumber = 3;
-  inline const ::std::string& value() const;
-  inline void set_value(const ::std::string& value);
-  inline void set_value(const char* value);
-  inline void set_value(const char* value, size_t size);
-  inline ::std::string* mutable_value();
-  inline ::std::string* release_value();
+  static const int kValueFieldNumber = 2;
+  inline const ::sienaplus::SienaPlusMessage_value_t& value() const;
+  inline ::sienaplus::SienaPlusMessage_value_t* mutable_value();
+  inline ::sienaplus::SienaPlusMessage_value_t* release_value();
   
   // @@protoc_insertion_point(class_scope:sienaplus.SienaPlusMessage.notification_t.attribute_t)
  private:
-  inline void set_has_type();
-  inline void clear_has_type();
   inline void set_has_name();
   inline void clear_has_name();
   inline void set_has_value();
@@ -441,11 +543,10 @@ class SienaPlusMessage_notification_t_attribute_t : public ::google::protobuf::M
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
   ::std::string* name_;
-  ::std::string* value_;
-  int type_;
+  ::sienaplus::SienaPlusMessage_value_t* value_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
   
   friend void  protobuf_AddDesc_SienaPlusMessage_2eproto();
   friend void protobuf_AssignDesc_SienaPlusMessage_2eproto();
@@ -595,6 +696,7 @@ class SienaPlusMessage : public ::google::protobuf::Message {
   
   // nested types ----------------------------------------------------
   
+  typedef SienaPlusMessage_value_t value_t;
   typedef SienaPlusMessage_subscription_t subscription_t;
   typedef SienaPlusMessage_notification_t notification_t;
   
@@ -747,40 +849,168 @@ class SienaPlusMessage : public ::google::protobuf::Message {
 
 // ===================================================================
 
-// SienaPlusMessage_subscription_t_constraint_t
+// SienaPlusMessage_value_t
 
 // required .sienaplus.SienaPlusMessage.tag_type_t type = 1;
-inline bool SienaPlusMessage_subscription_t_constraint_t::has_type() const {
+inline bool SienaPlusMessage_value_t::has_type() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::set_has_type() {
+inline void SienaPlusMessage_value_t::set_has_type() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::clear_has_type() {
+inline void SienaPlusMessage_value_t::clear_has_type() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::clear_type() {
+inline void SienaPlusMessage_value_t::clear_type() {
   type_ = 1;
   clear_has_type();
 }
-inline ::sienaplus::SienaPlusMessage_tag_type_t SienaPlusMessage_subscription_t_constraint_t::type() const {
+inline ::sienaplus::SienaPlusMessage_tag_type_t SienaPlusMessage_value_t::type() const {
   return static_cast< ::sienaplus::SienaPlusMessage_tag_type_t >(type_);
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::set_type(::sienaplus::SienaPlusMessage_tag_type_t value) {
+inline void SienaPlusMessage_value_t::set_type(::sienaplus::SienaPlusMessage_tag_type_t value) {
   GOOGLE_DCHECK(::sienaplus::SienaPlusMessage_tag_type_t_IsValid(value));
   set_has_type();
   type_ = value;
 }
 
-// required string name = 2;
-inline bool SienaPlusMessage_subscription_t_constraint_t::has_name() const {
+// optional string string_value = 2;
+inline bool SienaPlusMessage_value_t::has_string_value() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::set_has_name() {
+inline void SienaPlusMessage_value_t::set_has_string_value() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::clear_has_name() {
+inline void SienaPlusMessage_value_t::clear_has_string_value() {
   _has_bits_[0] &= ~0x00000002u;
+}
+inline void SienaPlusMessage_value_t::clear_string_value() {
+  if (string_value_ != &::google::protobuf::internal::kEmptyString) {
+    string_value_->clear();
+  }
+  clear_has_string_value();
+}
+inline const ::std::string& SienaPlusMessage_value_t::string_value() const {
+  return *string_value_;
+}
+inline void SienaPlusMessage_value_t::set_string_value(const ::std::string& value) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(value);
+}
+inline void SienaPlusMessage_value_t::set_string_value(const char* value) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(value);
+}
+inline void SienaPlusMessage_value_t::set_string_value(const char* value, size_t size) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* SienaPlusMessage_value_t::mutable_string_value() {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
+    string_value_ = new ::std::string;
+  }
+  return string_value_;
+}
+inline ::std::string* SienaPlusMessage_value_t::release_string_value() {
+  clear_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = string_value_;
+    string_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional int32 int_value = 3;
+inline bool SienaPlusMessage_value_t::has_int_value() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void SienaPlusMessage_value_t::set_has_int_value() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void SienaPlusMessage_value_t::clear_has_int_value() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void SienaPlusMessage_value_t::clear_int_value() {
+  int_value_ = 0;
+  clear_has_int_value();
+}
+inline ::google::protobuf::int32 SienaPlusMessage_value_t::int_value() const {
+  return int_value_;
+}
+inline void SienaPlusMessage_value_t::set_int_value(::google::protobuf::int32 value) {
+  set_has_int_value();
+  int_value_ = value;
+}
+
+// optional double double_value = 4;
+inline bool SienaPlusMessage_value_t::has_double_value() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void SienaPlusMessage_value_t::set_has_double_value() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void SienaPlusMessage_value_t::clear_has_double_value() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void SienaPlusMessage_value_t::clear_double_value() {
+  double_value_ = 0;
+  clear_has_double_value();
+}
+inline double SienaPlusMessage_value_t::double_value() const {
+  return double_value_;
+}
+inline void SienaPlusMessage_value_t::set_double_value(double value) {
+  set_has_double_value();
+  double_value_ = value;
+}
+
+// optional bool bool_value = 5;
+inline bool SienaPlusMessage_value_t::has_bool_value() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void SienaPlusMessage_value_t::set_has_bool_value() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void SienaPlusMessage_value_t::clear_has_bool_value() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void SienaPlusMessage_value_t::clear_bool_value() {
+  bool_value_ = false;
+  clear_has_bool_value();
+}
+inline bool SienaPlusMessage_value_t::bool_value() const {
+  return bool_value_;
+}
+inline void SienaPlusMessage_value_t::set_bool_value(bool value) {
+  set_has_bool_value();
+  bool_value_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// SienaPlusMessage_subscription_t_constraint_t
+
+// required string name = 1;
+inline bool SienaPlusMessage_subscription_t_constraint_t::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void SienaPlusMessage_subscription_t_constraint_t::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void SienaPlusMessage_subscription_t_constraint_t::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void SienaPlusMessage_subscription_t_constraint_t::clear_name() {
   if (name_ != &::google::protobuf::internal::kEmptyString) {
@@ -830,85 +1060,56 @@ inline ::std::string* SienaPlusMessage_subscription_t_constraint_t::release_name
   }
 }
 
-// required .sienaplus.SienaPlusMessage.subscription_t.operator_t operator = 3;
-inline bool SienaPlusMessage_subscription_t_constraint_t::has_operator_() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+// required .sienaplus.SienaPlusMessage.subscription_t.operator_t op = 2;
+inline bool SienaPlusMessage_subscription_t_constraint_t::has_op() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::set_has_operator_() {
-  _has_bits_[0] |= 0x00000004u;
+inline void SienaPlusMessage_subscription_t_constraint_t::set_has_op() {
+  _has_bits_[0] |= 0x00000002u;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::clear_has_operator_() {
-  _has_bits_[0] &= ~0x00000004u;
+inline void SienaPlusMessage_subscription_t_constraint_t::clear_has_op() {
+  _has_bits_[0] &= ~0x00000002u;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::clear_operator_() {
-  operator__ = 1;
-  clear_has_operator_();
+inline void SienaPlusMessage_subscription_t_constraint_t::clear_op() {
+  op_ = 1;
+  clear_has_op();
 }
-inline ::sienaplus::SienaPlusMessage_subscription_t_operator_t SienaPlusMessage_subscription_t_constraint_t::operator_() const {
-  return static_cast< ::sienaplus::SienaPlusMessage_subscription_t_operator_t >(operator__);
+inline ::sienaplus::SienaPlusMessage_subscription_t_operator_t SienaPlusMessage_subscription_t_constraint_t::op() const {
+  return static_cast< ::sienaplus::SienaPlusMessage_subscription_t_operator_t >(op_);
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::set_operator_(::sienaplus::SienaPlusMessage_subscription_t_operator_t value) {
+inline void SienaPlusMessage_subscription_t_constraint_t::set_op(::sienaplus::SienaPlusMessage_subscription_t_operator_t value) {
   GOOGLE_DCHECK(::sienaplus::SienaPlusMessage_subscription_t_operator_t_IsValid(value));
-  set_has_operator_();
-  operator__ = value;
+  set_has_op();
+  op_ = value;
 }
 
-// required string value = 4;
+// required .sienaplus.SienaPlusMessage.value_t value = 3;
 inline bool SienaPlusMessage_subscription_t_constraint_t::has_value() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void SienaPlusMessage_subscription_t_constraint_t::set_has_value() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void SienaPlusMessage_subscription_t_constraint_t::clear_has_value() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void SienaPlusMessage_subscription_t_constraint_t::clear_value() {
-  if (value_ != &::google::protobuf::internal::kEmptyString) {
-    value_->clear();
-  }
+  if (value_ != NULL) value_->::sienaplus::SienaPlusMessage_value_t::Clear();
   clear_has_value();
 }
-inline const ::std::string& SienaPlusMessage_subscription_t_constraint_t::value() const {
-  return *value_;
+inline const ::sienaplus::SienaPlusMessage_value_t& SienaPlusMessage_subscription_t_constraint_t::value() const {
+  return value_ != NULL ? *value_ : *default_instance_->value_;
 }
-inline void SienaPlusMessage_subscription_t_constraint_t::set_value(const ::std::string& value) {
+inline ::sienaplus::SienaPlusMessage_value_t* SienaPlusMessage_subscription_t_constraint_t::mutable_value() {
   set_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    value_ = new ::std::string;
-  }
-  value_->assign(value);
-}
-inline void SienaPlusMessage_subscription_t_constraint_t::set_value(const char* value) {
-  set_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    value_ = new ::std::string;
-  }
-  value_->assign(value);
-}
-inline void SienaPlusMessage_subscription_t_constraint_t::set_value(const char* value, size_t size) {
-  set_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    value_ = new ::std::string;
-  }
-  value_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* SienaPlusMessage_subscription_t_constraint_t::mutable_value() {
-  set_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    value_ = new ::std::string;
-  }
+  if (value_ == NULL) value_ = new ::sienaplus::SienaPlusMessage_value_t;
   return value_;
 }
-inline ::std::string* SienaPlusMessage_subscription_t_constraint_t::release_value() {
+inline ::sienaplus::SienaPlusMessage_value_t* SienaPlusMessage_subscription_t_constraint_t::release_value() {
   clear_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = value_;
-    value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
+  ::sienaplus::SienaPlusMessage_value_t* temp = value_;
+  value_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -944,38 +1145,15 @@ SienaPlusMessage_subscription_t::mutable_constraints() {
 
 // SienaPlusMessage_notification_t_attribute_t
 
-// required .sienaplus.SienaPlusMessage.tag_type_t type = 1;
-inline bool SienaPlusMessage_notification_t_attribute_t::has_type() const {
+// required string name = 1;
+inline bool SienaPlusMessage_notification_t_attribute_t::has_name() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void SienaPlusMessage_notification_t_attribute_t::set_has_type() {
+inline void SienaPlusMessage_notification_t_attribute_t::set_has_name() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void SienaPlusMessage_notification_t_attribute_t::clear_has_type() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void SienaPlusMessage_notification_t_attribute_t::clear_type() {
-  type_ = 1;
-  clear_has_type();
-}
-inline ::sienaplus::SienaPlusMessage_tag_type_t SienaPlusMessage_notification_t_attribute_t::type() const {
-  return static_cast< ::sienaplus::SienaPlusMessage_tag_type_t >(type_);
-}
-inline void SienaPlusMessage_notification_t_attribute_t::set_type(::sienaplus::SienaPlusMessage_tag_type_t value) {
-  GOOGLE_DCHECK(::sienaplus::SienaPlusMessage_tag_type_t_IsValid(value));
-  set_has_type();
-  type_ = value;
-}
-
-// required string name = 2;
-inline bool SienaPlusMessage_notification_t_attribute_t::has_name() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void SienaPlusMessage_notification_t_attribute_t::set_has_name() {
-  _has_bits_[0] |= 0x00000002u;
-}
 inline void SienaPlusMessage_notification_t_attribute_t::clear_has_name() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void SienaPlusMessage_notification_t_attribute_t::clear_name() {
   if (name_ != &::google::protobuf::internal::kEmptyString) {
@@ -1025,62 +1203,33 @@ inline ::std::string* SienaPlusMessage_notification_t_attribute_t::release_name(
   }
 }
 
-// required string value = 3;
+// required .sienaplus.SienaPlusMessage.value_t value = 2;
 inline bool SienaPlusMessage_notification_t_attribute_t::has_value() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void SienaPlusMessage_notification_t_attribute_t::set_has_value() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void SienaPlusMessage_notification_t_attribute_t::clear_has_value() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void SienaPlusMessage_notification_t_attribute_t::clear_value() {
-  if (value_ != &::google::protobuf::internal::kEmptyString) {
-    value_->clear();
-  }
+  if (value_ != NULL) value_->::sienaplus::SienaPlusMessage_value_t::Clear();
   clear_has_value();
 }
-inline const ::std::string& SienaPlusMessage_notification_t_attribute_t::value() const {
-  return *value_;
+inline const ::sienaplus::SienaPlusMessage_value_t& SienaPlusMessage_notification_t_attribute_t::value() const {
+  return value_ != NULL ? *value_ : *default_instance_->value_;
 }
-inline void SienaPlusMessage_notification_t_attribute_t::set_value(const ::std::string& value) {
+inline ::sienaplus::SienaPlusMessage_value_t* SienaPlusMessage_notification_t_attribute_t::mutable_value() {
   set_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    value_ = new ::std::string;
-  }
-  value_->assign(value);
-}
-inline void SienaPlusMessage_notification_t_attribute_t::set_value(const char* value) {
-  set_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    value_ = new ::std::string;
-  }
-  value_->assign(value);
-}
-inline void SienaPlusMessage_notification_t_attribute_t::set_value(const char* value, size_t size) {
-  set_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    value_ = new ::std::string;
-  }
-  value_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* SienaPlusMessage_notification_t_attribute_t::mutable_value() {
-  set_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    value_ = new ::std::string;
-  }
+  if (value_ == NULL) value_ = new ::sienaplus::SienaPlusMessage_value_t;
   return value_;
 }
-inline ::std::string* SienaPlusMessage_notification_t_attribute_t::release_value() {
+inline ::sienaplus::SienaPlusMessage_value_t* SienaPlusMessage_notification_t_attribute_t::release_value() {
   clear_has_value();
-  if (value_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = value_;
-    value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
+  ::sienaplus::SienaPlusMessage_value_t* temp = value_;
+  value_ = NULL;
+  return temp;
 }
 
 // -------------------------------------------------------------------

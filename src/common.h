@@ -1,12 +1,15 @@
 /*
- * ConnectionType.h
+ * COMMON.h
  *
  *  Created on: Sep 7, 2012
  *      Author: amir
  */
 
-#ifndef CONNECTIONTYPE_H_
-#define CONNECTIONTYPE_H_
+#ifndef COMMON_H_
+#define COMMON_H_
+
+#include <siena/types.h>
+#include "SienaPlusMessage.pb.h"
 
 namespace sienaplus {
 
@@ -17,5 +20,9 @@ namespace sienaplus {
 	};
 
 	typedef enum_connection_type connection_type;
-}
-#endif /* CONNECTIONTYPE_H_ */
+
+	const int MAX_MSG_SIZE = 9000; //Bytes
+
+};
+
+#endif /* COMMON_H_ */

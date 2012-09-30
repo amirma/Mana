@@ -25,7 +25,8 @@ class TCPMessageReceiver: public sienaplus::MessageReceiver {
 public:
 	// port_number, ip_address
 	TCPMessageReceiver(boost::asio::io_service&, const int, const string&,
-			std::function<void(const char*, int)>);
+			const std::function<void(const char*, int)>&,
+            const std::function<void(shared_ptr<NetworkConnector>)>&);
 	virtual ~TCPMessageReceiver();
 	void start();
 	void stop();
@@ -39,6 +40,9 @@ private:
 	shared_ptr<boost::asio::ip::tcp::socket> next_connection_socket_;
 	int port_;
 	string address_;
+    std::function<void(shared_ptr<NetworkConnector>)> connect_handler_; //this
+    // callback is provided by the owner of this acceptor. when a new
+    // connwction is established this we invoke this callback.
 };
 
 } /* namespace sienaplus */

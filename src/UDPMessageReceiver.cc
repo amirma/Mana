@@ -10,7 +10,7 @@
 namespace sienaplus {
 
 UDPMessageReceiver::UDPMessageReceiver(boost::asio::io_service& srv,
-		const int port, const string& addr, std::function<void(const char*, int)> hndlr):
+		const int port, const string& addr, const std::function<void(const char*, int)>& hndlr):
 		MessageReceiver(srv, hndlr) {
 	connection_type_ = sienaplus::udp;
 }

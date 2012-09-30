@@ -2,24 +2,46 @@ package sienaplus;
 
 message SienaPlusMessage {
 
+ 	// constants and type definitions
+
     enum message_type_t {
         SUB = 1;
         NOT = 2;
         UNSUB = 3;
+        HNDSHAKE = 4; // this is the first message a connecting client 
+        //sends to a server. 
+        HNDSHAKE_ACK = 5;
     }
+    
+    /*
+    	IMPORTANT NOTE: THE ORDER AND VALUE OF ITEMS IN tag_type_t ARE IMPORTANT,
+    	and must be the same as in Siena/types.h. This makes it easy and efficient to
+    	directly convert from Siena tags type to Protobuf tag type (i.e.
+    	both integers of the same value).
+    */
 
     enum tag_type_t {
         STRING = 1;
         INT = 2;
         DOUBLE = 3;
-        BOOLEAN = 4;
+        BOOL = 4;
         ANY_TYPE = 5;
     };
-
-    required message_type_t type = 1;
-    required string sender = 2;
+    
+    message value_t {
+        required tag_type_t type = 1;
+		optional string string_value = 2;
+		optional int32 int_value = 3;
+		optional double double_value = 4;
+		optional bool bool_value = 5;
+    }
     
     message subscription_t {
+    
+    /*
+    	IMPORTANT NOTE: THE ORDER AND VALUE OF ITEMS IN operator_t ARE IMPORTANT.
+    	See the above explanation for tag_type_t.
+    */
     
         enum operator_t {
     		EQUAL = 1;
@@ -34,30 +56,29 @@ message SienaPlusMessage {
     	}
     	
     	message constraint_t {
-            required tag_type_t type = 1;
-    		required string name = 2;
-    		required operator_t operator = 3;  
-    		required string value = 4;
+    		required string name = 1;
+    		required operator_t op = 2;  
+    		required value_t value = 3;
     	}
     
         repeated constraint_t constraints = 1;
     }
     
-    optional subscription_t subscription = 3;
-
     message notification_t {
+    	
     	message attribute_t {
-            required tag_type_t type = 1;
-    		required string name = 2;
-    		required string value = 3;
+    		required string name = 1;
+    		required value_t value = 2;
     	}
     	
         repeated attribute_t attributes = 1;
     }
     
+    // message fields
+    required message_type_t type = 1;
+   	required string sender = 2; 
+   	optional subscription_t subscription = 3;
     optional notification_t notification = 4;
-    
     optional string unsubscription = 5;
-  
     optional string payload = 6;
 }

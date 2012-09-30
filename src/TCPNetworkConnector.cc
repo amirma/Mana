@@ -18,7 +18,7 @@ namespace sienaplus {
  * This constructor is used when we need to manually create a connection.
  */
 TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
-		std::function<void(const char*, int)> hndlr) : NetworkConnector(srv, hndlr) {
+		const std::function<void(const char*, int)>& hndlr) : NetworkConnector(srv, hndlr) {
 	socket_ = make_shared<boost::asio::ip::tcp::socket>(io_service_);
 }
 
@@ -29,7 +29,7 @@ TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
  * has to outlive the instance of this class.
  */
 TCPNetworkConnector::TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>& skt,
-	std::function<void(const char*, int size)> hndlr) :
+	const std::function<void(const char*, int size)>& hndlr) :
 	socket_(skt), NetworkConnector(skt->get_io_service(), hndlr) {
 	if(socket_->is_open()) {
 		flag_is_connected = true;

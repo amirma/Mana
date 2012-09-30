@@ -12,7 +12,7 @@
 #include <memory>
 #include "NetworkConnector.h"
 #include <boost/asio.hpp>
-#include "ConnectionType.h"
+#include "common.h"
 #include <thread>
 #include "SienaPlusMessage.pb.h"
 #include "sff.bzr/simple_fwd_types.h"
@@ -40,7 +40,7 @@ private:
 	string url_;
 	bool connect();
 	sienaplus::connection_type connection_type;
-	std::function<void(const simple_message&)> handler_;
+	std::function<void(const simple_message&)> app_notification_handler_;
 	int port_;
 	string address_;
 	shared_ptr<boost::asio::io_service::work> work_;

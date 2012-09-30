@@ -9,15 +9,16 @@
 #include <boost/bind.hpp>
 #include <memory>
 #include "TCPMessageReceiver.h"
-#include "ConnectionType.h"
+#include "common.h"
 
 using namespace std;
 
 namespace sienaplus {
 
 TCPMessageReceiver::TCPMessageReceiver(boost::asio::io_service& srv,
-		const int port, const string& addr, std::function<void(const char*, int)> hndlr):
-		MessageReceiver(srv, hndlr) {
+		const int port, const string& addr, const std::function<void(const char*, int)>& hndlr, 
+        const std::function<void(shared_ptr<NetworkConnector>)>& c_hndlr):
+		MessageReceiver(srv, hndlr), connect_handler_(c_hndlr) {
 	connection_type_ = sienaplus::tcp;
 	port_ = port;
 	address_ = addr;
@@ -61,8 +62,11 @@ void TCPMessageReceiver::accept_handler(const boost::system::error_code& ec) {
 	//once the connection in created we move the pointer
 	auto c = make_shared<TCPNetworkConnector>(next_connection_socket_, receive_handler_);
 	remote_endpoints.push_back(std::move(next_connection_socket_));
+    if(connect_handler_ != nullptr)
+        connect_handler_(c);
 	tcp_connections.push_back(std::move(c));
 	begin_accept();
+
 }
 
 } /* namespace sienaplus */
