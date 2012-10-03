@@ -66,9 +66,15 @@ void TCPNetworkConnector::async_connect(const string& addr, int prt) {
 	}
 }
 
+
+void TCPNetworkConnector::write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
+    //cout << endl << "wrote " << bytes_transferred << " bytes.";
+}
+
 void TCPNetworkConnector::connect_handler(const boost::system::error_code& ec) {
 	if(!ec && ec.value() != 0) {
-		// error
+	    cout << "could not connect...";
+        return;
 	}
 	//socket_
 	flag_is_connected = true;
@@ -85,34 +91,45 @@ void TCPNetworkConnector::read_handler(const boost::system::error_code& ec, std:
 		cout << endl << "error reading:" << ec.message() << endl;
 		return;
 	}
-	/*
-	if(bytes_num != 0) {
-		cout << endl << "read " << bytes_num << " bytes.";
-		cout << endl << read_buffer_.data();
+	// TODO: i'm using the number of bytes as a hint that the connection 
+    // terminated. I'm not sure this is a good way though. For some 
+    // reason socket.is_open() does not do it's job...
+	if(bytes_num == 0) {
+        flag_is_connected = false;
+        return;
 	}
-	*/
 	assert(receive_handler != NULL);
 	receive_handler(read_buffer_.data(), bytes_num);
+    // FIXME: is this needed ?
+    if(is_connected())
+        start_read();
 }
 
-void TCPNetworkConnector::send(const char* data, int length) {
+void TCPNetworkConnector::send(const char* data, size_t length) {
 	if(!flag_is_connected) {
 		cout << endl << "is not connected. not sending data.";
 		return;
 	}
-	socket_->write_some(boost::asio::buffer(data, length));
+    boost::asio::async_write(*socket_, boost::asio::buffer(data, length), 
+            boost::bind(&TCPNetworkConnector::write_handler, this, boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
+	//socket_->write_some(boost::asio::buffer(data, length));
 }
 
 void TCPNetworkConnector::send(const string& str) {
-	if(!flag_is_connected) {
+	if(!is_connected()) {
 		cout << endl << "is not connected. not sending." << str;
 		return;
 	}
-	socket_->write_some(boost::asio::buffer(str.c_str(), str.length()));
+
+	//socket_->write_some(boost::asio::buffer(str.c_str(), str.length()));
+    boost::asio::async_write(*socket_, boost::asio::buffer(str.c_str(), str.length()), 
+            boost::bind(&TCPNetworkConnector::write_handler, this, boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
 }
 
 bool TCPNetworkConnector::connect(const string& url) {
-	if(flag_is_connected) {
+	if(is_connected()) {
 		return true;
 	}
 	vector<string> tokens;
@@ -127,9 +144,10 @@ bool TCPNetworkConnector::connect(const string& url) {
 }
 
 bool TCPNetworkConnector::connect(const string& addr, int prt) {
-	if(flag_is_connected) {
+	if(is_connected()) {
 		return true;
 	}
+
 	try {
 		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(addr), prt);
 		socket_->connect(endpoint);

@@ -49,13 +49,14 @@ void protobuf_AssignDesc_SienaPlusMessage_2eproto() {
       "SienaPlusMessage.proto");
   GOOGLE_CHECK(file != NULL);
   SienaPlusMessage_descriptor_ = file->message_type(0);
-  static const int SienaPlusMessage_offsets_[6] = {
+  static const int SienaPlusMessage_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage, sender_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage, subscription_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage, notification_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage, unsubscription_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage, payload_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage, assigned_id_),
   };
   SienaPlusMessage_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -122,7 +123,7 @@ void protobuf_AssignDesc_SienaPlusMessage_2eproto() {
   SienaPlusMessage_subscription_t_operator_t_descriptor_ = SienaPlusMessage_subscription_t_descriptor_->enum_type(0);
   SienaPlusMessage_notification_t_descriptor_ = SienaPlusMessage_descriptor_->nested_type(2);
   static const int SienaPlusMessage_notification_t_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage_notification_t, attributes_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SienaPlusMessage_notification_t, attribute_),
   };
   SienaPlusMessage_notification_t_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -203,35 +204,36 @@ void protobuf_AddDesc_SienaPlusMessage_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\026SienaPlusMessage.proto\022\tsienaplus\"\312\010\n\020"
+    "\n\026SienaPlusMessage.proto\022\tsienaplus\"\373\010\n\020"
     "SienaPlusMessage\0228\n\004type\030\001 \002(\0162*.sienapl"
     "us.SienaPlusMessage.message_type_t\022\016\n\006se"
     "nder\030\002 \002(\t\022@\n\014subscription\030\003 \001(\0132*.siena"
     "plus.SienaPlusMessage.subscription_t\022@\n\014"
     "notification\030\004 \001(\0132*.sienaplus.SienaPlus"
     "Message.notification_t\022\026\n\016unsubscription"
-    "\030\005 \001(\t\022\017\n\007payload\030\006 \001(\t\032\222\001\n\007value_t\0224\n\004t"
-    "ype\030\001 \002(\0162&.sienaplus.SienaPlusMessage.t"
-    "ag_type_t\022\024\n\014string_value\030\002 \001(\t\022\021\n\tint_v"
-    "alue\030\003 \001(\005\022\024\n\014double_value\030\004 \001(\001\022\022\n\nbool"
-    "_value\030\005 \001(\010\032\200\003\n\016subscription_t\022L\n\013const"
-    "raints\030\001 \003(\01327.sienaplus.SienaPlusMessag"
-    "e.subscription_t.constraint_t\032\223\001\n\014constr"
-    "aint_t\022\014\n\004name\030\001 \002(\t\022A\n\002op\030\002 \002(\01625.siena"
-    "plus.SienaPlusMessage.subscription_t.ope"
-    "rator_t\0222\n\005value\030\003 \002(\0132#.sienaplus.Siena"
-    "PlusMessage.value_t\"\211\001\n\noperator_t\022\t\n\005EQ"
-    "UAL\020\001\022\r\n\tLESS_THAN\020\002\022\020\n\014GREATER_THAN\020\003\022\n"
-    "\n\006SUFFIX\020\004\022\n\n\006PREFIX\020\005\022\016\n\nSUB_STRING\020\006\022\007"
-    "\n\003ANY\020\007\022\r\n\tNOT_EQUAL\020\010\022\017\n\013REGULAR_EXP\020\t\032"
-    "\255\001\n\016notification_t\022J\n\nattributes\030\001 \003(\01326"
-    ".sienaplus.SienaPlusMessage.notification"
-    "_t.attribute_t\032O\n\013attribute_t\022\014\n\004name\030\001 "
-    "\002(\t\0222\n\005value\030\002 \002(\0132#.sienaplus.SienaPlus"
-    "Message.value_t\"-\n\016message_type_t\022\007\n\003SUB"
-    "\020\001\022\007\n\003NOT\020\002\022\t\n\005UNSUB\020\003\"H\n\ntag_type_t\022\n\n\006"
-    "STRING\020\001\022\007\n\003INT\020\002\022\n\n\006DOUBLE\020\003\022\013\n\007BOOLEAN"
-    "\020\004\022\014\n\010ANY_TYPE\020\005", 1136);
+    "\030\005 \001(\t\022\017\n\007payload\030\006 \001(\t\022\023\n\013assigned_id\030\007"
+    " \001(\005\032\222\001\n\007value_t\0224\n\004type\030\001 \002(\0162&.sienapl"
+    "us.SienaPlusMessage.tag_type_t\022\024\n\014string"
+    "_value\030\002 \001(\t\022\021\n\tint_value\030\003 \001(\005\022\024\n\014doubl"
+    "e_value\030\004 \001(\001\022\022\n\nbool_value\030\005 \001(\010\032\200\003\n\016su"
+    "bscription_t\022L\n\013constraints\030\001 \003(\01327.sien"
+    "aplus.SienaPlusMessage.subscription_t.co"
+    "nstraint_t\032\223\001\n\014constraint_t\022\014\n\004name\030\001 \002("
+    "\t\022A\n\002op\030\002 \002(\01625.sienaplus.SienaPlusMessa"
+    "ge.subscription_t.operator_t\0222\n\005value\030\003 "
+    "\002(\0132#.sienaplus.SienaPlusMessage.value_t"
+    "\"\211\001\n\noperator_t\022\t\n\005EQUAL\020\001\022\r\n\tLESS_THAN\020"
+    "\002\022\020\n\014GREATER_THAN\020\003\022\n\n\006SUFFIX\020\004\022\n\n\006PREFI"
+    "X\020\005\022\016\n\nSUB_STRING\020\006\022\007\n\003ANY\020\007\022\r\n\tNOT_EQUA"
+    "L\020\010\022\017\n\013REGULAR_EXP\020\t\032\254\001\n\016notification_t\022"
+    "I\n\tattribute\030\001 \003(\01326.sienaplus.SienaPlus"
+    "Message.notification_t.attribute_t\032O\n\013at"
+    "tribute_t\022\014\n\004name\030\001 \002(\t\0222\n\005value\030\002 \002(\0132#"
+    ".sienaplus.SienaPlusMessage.value_t\"M\n\016m"
+    "essage_type_t\022\007\n\003SUB\020\001\022\007\n\003NOT\020\002\022\t\n\005UNSUB"
+    "\020\003\022\014\n\010HNDSHAKE\020\004\022\020\n\014HNDSHAKE_ACK\020\005\"E\n\nta"
+    "g_type_t\022\n\n\006STRING\020\001\022\007\n\003INT\020\002\022\n\n\006DOUBLE\020"
+    "\003\022\010\n\004BOOL\020\004\022\014\n\010ANY_TYPE\020\005", 1185);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "SienaPlusMessage.proto", &protobuf_RegisterTypes);
   SienaPlusMessage::default_instance_ = new SienaPlusMessage();
@@ -268,6 +270,8 @@ bool SienaPlusMessage_message_type_t_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
+    case 5:
       return true;
     default:
       return false;
@@ -278,6 +282,8 @@ bool SienaPlusMessage_message_type_t_IsValid(int value) {
 const SienaPlusMessage_message_type_t SienaPlusMessage::SUB;
 const SienaPlusMessage_message_type_t SienaPlusMessage::NOT;
 const SienaPlusMessage_message_type_t SienaPlusMessage::UNSUB;
+const SienaPlusMessage_message_type_t SienaPlusMessage::HNDSHAKE;
+const SienaPlusMessage_message_type_t SienaPlusMessage::HNDSHAKE_ACK;
 const SienaPlusMessage_message_type_t SienaPlusMessage::message_type_t_MIN;
 const SienaPlusMessage_message_type_t SienaPlusMessage::message_type_t_MAX;
 const int SienaPlusMessage::message_type_t_ARRAYSIZE;
@@ -303,7 +309,7 @@ bool SienaPlusMessage_tag_type_t_IsValid(int value) {
 const SienaPlusMessage_tag_type_t SienaPlusMessage::STRING;
 const SienaPlusMessage_tag_type_t SienaPlusMessage::INT;
 const SienaPlusMessage_tag_type_t SienaPlusMessage::DOUBLE;
-const SienaPlusMessage_tag_type_t SienaPlusMessage::BOOLEAN;
+const SienaPlusMessage_tag_type_t SienaPlusMessage::BOOL;
 const SienaPlusMessage_tag_type_t SienaPlusMessage::ANY_TYPE;
 const SienaPlusMessage_tag_type_t SienaPlusMessage::tag_type_t_MIN;
 const SienaPlusMessage_tag_type_t SienaPlusMessage::tag_type_t_MAX;
@@ -1529,7 +1535,7 @@ void SienaPlusMessage_notification_t_attribute_t::Swap(SienaPlusMessage_notifica
 // -------------------------------------------------------------------
 
 #ifndef _MSC_VER
-const int SienaPlusMessage_notification_t::kAttributesFieldNumber;
+const int SienaPlusMessage_notification_t::kAttributeFieldNumber;
 #endif  // !_MSC_VER
 
 SienaPlusMessage_notification_t::SienaPlusMessage_notification_t()
@@ -1581,7 +1587,7 @@ SienaPlusMessage_notification_t* SienaPlusMessage_notification_t::New() const {
 }
 
 void SienaPlusMessage_notification_t::Clear() {
-  attributes_.Clear();
+  attribute_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -1592,17 +1598,17 @@ bool SienaPlusMessage_notification_t::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attributes = 1;
+      // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attribute = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_attributes:
+         parse_attribute:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_attributes()));
+                input, add_attribute()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(10)) goto parse_attributes;
+        if (input->ExpectTag(10)) goto parse_attribute;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1625,10 +1631,10 @@ bool SienaPlusMessage_notification_t::MergePartialFromCodedStream(
 
 void SienaPlusMessage_notification_t::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attributes = 1;
-  for (int i = 0; i < this->attributes_size(); i++) {
+  // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attribute = 1;
+  for (int i = 0; i < this->attribute_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->attributes(i), output);
+      1, this->attribute(i), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -1639,11 +1645,11 @@ void SienaPlusMessage_notification_t::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* SienaPlusMessage_notification_t::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attributes = 1;
-  for (int i = 0; i < this->attributes_size(); i++) {
+  // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attribute = 1;
+  for (int i = 0; i < this->attribute_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        1, this->attributes(i), target);
+        1, this->attribute(i), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -1656,12 +1662,12 @@ void SienaPlusMessage_notification_t::SerializeWithCachedSizes(
 int SienaPlusMessage_notification_t::ByteSize() const {
   int total_size = 0;
   
-  // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attributes = 1;
-  total_size += 1 * this->attributes_size();
-  for (int i = 0; i < this->attributes_size(); i++) {
+  // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attribute = 1;
+  total_size += 1 * this->attribute_size();
+  for (int i = 0; i < this->attribute_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->attributes(i));
+        this->attribute(i));
   }
   
   if (!unknown_fields().empty()) {
@@ -1689,7 +1695,7 @@ void SienaPlusMessage_notification_t::MergeFrom(const ::google::protobuf::Messag
 
 void SienaPlusMessage_notification_t::MergeFrom(const SienaPlusMessage_notification_t& from) {
   GOOGLE_CHECK_NE(&from, this);
-  attributes_.MergeFrom(from.attributes_);
+  attribute_.MergeFrom(from.attribute_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -1707,15 +1713,15 @@ void SienaPlusMessage_notification_t::CopyFrom(const SienaPlusMessage_notificati
 
 bool SienaPlusMessage_notification_t::IsInitialized() const {
   
-  for (int i = 0; i < attributes_size(); i++) {
-    if (!this->attributes(i).IsInitialized()) return false;
+  for (int i = 0; i < attribute_size(); i++) {
+    if (!this->attribute(i).IsInitialized()) return false;
   }
   return true;
 }
 
 void SienaPlusMessage_notification_t::Swap(SienaPlusMessage_notification_t* other) {
   if (other != this) {
-    attributes_.Swap(&other->attributes_);
+    attribute_.Swap(&other->attribute_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -1740,6 +1746,7 @@ const int SienaPlusMessage::kSubscriptionFieldNumber;
 const int SienaPlusMessage::kNotificationFieldNumber;
 const int SienaPlusMessage::kUnsubscriptionFieldNumber;
 const int SienaPlusMessage::kPayloadFieldNumber;
+const int SienaPlusMessage::kAssignedIdFieldNumber;
 #endif  // !_MSC_VER
 
 SienaPlusMessage::SienaPlusMessage()
@@ -1766,6 +1773,7 @@ void SienaPlusMessage::SharedCtor() {
   notification_ = NULL;
   unsubscription_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   payload_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  assigned_id_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1833,6 +1841,7 @@ void SienaPlusMessage::Clear() {
         payload_->clear();
       }
     }
+    assigned_id_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -1939,6 +1948,22 @@ bool SienaPlusMessage::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(56)) goto parse_assigned_id;
+        break;
+      }
+      
+      // optional int32 assigned_id = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_assigned_id:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &assigned_id_)));
+          set_has_assigned_id();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2006,6 +2031,11 @@ void SienaPlusMessage::SerializeWithCachedSizes(
       6, this->payload(), output);
   }
   
+  // optional int32 assigned_id = 7;
+  if (has_assigned_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->assigned_id(), output);
+  }
+  
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -2064,6 +2094,11 @@ void SienaPlusMessage::SerializeWithCachedSizes(
         6, this->payload(), target);
   }
   
+  // optional int32 assigned_id = 7;
+  if (has_assigned_id()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->assigned_id(), target);
+  }
+  
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -2116,6 +2151,13 @@ int SienaPlusMessage::ByteSize() const {
           this->payload());
     }
     
+    // optional int32 assigned_id = 7;
+    if (has_assigned_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->assigned_id());
+    }
+    
   }
   if (!unknown_fields().empty()) {
     total_size +=
@@ -2161,6 +2203,9 @@ void SienaPlusMessage::MergeFrom(const SienaPlusMessage& from) {
     if (from.has_payload()) {
       set_payload(from.payload());
     }
+    if (from.has_assigned_id()) {
+      set_assigned_id(from.assigned_id());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -2197,6 +2242,7 @@ void SienaPlusMessage::Swap(SienaPlusMessage* other) {
     std::swap(notification_, other->notification_);
     std::swap(unsubscription_, other->unsubscription_);
     std::swap(payload_, other->payload_);
+    std::swap(assigned_id_, other->assigned_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

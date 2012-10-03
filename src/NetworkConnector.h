@@ -22,7 +22,7 @@ class NetworkConnector {
 public:
 	NetworkConnector(boost::asio::io_service&, const std::function<void(const char*, int size)>&);
 	virtual ~NetworkConnector();
-	virtual void send(const char*, int) = 0;
+	virtual void send(const char*, size_t) = 0;
 	virtual void send(const string&) = 0;
 	virtual void async_connect(const string&, int) = 0;
 	virtual void async_connect(const string&) = 0;

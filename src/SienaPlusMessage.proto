@@ -8,9 +8,15 @@ message SienaPlusMessage {
         SUB = 1;
         NOT = 2;
         UNSUB = 3;
+
         HNDSHAKE = 4; // this is the first message a connecting client 
-        //sends to a server. 
-        HNDSHAKE_ACK = 5;
+                      // sends to a server. 
+
+        HNDSHAKE_ACK = 5; // this type of message is sent
+                //  in response to a HNDSHAKE message. This message also
+                //  carries an integer (field 'assigned_id', defined later)
+                // which stores the id that the connection acceptor assigned 
+                // to the receiver of the message.
     }
     
     /*
@@ -71,14 +77,23 @@ message SienaPlusMessage {
     		required value_t value = 2;
     	}
     	
-        repeated attribute_t attributes = 1;
+        repeated attribute_t attribute = 1;
     }
     
-    // message fields
+    // mandatory message fields
     required message_type_t type = 1;
-   	required string sender = 2; 
+   	required string sender = 2; // this is the sender's 
+        // id that is assigned to it by the connection acceptor
+
+    // pub/sub related messages 
    	optional subscription_t subscription = 3;
     optional notification_t notification = 4;
     optional string unsubscription = 5;
     optional string payload = 6;
+
+    //control messages 
+    optional int32 assigned_id = 7; // this id is assigned by the broker
+        // and sent to the client. (client here means the initiator of 
+        // connection. Any further messages sent by a sender has to carry 
+        // its sender_id (field 2 defined above)
 }

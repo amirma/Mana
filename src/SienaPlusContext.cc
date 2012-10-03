@@ -46,10 +46,41 @@ SienaPlusContext::SienaPlusContext(const string& url, std::function<void(const s
 	}
 }
 
+void SienaPlusContext::set_id(const string& str_id) {
+    local_id_ = str_id;
+}
+
 SienaPlusContext::~SienaPlusContext() {
 }
 
-void SienaPlusContext::publish() {
+void SienaPlusContext::publish(const string& msg) {
+}
+
+void SienaPlusContext::publish(const simple_message& msg) {
+    SienaPlusMessage buff;
+    // set the sender id
+    buff.set_sender(local_id_);
+    // fill in the rest of the message parts 
+    to_protobuf(msg, buff);
+    send_message(buff);
+}
+
+void SienaPlusContext::send_message(SienaPlusMessage& msg) {
+    // seriazlie the message to a buffer ...
+    //
+    //TOOD here the buffer should come from a pool
+    char arr_buf[MAX_MSG_SIZE];
+    if(!msg.SerializePartialToArray(arr_buf, MAX_MSG_SIZE)) {
+    	cout << "SienaPlusContext::subscribe: unable to serialize message.";
+    	return;
+    }
+    //SienaPlusMessage msg1;
+    //assert(msg1.ParsePartialFromArray(arr_buf, MAX_MSG_SIZE));
+    //assert(msg1.ParseFromString(msg.SerializeAsString()));
+
+   //Send out the buffer
+   string str = msg.SerializeAsString();
+   net_connection_->send(str.c_str(), str.length());
 }
 
 /*
@@ -62,64 +93,19 @@ void SienaPlusContext::subscribe(const string& str) {
 }
 
 void SienaPlusContext::subscribe(const simple_filter& filtr) {
-    SienaPlusMessage msg;
-    // set message type
-    msg.set_type(SienaPlusMessage_message_type_t_SUB);
+    SienaPlusMessage buff;
+
     // set sender id
-    msg.set_sender("me");
+    buff.set_sender(local_id_);
     // fill in the constraints : type, name, operator, value
-
-    SienaPlusMessage_subscription_t* s = msg.mutable_subscription();
-    for(auto& cnst : filtr) {
-    	SienaPlusMessage_subscription_t_constraint_t* c = s->add_constraints();
-    	c->set_name(cnst.name().c_str());
-    	c->mutable_value()->set_type(SienaPlusMessage_tag_type_t(cnst.type()));
-    	c->set_op(SienaPlusMessage_subscription_t_operator_t(cnst.op()));
-        switch(cnst.type()) {
-            case siena::type_id::string_id:
-            	c->mutable_value()->set_string_value(cnst.string_value().c_str());
-                break;
-            case siena::type_id::int_id:
-            	c->mutable_value()->set_int_value(cnst.int_value());
-                break;
-            case siena::type_id::double_id:
-            	c->mutable_value()->set_double_value(cnst.double_value());
-                break;
-            case siena::type_id::bool_id:
-            	c->mutable_value()->set_bool_value(cnst.bool_value());
-                break;
-            case siena::type_id::anytype_id:
-            	cout << "Type any is not supported yet.";
-                break;
-       }
-
-        //make sure all required fields are filled
-        assert(c->has_name());
-        assert(c->has_op());
-        assert(c->has_value());
-    }
+    to_protobuf(filtr, buff);
 
     //make sure all required fields are filled
-    assert(msg.has_type());
-    assert(msg.has_sender());
-    assert(msg.has_subscription());
-
-    //TOOD here the buffer should come from a pool
-    char arr_buf[MAX_MSG_SIZE];
-    if(!msg.SerializePartialToArray(arr_buf, MAX_MSG_SIZE)) {
-    	cout << "SienaPlusContext::subscribe: unable to serialize message.";
-    	return;
-    }
-
-    //SienaPlusMessage msg1;
-    //assert(msg1.ParsePartialFromArray(arr_buf, MAX_MSG_SIZE));
-    //assert(msg1.ParseFromString(msg.SerializeAsString()));
-
-
-   //Send out the buffer
-   string str = msg.SerializeAsString();
-   net_connection_->send(str.c_str(), str.length());
-   cout << endl << str.c_str();
+    assert(buff.has_type());
+    assert(buff.has_sender());
+    assert(buff.has_subscription());
+    
+    send_message(buff);
 }
 
 void SienaPlusContext::unsubscribe() {

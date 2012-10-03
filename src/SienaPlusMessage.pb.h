@@ -68,11 +68,13 @@ inline bool SienaPlusMessage_subscription_t_operator_t_Parse(
 enum SienaPlusMessage_message_type_t {
   SienaPlusMessage_message_type_t_SUB = 1,
   SienaPlusMessage_message_type_t_NOT = 2,
-  SienaPlusMessage_message_type_t_UNSUB = 3
+  SienaPlusMessage_message_type_t_UNSUB = 3,
+  SienaPlusMessage_message_type_t_HNDSHAKE = 4,
+  SienaPlusMessage_message_type_t_HNDSHAKE_ACK = 5
 };
 bool SienaPlusMessage_message_type_t_IsValid(int value);
 const SienaPlusMessage_message_type_t SienaPlusMessage_message_type_t_message_type_t_MIN = SienaPlusMessage_message_type_t_SUB;
-const SienaPlusMessage_message_type_t SienaPlusMessage_message_type_t_message_type_t_MAX = SienaPlusMessage_message_type_t_UNSUB;
+const SienaPlusMessage_message_type_t SienaPlusMessage_message_type_t_message_type_t_MAX = SienaPlusMessage_message_type_t_HNDSHAKE_ACK;
 const int SienaPlusMessage_message_type_t_message_type_t_ARRAYSIZE = SienaPlusMessage_message_type_t_message_type_t_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* SienaPlusMessage_message_type_t_descriptor();
@@ -89,7 +91,7 @@ enum SienaPlusMessage_tag_type_t {
   SienaPlusMessage_tag_type_t_STRING = 1,
   SienaPlusMessage_tag_type_t_INT = 2,
   SienaPlusMessage_tag_type_t_DOUBLE = 3,
-  SienaPlusMessage_tag_type_t_BOOLEAN = 4,
+  SienaPlusMessage_tag_type_t_BOOL = 4,
   SienaPlusMessage_tag_type_t_ANY_TYPE = 5
 };
 bool SienaPlusMessage_tag_type_t_IsValid(int value);
@@ -613,24 +615,24 @@ class SienaPlusMessage_notification_t : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attributes = 1;
-  inline int attributes_size() const;
-  inline void clear_attributes();
-  static const int kAttributesFieldNumber = 1;
-  inline const ::sienaplus::SienaPlusMessage_notification_t_attribute_t& attributes(int index) const;
-  inline ::sienaplus::SienaPlusMessage_notification_t_attribute_t* mutable_attributes(int index);
-  inline ::sienaplus::SienaPlusMessage_notification_t_attribute_t* add_attributes();
+  // repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attribute = 1;
+  inline int attribute_size() const;
+  inline void clear_attribute();
+  static const int kAttributeFieldNumber = 1;
+  inline const ::sienaplus::SienaPlusMessage_notification_t_attribute_t& attribute(int index) const;
+  inline ::sienaplus::SienaPlusMessage_notification_t_attribute_t* mutable_attribute(int index);
+  inline ::sienaplus::SienaPlusMessage_notification_t_attribute_t* add_attribute();
   inline const ::google::protobuf::RepeatedPtrField< ::sienaplus::SienaPlusMessage_notification_t_attribute_t >&
-      attributes() const;
+      attribute() const;
   inline ::google::protobuf::RepeatedPtrField< ::sienaplus::SienaPlusMessage_notification_t_attribute_t >*
-      mutable_attributes();
+      mutable_attribute();
   
   // @@protoc_insertion_point(class_scope:sienaplus.SienaPlusMessage.notification_t)
  private:
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
-  ::google::protobuf::RepeatedPtrField< ::sienaplus::SienaPlusMessage_notification_t_attribute_t > attributes_;
+  ::google::protobuf::RepeatedPtrField< ::sienaplus::SienaPlusMessage_notification_t_attribute_t > attribute_;
   
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
@@ -704,6 +706,8 @@ class SienaPlusMessage : public ::google::protobuf::Message {
   static const message_type_t SUB = SienaPlusMessage_message_type_t_SUB;
   static const message_type_t NOT = SienaPlusMessage_message_type_t_NOT;
   static const message_type_t UNSUB = SienaPlusMessage_message_type_t_UNSUB;
+  static const message_type_t HNDSHAKE = SienaPlusMessage_message_type_t_HNDSHAKE;
+  static const message_type_t HNDSHAKE_ACK = SienaPlusMessage_message_type_t_HNDSHAKE_ACK;
   static inline bool message_type_t_IsValid(int value) {
     return SienaPlusMessage_message_type_t_IsValid(value);
   }
@@ -729,7 +733,7 @@ class SienaPlusMessage : public ::google::protobuf::Message {
   static const tag_type_t STRING = SienaPlusMessage_tag_type_t_STRING;
   static const tag_type_t INT = SienaPlusMessage_tag_type_t_INT;
   static const tag_type_t DOUBLE = SienaPlusMessage_tag_type_t_DOUBLE;
-  static const tag_type_t BOOLEAN = SienaPlusMessage_tag_type_t_BOOLEAN;
+  static const tag_type_t BOOL = SienaPlusMessage_tag_type_t_BOOL;
   static const tag_type_t ANY_TYPE = SienaPlusMessage_tag_type_t_ANY_TYPE;
   static inline bool tag_type_t_IsValid(int value) {
     return SienaPlusMessage_tag_type_t_IsValid(value);
@@ -810,6 +814,13 @@ class SienaPlusMessage : public ::google::protobuf::Message {
   inline ::std::string* mutable_payload();
   inline ::std::string* release_payload();
   
+  // optional int32 assigned_id = 7;
+  inline bool has_assigned_id() const;
+  inline void clear_assigned_id();
+  static const int kAssignedIdFieldNumber = 7;
+  inline ::google::protobuf::int32 assigned_id() const;
+  inline void set_assigned_id(::google::protobuf::int32 value);
+  
   // @@protoc_insertion_point(class_scope:sienaplus.SienaPlusMessage)
  private:
   inline void set_has_type();
@@ -824,18 +835,21 @@ class SienaPlusMessage : public ::google::protobuf::Message {
   inline void clear_has_unsubscription();
   inline void set_has_payload();
   inline void clear_has_payload();
+  inline void set_has_assigned_id();
+  inline void clear_has_assigned_id();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
   ::std::string* sender_;
   ::sienaplus::SienaPlusMessage_subscription_t* subscription_;
   ::sienaplus::SienaPlusMessage_notification_t* notification_;
+  int type_;
+  ::google::protobuf::int32 assigned_id_;
   ::std::string* unsubscription_;
   ::std::string* payload_;
-  int type_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
   
   friend void  protobuf_AddDesc_SienaPlusMessage_2eproto();
   friend void protobuf_AssignDesc_SienaPlusMessage_2eproto();
@@ -1236,29 +1250,29 @@ inline ::sienaplus::SienaPlusMessage_value_t* SienaPlusMessage_notification_t_at
 
 // SienaPlusMessage_notification_t
 
-// repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attributes = 1;
-inline int SienaPlusMessage_notification_t::attributes_size() const {
-  return attributes_.size();
+// repeated .sienaplus.SienaPlusMessage.notification_t.attribute_t attribute = 1;
+inline int SienaPlusMessage_notification_t::attribute_size() const {
+  return attribute_.size();
 }
-inline void SienaPlusMessage_notification_t::clear_attributes() {
-  attributes_.Clear();
+inline void SienaPlusMessage_notification_t::clear_attribute() {
+  attribute_.Clear();
 }
-inline const ::sienaplus::SienaPlusMessage_notification_t_attribute_t& SienaPlusMessage_notification_t::attributes(int index) const {
-  return attributes_.Get(index);
+inline const ::sienaplus::SienaPlusMessage_notification_t_attribute_t& SienaPlusMessage_notification_t::attribute(int index) const {
+  return attribute_.Get(index);
 }
-inline ::sienaplus::SienaPlusMessage_notification_t_attribute_t* SienaPlusMessage_notification_t::mutable_attributes(int index) {
-  return attributes_.Mutable(index);
+inline ::sienaplus::SienaPlusMessage_notification_t_attribute_t* SienaPlusMessage_notification_t::mutable_attribute(int index) {
+  return attribute_.Mutable(index);
 }
-inline ::sienaplus::SienaPlusMessage_notification_t_attribute_t* SienaPlusMessage_notification_t::add_attributes() {
-  return attributes_.Add();
+inline ::sienaplus::SienaPlusMessage_notification_t_attribute_t* SienaPlusMessage_notification_t::add_attribute() {
+  return attribute_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::sienaplus::SienaPlusMessage_notification_t_attribute_t >&
-SienaPlusMessage_notification_t::attributes() const {
-  return attributes_;
+SienaPlusMessage_notification_t::attribute() const {
+  return attribute_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::sienaplus::SienaPlusMessage_notification_t_attribute_t >*
-SienaPlusMessage_notification_t::mutable_attributes() {
-  return &attributes_;
+SienaPlusMessage_notification_t::mutable_attribute() {
+  return &attribute_;
 }
 
 // -------------------------------------------------------------------
@@ -1518,6 +1532,28 @@ inline ::std::string* SienaPlusMessage::release_payload() {
     payload_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
+}
+
+// optional int32 assigned_id = 7;
+inline bool SienaPlusMessage::has_assigned_id() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void SienaPlusMessage::set_has_assigned_id() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void SienaPlusMessage::clear_has_assigned_id() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void SienaPlusMessage::clear_assigned_id() {
+  assigned_id_ = 0;
+  clear_has_assigned_id();
+}
+inline ::google::protobuf::int32 SienaPlusMessage::assigned_id() const {
+  return assigned_id_;
+}
+inline void SienaPlusMessage::set_assigned_id(::google::protobuf::int32 value) {
+  set_has_assigned_id();
+  assigned_id_ = value;
 }
 
 

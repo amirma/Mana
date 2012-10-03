@@ -10,6 +10,9 @@
 
 #include <siena/types.h>
 #include "SienaPlusMessage.pb.h"
+#include "sff.bzr/simple_fwd_types.h"
+
+#define is_in_container(container, key) #container.find(#key)!=#container.end()
 
 namespace sienaplus {
 
@@ -22,6 +25,17 @@ namespace sienaplus {
 	typedef enum_connection_type connection_type;
 
 	const int MAX_MSG_SIZE = 9000; //Bytes
+
+/*
+ * These function conver from/to  a SienaMessagePlus to different 
+ * siena types. Note that when filling in a protobuf the field 
+ * 'sender' is not set in these function. 
+ */
+    void to_simple_message(const SienaPlusMessage& buff, simple_message& msg);
+    void to_simple_filter(const SienaPlusMessage& buff, simple_filter& pred);
+    //
+    void to_protobuf(const simple_message& msg, SienaPlusMessage& buff);
+    void to_protobuf(const simple_filter& predg, SienaPlusMessage& buff);
 
 };
 

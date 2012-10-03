@@ -24,10 +24,13 @@ using namespace std;
 namespace sienaplus {
 
 
-Broker::Broker() {
+Broker::Broker(const string& id) : id_(id) {
+    message_match_handler_ = new BrokerMatchMessageHandler(this);
+    // TODO: the broker id has to be set at command line...
 }
 
 Broker::~Broker() {
+    delete message_match_handler_;
 }
 
 void Broker::add_transport(string url) {
@@ -58,22 +61,20 @@ void Broker::add_transport(string url) {
 void Broker::start() {
 	for(auto tr : message_receivers)
 		tr->start();
-	for (;;)
-	{
-	  try
-	  {
+	for (;;) {
+	  try {
 	    io_service_.run();
 	    break; // run() exited normally
-	  }
-	  catch (SienaPlusException& e)
-	  {
-	    // Deal with exception as appropriate.
+	  } catch (SienaPlusException& e) {
+	    cout << "An error happended in the broker execution: " << e.what();
 	  }
 	}
 }
 
 void Broker::shutdown() {
+    cout << endl << "Broker is shutting down...";
 	io_service_.stop();
+    cout << "done." << endl;
 }
 
 boost::asio::io_service& Broker::io_service() {
@@ -84,56 +85,33 @@ void Broker::handle_message(SienaPlusMessage& msg) {
 	cout << "broker received message from sender " << msg.sender();
 }
 
-void Broker::handle_sub(SienaPlusMessage& msg) {
+void Broker::handle_sub(SienaPlusMessage& buff) {
     simple_filter* fltr = new simple_filter();
-    cout << endl << "size: " << msg.subscription().constraints_size();
-    for(int i = 0; i < msg.subscription().constraints_size(); i++) {
-        string* st = new string(msg.subscription().constraints(i).name());
-        // TODO: string_t
-        siena::string_t name(st->c_str());
-        siena::operator_id op_id = siena::operator_id(msg.subscription().constraints(i).op());
-        switch(msg.subscription().constraints(i).value().type()) {
-            case SienaPlusMessage_tag_type_t_STRING: {
-                // TODO : I don't like the convesrion of string to siena string
-                // ...
-                string* st = new string(msg.subscription().constraints(i).value().string_value());
-                // TODO: string_t again...
-                simple_op_value* sopv = 
-                    new simple_op_value(op_id, siena::string_t(st->c_str()));
-                fltr->add(name, sopv);
-                break;
-            }
-            case SienaPlusMessage_tag_type_t_INT: {
-                simple_op_value* sopv = 
-                    new simple_op_value(op_id, static_cast<siena::int_t>(msg.subscription().constraints(i).value().int_value()));
-                fltr->add(name, sopv);
-                break;
-            }
-            case SienaPlusMessage_tag_type_t_DOUBLE: {
-                simple_op_value* sopv = 
-                    new simple_op_value(op_id, static_cast<siena::double_t>(msg.subscription().constraints(i).value().double_value()));
-                fltr->add(name, sopv);
-                break;
-            }
-            case SienaPlusMessage_tag_type_t_BOOLEAN: {
-                simple_op_value* sopv  = 
-                    new simple_op_value(op_id, static_cast<siena::bool_t>(msg.subscription().constraints(i).value().bool_value()));
-                fltr->add(name, sopv);
-                break;
-            }
-            default:
-                cout << endl << "Warining: Broker.cc::handle_sub(): ignoring unrecognized constraint type";
-        }
-    }
-
+    to_simple_filter(buff, *fltr);
     //TODO: one predicate per filter is not the right way...
     simple_predicate pred;
     pred.add(fltr);
-    fwd_table_.ifconfig(iface_no_generator_.borrow_number(), pred);
+
+    siena::if_t  if_ = 0;
+    //if(is_in_container(neighbors_by_id_, buff.sender())) {
+    if(neighbors_by_id_.find(buff.sender())!=neighbors_by_id_.end()) {
+        if_ =  neighbors_by_id_[buff.sender()]->iface_;
+    } else {
+        if_ = iface_no_generator_.borrow_number();
+        auto tmp = make_shared<NeighborNode>(buff.sender(), if_);
+        neighbors_by_id_[buff.sender()] = tmp;
+        neighbors_by_iface_[if_] = std::move(tmp);
+    }
+
+    // FIXME: we definately need locking here ... 
+    fwd_table_.ifconfig(if_, pred);
     fwd_table_.consolidate();
 }
 
-void Broker::handle_not(SienaPlusMessage& msg) {
+void Broker::handle_not(SienaPlusMessage& buff) {
+  simple_message msg;
+  to_simple_message(buff, msg);
+  fwd_table_.match(msg, *message_match_handler_);
 }
 
 /*
@@ -151,18 +129,11 @@ void Broker::connect_handler(shared_ptr<NetworkConnector> connector) {
 }
 
 void Broker::receive_handler(const char* data, int size) {
-	//cout << endl << "broker received: " << data;
-
-	//cout << endl << "here 0";
 	SienaPlusMessage msg;
-	//cout << endl << "here 1";
-
 	if(!msg.ParsePartialFromArray(data, size)) {
 		cout << endl << "Broker::receive_handler: unable to deserialize message.";
 		return;
 	}
-
-	cout << endl << "type: " <<  msg.type();
     switch(msg.type()) {
         case SienaPlusMessage_message_type_t_SUB:
             handle_sub(msg);
@@ -176,4 +147,8 @@ void Broker::receive_handler(const char* data, int size) {
     }
 }
 
+bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
+        cout << endl << "match for client " << neighbors_by_iface_[iface]->id_;
+        return true;
+    }
 } /* namespace sienaplus */
