@@ -8,6 +8,7 @@
 #include "SienaPlusException.h"
 #include <string>
 #include <iostream>
+#include "common.h"
 
 using namespace std;
 
@@ -17,11 +18,11 @@ SienaPlusException::SienaPlusException() {
 }
 
 SienaPlusException::SienaPlusException(const char* msg) {
-	cout << msg;
+	log_err(msg);
 }
 
 SienaPlusException::SienaPlusException(const string& msg) {
-	cout << msg;
+	log_err(msg);
 }
 
 SienaPlusException::~SienaPlusException() throw(){

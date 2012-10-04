@@ -18,6 +18,8 @@
 
 #include "siena/fwdtable.h"
 
+#define DEFAULT_NUM_OF_THREADS 1
+
 using namespace std;
 
 namespace sienaplus {
@@ -55,12 +57,13 @@ class IFaceNoGenerator {
 
 struct NeighborNode {
     siena::if_t interface_;
-    shared_ptr<NetworkConnector> net_connector_;
     string id_;
     siena::if_t iface_;
-    NeighborNode(const string& id, siena::if_t ifc) : id_(id), iface_(ifc) {}
-//    private:
- //   NeighborNode() {} //disable this
+    NetworkConnector* net_connector_;
+    NeighborNode(NetworkConnector* nc,const string& id, siena::if_t ifc) : 
+        net_connector_(nc), id_(id), iface_(ifc) {}
+    private:    
+    NeighborNode() {} //disable this
 };
 
 // forward declaration so that we can have a pointer to 
@@ -78,7 +81,7 @@ public:
 	// Use this method to add more transport protocols to the broker
 	void add_transport(string);
 	void handle_message(SienaPlusMessage&);
-	void handle_sub(SienaPlusMessage&);
+	void handle_sub(NetworkConnector*, SienaPlusMessage&);
 	void handle_not(SienaPlusMessage&);
     // we want BrokerMatchMessageHandler to be able to call
     // the private method 'handle_match'
@@ -87,9 +90,10 @@ private:
 	boost::asio::io_service io_service_;
 	vector<shared_ptr<MessageReceiver> > message_receivers;
 	//data, size
-	void receive_handler(const char*, int);
+	void receive_handler(NetworkConnector*, const char*, int);
     void connect_handler(shared_ptr<NetworkConnector>);
     // the main forwarding table
+    //
     siena::FwdTable fwd_table_;
     // a number generator for generating unique numbers to represnt
     // clients/neighbors 
@@ -100,6 +104,7 @@ private:
     BrokerMatchMessageHandler* message_match_handler_;
     bool handle_match(siena::if_t, const siena::message&);
     string id_;
+    size_t num_of_threads_; 
 };
 
 

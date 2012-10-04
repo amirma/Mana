@@ -16,7 +16,7 @@ using namespace std;
 namespace sienaplus {
 
 TCPMessageReceiver::TCPMessageReceiver(boost::asio::io_service& srv,
-		const int port, const string& addr, const std::function<void(const char*, int)>& hndlr, 
+		const int port, const string& addr, const std::function<void(NetworkConnector*, const char*, int)>& hndlr, 
         const std::function<void(shared_ptr<NetworkConnector>)>& c_hndlr):
 		MessageReceiver(srv, hndlr), connect_handler_(c_hndlr) {
 	connection_type_ = sienaplus::tcp;
@@ -55,10 +55,10 @@ void TCPMessageReceiver::begin_accept() {
 void TCPMessageReceiver::accept_handler(const boost::system::error_code& ec) {
 
 	if(!ec && ec.value() != 0) {
-		cout << "error: " << ec.message();
+		log_err("error: " << ec.message());
 	}
 
-	cout << endl << "Accepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string() << endl;
+	log_debug("Accepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string());
 	//once the connection in created we move the pointer
 	auto c = make_shared<TCPNetworkConnector>(next_connection_socket_, receive_handler_);
 	remote_endpoints.push_back(std::move(next_connection_socket_));

@@ -16,7 +16,8 @@
 
 namespace sienaplus {
 
-SienaPlusContext::SienaPlusContext(const string& url, std::function<void(const simple_message&)> h) {
+SienaPlusContext::SienaPlusContext(const string& id, const string& url, std::function<void(const simple_message&)> h) {
+    local_id_ = id;
 	flag_has_subscription = false;
 	url_ = url;
 	app_notification_handler_ = h;
@@ -32,28 +33,26 @@ SienaPlusContext::SienaPlusContext(const string& url, std::function<void(const s
 	if(tokens[0] == "tcp") {
 		net_connection_ = make_shared<TCPNetworkConnector>(io_service_,
 				std::bind(&SienaPlusContext::receive_handler, this,
-				std::placeholders::_1, std::placeholders::_2));
+				std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		connection_type = sienaplus::connection_type::tcp;
 	} else if(tokens[0] == "ka") {
 		net_connection_ = make_shared<TCPNetworkConnector>(io_service_,
 				std::bind(&SienaPlusContext::receive_handler, this,
-				std::placeholders::_1, std::placeholders::_2));
+				std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		connect();
 		connection_type = sienaplus::connection_type::ka;
 	} else {
-		cout << "Malformed URL or method not supported:" << url_ << endl;
+		log_err("Malformed URL or method not supported:" << url_);
 		exit(-1);
 	}
-}
-
-void SienaPlusContext::set_id(const string& str_id) {
-    local_id_ = str_id;
 }
 
 SienaPlusContext::~SienaPlusContext() {
 }
 
 void SienaPlusContext::publish(const string& msg) {
+    //TODO:
+    throw SienaPlusException("SienaPlusContext::publish(): not implemented.");
 }
 
 void SienaPlusContext::publish(const simple_message& msg) {
@@ -62,25 +61,21 @@ void SienaPlusContext::publish(const simple_message& msg) {
     buff.set_sender(local_id_);
     // fill in the rest of the message parts 
     to_protobuf(msg, buff);
+    // make sure required fields are filled in
+    assert(buff.IsInitialized());
     send_message(buff);
 }
 
 void SienaPlusContext::send_message(SienaPlusMessage& msg) {
-    // seriazlie the message to a buffer ...
-    //
-    //TOOD here the buffer should come from a pool
+    // FIXME: this test is expensive ...
     char arr_buf[MAX_MSG_SIZE];
-    if(!msg.SerializePartialToArray(arr_buf, MAX_MSG_SIZE)) {
-    	cout << "SienaPlusContext::subscribe: unable to serialize message.";
-    	return;
-    }
-    //SienaPlusMessage msg1;
-    //assert(msg1.ParsePartialFromArray(arr_buf, MAX_MSG_SIZE));
-    //assert(msg1.ParseFromString(msg.SerializeAsString()));
+    assert(msg.SerializeToArray(arr_buf, MAX_MSG_SIZE));
 
-   //Send out the buffer
-   string str = msg.SerializeAsString();
-   net_connection_->send(str.c_str(), str.length());
+    // seriazlie the message to a buffer ...
+    //Send out the buffer
+    //TODO: i'm sute this is very inefficient
+    string str = msg.SerializeAsString();
+    net_connection_->send(str.c_str(), str.length());
 }
 
 /*
@@ -88,8 +83,9 @@ void SienaPlusContext::send_message(SienaPlusMessage& msg) {
  * called to handle the notification
  */
 void SienaPlusContext::subscribe(const string& str) {
-	if(connection_type == sienaplus::connection_type::tcp || connection_type == sienaplus::connection_type::ka)
-	net_connection_->send(str.c_str(), str.length());
+	//if(connection_type == sienaplus::connection_type::tcp || connection_type == sienaplus::connection_type::ka)
+	//net_connection_->send(str.c_str(), str.length());
+    throw SienaPlusException("not implemented");
 }
 
 void SienaPlusContext::subscribe(const simple_filter& filtr) {
@@ -101,8 +97,7 @@ void SienaPlusContext::subscribe(const simple_filter& filtr) {
     to_protobuf(filtr, buff);
 
     //make sure all required fields are filled
-    assert(buff.has_type());
-    assert(buff.has_sender());
+    assert(buff.IsInitialized());
     assert(buff.has_subscription());
     
     send_message(buff);
@@ -123,10 +118,28 @@ void SienaPlusContext::start() {
 
 void SienaPlusContext::stop() {
 	//work_->reset();
+    net_connection_->disconnect();
 }
 
-void SienaPlusContext::receive_handler(const char* data, int) {
-	cout << endl << "context received: " << data;
+void SienaPlusContext::receive_handler(NetworkConnector* nc, const char* data, int size) {
+    log_debug("SienaPlusContext::receive_handler: received " << size << " bytes.");
+    SienaPlusMessage buff;
+	if(!buff.ParsePartialFromArray(data, size)) {
+		log_err("SienaPlusContext::receive_handler(): unable to deserialize message.");
+		return;
+	}
+    switch(buff.type()) {
+    case SienaPlusMessage_message_type_t_NOT: {
+        simple_message msg;
+        to_simple_message(buff, msg);
+        log_debug("SienaPlusContext::receive_handler(): dispatching notification to the application.");
+        app_notification_handler_(msg);
+        break;
+    }
+    //TODO : other types ...
+    default:
+        log_err("SienaPlusContext::receive_handler(): unrecognized message type: " << buff.type());
+    }
 }
 
 bool SienaPlusContext::connect() {
@@ -135,7 +148,7 @@ bool SienaPlusContext::connect() {
 	if(!(net_connection_->connect(address_, port_))) {
 		return false;
 	}
-	cout << "Context connected to " << address_;
+	log_debug("Context connected to " << address_);
 	return true;
 }
 

@@ -25,7 +25,7 @@ class TCPMessageReceiver: public sienaplus::MessageReceiver {
 public:
 	// port_number, ip_address
 	TCPMessageReceiver(boost::asio::io_service&, const int, const string&,
-			const std::function<void(const char*, int)>&,
+			const std::function<void(NetworkConnector*, const char*, int)>&,
             const std::function<void(shared_ptr<NetworkConnector>)>&);
 	virtual ~TCPMessageReceiver();
 	void start();

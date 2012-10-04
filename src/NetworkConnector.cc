@@ -9,7 +9,7 @@
 
 namespace sienaplus {
 
-NetworkConnector::NetworkConnector(boost::asio::io_service& srv, const std::function<void(const char*, int size)>& hndlr) :
+NetworkConnector::NetworkConnector(boost::asio::io_service& srv, const std::function<void(NetworkConnector*, const char*, int size)>& hndlr) :
 		io_service_(srv), strand_(io_service_) {
 	receive_handler = hndlr;
 	port_ = 0;

@@ -23,8 +23,7 @@ namespace sienaplus {
 
 class SienaPlusContext {
 public:
-	SienaPlusContext(const string& url, std::function<void(const simple_message&)>);
-    void set_id(const string&); 
+	SienaPlusContext(const string&, const string& url, std::function<void(const simple_message&)>);
 	virtual ~SienaPlusContext();
 	void publish(const string&);
 	void publish(const simple_message&);
@@ -52,7 +51,7 @@ private:
 	string address_;
 	shared_ptr<boost::asio::io_service::work> work_;
 	shared_ptr<thread> thread_;
-	void receive_handler(const char*, int);
+	void receive_handler(NetworkConnector*, const char*, int);
     void send_message(SienaPlusMessage&);
 };
 

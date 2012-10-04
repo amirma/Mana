@@ -11,6 +11,7 @@
 #include <iostream>
 #include "Broker.h"
 #include <signal.h>
+#include "common.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ void termination_handler(int signum) {
 }
 
 void start_broker() {
-	cout << "Starting broker...";
+	log_info("Starting broker...");
 	string url = "tcp:localhost:2350";
 	broker.add_transport(url);
 	broker.start();

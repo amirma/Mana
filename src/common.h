@@ -12,7 +12,24 @@
 #include "SienaPlusMessage.pb.h"
 #include "sff.bzr/simple_fwd_types.h"
 
-#define is_in_container(container, key) #container.find(#key)!=#container.end()
+#define FLG_PR_DEBUG false
+
+#define is_in_container(container, key) container.find(key)!=container.end()
+#define log_debug(txt) while(FLG_PR_DEBUG) { \
+                    cout << endl << txt;\
+                    cout.flush();\
+                    break; \
+                    };
+
+#define log_info(txt) do { \
+                    cout << txt;\
+                    cout.flush();\
+                    } while(false);
+
+#define log_err(txt) do { \
+                    cout << endl << txt;\
+                    cout.flush();\
+                    } while(false);
 
 namespace sienaplus {
 

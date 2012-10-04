@@ -42,7 +42,7 @@ void to_simple_message(const SienaPlusMessage& buff, simple_message& msg) {
             break;
         }
         default:
-            cout << endl << "Warining: Broker.cc::handle_sub(): ignoring unrecognized attribute type";
+            log_err("Warining: Broker.cc::handle_sub(): ignoring unrecognized attribute type");
         }
     }
 }
@@ -83,7 +83,7 @@ void to_simple_filter(const SienaPlusMessage& buff, simple_filter& fltr) {
             break;
         }
         default:
-            cout << endl << "Warining: Broker.cc::handle_sub(): ignoring unrecognized constraint type";
+            log_err("Warining: Broker.cc::handle_sub(): ignoring unrecognized constraint type");
         }
     }
 }
@@ -114,7 +114,7 @@ void to_protobuf(const simple_message& msg, SienaPlusMessage& buff) {
                 att->mutable_value()->set_bool_value(attr.bool_value());
                 break;
             case siena::any_id:
-                cout << "ProtobugToFromSiena::to_protobuf: type \'any_id\' is not supported";
+                log_err("ProtobugToFromSiena::to_protobuf: type \'any_id\' is not supported");
                 break;
         }
     }
@@ -147,7 +147,7 @@ void to_protobuf(const simple_filter& fltr, SienaPlusMessage& buff) {
             	c->mutable_value()->set_bool_value(cnst.bool_value());
                 break;
             case siena::type_id::anytype_id:
-            	cout << "Type any is not supported yet.";
+                log_err("Type any is not supported yet.");
                 break;
        }
 

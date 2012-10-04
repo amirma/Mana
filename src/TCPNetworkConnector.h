@@ -15,8 +15,8 @@ namespace sienaplus {
 
 class TCPNetworkConnector: public sienaplus::NetworkConnector {
 public:
-	TCPNetworkConnector(boost::asio::io_service&, const std::function<void(const char*, int)>&);
-	TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&, const std::function<void(const char*, int)>&);
+	TCPNetworkConnector(boost::asio::io_service&, const std::function<void(NetworkConnector*, const char*, int)>&);
+	TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&, const std::function<void(NetworkConnector*, const char*, int)>&);
 	virtual ~TCPNetworkConnector();
 	void async_connect(const string&, int);
 	void async_connect(const string&);

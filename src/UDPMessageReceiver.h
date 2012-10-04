@@ -18,7 +18,7 @@ namespace sienaplus {
 
 class UDPMessageReceiver: public sienaplus::MessageReceiver {
 public:
-	UDPMessageReceiver(boost::asio::io_service&, const int, const string&, const std::function<void(const char*, int)>&);
+	UDPMessageReceiver(boost::asio::io_service&, const int, const string&, const std::function<void(NetworkConnector*, const char*, int)>&);
 	virtual ~UDPMessageReceiver();
 	void start();
 	void stop();
