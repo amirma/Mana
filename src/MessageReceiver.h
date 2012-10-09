@@ -19,7 +19,7 @@ class NetworkConnector;
 
 class MessageReceiver {
 public:
-	MessageReceiver(boost::asio::io_service&, const std::function<void(NetworkConnector*, const char*, int)>&);
+	MessageReceiver(boost::asio::io_service&, const std::function<void(NetworkConnector*, SienaPlusMessage&)>&);
 	virtual ~MessageReceiver();
 	virtual void start() = 0;
 	virtual void stop() = 0;
@@ -27,7 +27,7 @@ protected:
 	connection_type connection_type_;
 	bool flag_runing_;
 	boost::asio::io_service& io_service_;
-	std::function<void(NetworkConnector*, const char*, int size)> receive_handler_;
+	std::function<void(NetworkConnector*, SienaPlusMessage&)> receive_handler_;
 };
 
 } /* namespace sienaplus */

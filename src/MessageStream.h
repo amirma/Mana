@@ -13,7 +13,8 @@ class MessageStream {
 
     public:
         MessageStream();
-        
+        virtual ~MessageStream();
+        MessageStream(const MessageStream&) = delete; // delete copy constructor
         void consume(const char* buff, int size);
         bool produce(SienaPlusMessage& msg);
 private:

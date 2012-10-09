@@ -16,7 +16,7 @@ using namespace std;
 namespace sienaplus {
 
 TCPMessageReceiver::TCPMessageReceiver(boost::asio::io_service& srv,
-		const int port, const string& addr, const std::function<void(NetworkConnector*, const char*, int)>& hndlr, 
+		const int port, const string& addr, const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr, 
         const std::function<void(shared_ptr<NetworkConnector>)>& c_hndlr):
 		MessageReceiver(srv, hndlr), connect_handler_(c_hndlr) {
 	connection_type_ = sienaplus::tcp;

@@ -13,8 +13,10 @@
 #include <boost/asio.hpp>
 #include <vector>
 #include <functional>
+#include <memory>
 #include "string"
 #include "TCPNetworkConnector.h"
+#include "SienaPlusMessage.pb.h"
 
 
 using namespace std;
@@ -25,7 +27,7 @@ class TCPMessageReceiver: public sienaplus::MessageReceiver {
 public:
 	// port_number, ip_address
 	TCPMessageReceiver(boost::asio::io_service&, const int, const string&,
-			const std::function<void(NetworkConnector*, const char*, int)>&,
+			const std::function<void(NetworkConnector*, SienaPlusMessage&)>&,
             const std::function<void(shared_ptr<NetworkConnector>)>&);
     TCPMessageReceiver(const TCPMessageReceiver&) = delete; //disable copy const.
 	virtual ~TCPMessageReceiver();
@@ -36,7 +38,7 @@ private:
 	void accept_handler(const boost::system::error_code&);
 	int port;
 	shared_ptr<boost::asio::ip::tcp::acceptor> acceptor_ptr_;
-	vector<shared_ptr<boost::asio::ip::tcp::socket> >remote_endpoints;
+	vector<shared_ptr<boost::asio::ip::tcp::socket> > remote_endpoints;
 	vector<shared_ptr<TCPNetworkConnector> > tcp_connections;
 	shared_ptr<boost::asio::ip::tcp::socket> next_connection_socket_;
 	int port_;

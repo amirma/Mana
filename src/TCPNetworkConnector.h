@@ -15,9 +15,9 @@ namespace sienaplus {
 
 class TCPNetworkConnector: public sienaplus::NetworkConnector {
 public:
-	TCPNetworkConnector(boost::asio::io_service&, const std::function<void(NetworkConnector*, const char*, int)>&);
-	TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&, const std::function<void(NetworkConnector*, const char*, int)>&);
-    TCPNetworkConnector(const TCPNetworkConnector& other) = delete; // disable copy constructor
+	TCPNetworkConnector(boost::asio::io_service&, const std::function<void(NetworkConnector*, SienaPlusMessage&)>&);
+	TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&, const std::function<void(NetworkConnector*, SienaPlusMessage&)>&);
+    TCPNetworkConnector(const TCPNetworkConnector& other) = delete; // delete copy constructor
     virtual ~TCPNetworkConnector();
 	void async_connect(const string&, int);
 	void async_connect(const string&);
@@ -27,6 +27,7 @@ public:
 	// data, length
 	void send(const void*, size_t);
 	void send(const string&);
+    void send(const SienaPlusMessage&);
 	bool is_connected();
 
 private:
@@ -36,9 +37,7 @@ private:
     void start_sync_read();
     void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred);
     void set_socket_options();
-
 	//
-    boost::asio::io_service& io_service_;
 	shared_ptr<boost::asio::ip::tcp::socket> socket_;
 	// this flag specifies the behavior in case of connection termination, whether
 	// a re-connection should be tried or not

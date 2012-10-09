@@ -8,15 +8,8 @@ message SienaPlusMessage {
         SUB = 1;
         NOT = 2;
         UNSUB = 3;
-
-        HNDSHAKE = 4; // this is the first message a connecting client 
-                      // sends to a server. 
-
-        HNDSHAKE_ACK = 5; // this type of message is sent
-                //  in response to a HNDSHAKE message. This message also
-                //  carries an integer (field 'assigned_id', defined later)
-                // which stores the id that the connection acceptor assigned 
-                // to the receiver of the message.
+        TERMINATE_SESSION = 4; // In a graceful session termination this should 
+        // be sent from one of the two endpoints
     }
     
     /*

@@ -7,6 +7,8 @@ MessageStream::MessageStream() {
     new_data_size_ = 0;
 }
 
+MessageStream::~MessageStream() {}
+
 void MessageStream::consume(const char* buff, int size) {
     new_data_ = buff;
     new_data_size_ = size;
@@ -15,7 +17,8 @@ void MessageStream::consume(const char* buff, int size) {
 
 /*
  * Take a buffer 'data' with a maximum size of 'size' and deserialize into msg
- * and put the number of consumed bytes in consumed_size
+ * and put the number of consumed bytes in consumed_size, return true on
+ * success
  */
 bool MessageStream::do_produce(const char* data, int size, SienaPlusMessage& msg, int& consumed_size) {
     assert(data[0] == BUFF_SEPERATOR);

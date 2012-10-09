@@ -12,7 +12,6 @@
 #include "MessageReceiver.h"
 #include "SienaPlusMessage.pb.h"
 #include "NetworkConnector.h"
-#include "MessageStream.h"
 #include <array>
 #include <queue>
 #include <mutex>
@@ -91,7 +90,7 @@ private:
 	boost::asio::io_service io_service_;
 	vector<shared_ptr<MessageReceiver> > message_receivers;
 	//data, size
-	void receive_handler(NetworkConnector*, const char*, int);
+	void receive_handler(NetworkConnector*, SienaPlusMessage&);
     void connect_handler(shared_ptr<NetworkConnector>);
     // the main forwarding table
     //
@@ -106,7 +105,6 @@ private:
     bool handle_match(siena::if_t, const siena::message&);
     string id_;
     size_t num_of_threads_; 
-    MessageStream message_stream_;
 };
 
 class BrokerMatchMessageHandler : public siena::MatchMessageHandler {

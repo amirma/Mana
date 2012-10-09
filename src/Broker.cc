@@ -48,7 +48,7 @@ void Broker::add_transport(string url) {
 	}
 
 	if(tokens[0] == "tcp") {
-		auto h = std::bind(&Broker::receive_handler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		auto h = std::bind(&Broker::receive_handler, this, std::placeholders::_1, std::placeholders::_2);
 		function<void(shared_ptr<NetworkConnector>)> h_c = std::bind(&Broker::connect_handler, this, std::placeholders::_1);
 		std::shared_ptr<MessageReceiver> mr(new TCPMessageReceiver(io_service_ ,port, addr, h, h_c));
 		//std::shared_ptr<MessageReceiver> mr(new TCPMessageReceiver(io_service_ ,port, addr, [&](const char* data,
@@ -127,10 +127,7 @@ void Broker::handle_not(SienaPlusMessage& buff) {
 void Broker::connect_handler(shared_ptr<NetworkConnector> connector) {
 }
 
-void Broker::receive_handler(NetworkConnector* nc, const char* buff, int size) {
-    SienaPlusMessage msg;
-    message_stream_.consume(buff, size);
-    while(message_stream_.produce(msg)) {
+void Broker::receive_handler(NetworkConnector* nc, SienaPlusMessage& msg) {
         switch(msg.type()) {
         case SienaPlusMessage_message_type_t_SUB:
             handle_sub(nc, msg);
@@ -142,7 +139,6 @@ void Broker::receive_handler(NetworkConnector* nc, const char* buff, int size) {
             handle_message(msg);
         } 
         msg.Clear();
-    }
 }
 
 bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
@@ -152,11 +148,8 @@ bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
         buff.set_sender(id_);
         // fill in the rest of the message parts 
         to_protobuf(dynamic_cast<const simple_message&>(msg), buff);
-        //TODO: i'm sure this is very inefficient
-        //FIXME: definite data leak here...
-        string* str = new string(buff.SerializeAsString());
         assert(is_in_container(neighbors_by_iface_, iface));
-        neighbors_by_iface_[iface]->net_connector_->send(*str);
+        neighbors_by_iface_[iface]->net_connector_->send(buff);
         //
         char data[MAX_MSG_SIZE];
         assert(buff.SerializeToArray(data, MAX_MSG_SIZE));

@@ -11,6 +11,7 @@
 #include <boost/asio.hpp>
 #include "common.h"
 #include "SienaPlusMessage.pb.h"
+#include "MessageStream.h"
 #include <functional>
 
 
@@ -20,11 +21,12 @@ namespace sienaplus {
 
 class NetworkConnector {
 public:
-	NetworkConnector(boost::asio::io_service&, const std::function<void(NetworkConnector*, 
-                const char*, int size)>&);
+	NetworkConnector(boost::asio::io_service&, const std::function<void(NetworkConnector*, SienaPlusMessage&)>&);
+    NetworkConnector(const NetworkConnector&) = delete; // delete copy constructor
 	virtual ~NetworkConnector();
 	virtual void send(const void*, size_t) = 0;
 	virtual void send(const string&) = 0;
+    virtual void send(const SienaPlusMessage&) = 0;
 	virtual void async_connect(const string&, int) = 0;
 	virtual void async_connect(const string&) = 0;
 	virtual bool connect(const string&, int) = 0; //sync
@@ -41,9 +43,11 @@ protected:
 	string address_;
 	bool flag_is_connected;
 	array<char, MAX_MSG_SIZE> read_buffer_;
-	std::function<void(NetworkConnector*, const char*, int size)> receive_handler;
+	std::function<void(NetworkConnector*, SienaPlusMessage&)> receive_handler;
 	boost::asio::strand strand_;
     unsigned char remained_buffer_[MAX_MSG_SIZE];
+    MessageStream message_stream_;
+
 };
 
 } /* namespace sienaplus */

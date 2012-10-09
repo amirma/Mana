@@ -33,12 +33,12 @@ SienaPlusContext::SienaPlusContext(const string& id, const string& url, std::fun
 	if(tokens[0] == "tcp") {
 		net_connection_ = make_shared<TCPNetworkConnector>(io_service_,
 				std::bind(&SienaPlusContext::receive_handler, this,
-				std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+				std::placeholders::_1, std::placeholders::_2));
 		connection_type = sienaplus::connection_type::tcp;
 	} else if(tokens[0] == "ka") {
 		net_connection_ = make_shared<TCPNetworkConnector>(io_service_,
 				std::bind(&SienaPlusContext::receive_handler, this,
-				std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+				std::placeholders::_1, std::placeholders::_2));
 		connect();
 		connection_type = sienaplus::connection_type::ka;
 	} else {
@@ -48,6 +48,7 @@ SienaPlusContext::SienaPlusContext(const string& id, const string& url, std::fun
 }
 
 SienaPlusContext::~SienaPlusContext() {
+    stop();
 }
 
 void SienaPlusContext::publish(const string& msg) {
@@ -67,23 +68,7 @@ void SienaPlusContext::publish(const simple_message& msg) {
 }
 
 void SienaPlusContext::send_message(SienaPlusMessage& msg) {
-    // FIXME: this test is expensive ...
-    //char* arr_buf = new char[MAX_MSG_SIZE];
-    //assert(msg.SerializeToArray(arr_buf, MAX_MSG_SIZE));
-
-    // seriazlie the message to a buffer ...
-    //Send out the buffer
-    //TODO: i'm sute this is very inefficient
-    //string* str = new string(msg.SerializeAsString());
-    int data_size = msg.ByteSize();
-    int header_size = sizeof(int) + 1;
-    int total_size = header_size + data_size;
-    unsigned char* arr_buf = new unsigned char[total_size];
-    arr_buf[0] = BUFF_SEPERATOR;
-    *((int*)(arr_buf + 1)) = data_size;
-    msg.SerializeWithCachedSizesToArray(arr_buf + header_size);
-    log_debug("\nsize: " << total_size);
-    net_connection_->send(arr_buf, total_size);
+    net_connection_->send(msg);
 }
 
 /*
@@ -129,13 +114,8 @@ void SienaPlusContext::stop() {
     net_connection_->disconnect();
 }
 
-void SienaPlusContext::receive_handler(NetworkConnector* nc, const char* data, int size) {
-    log_debug("\nSienaPlusContext::receive_handler: received " << size << " bytes.");
-    SienaPlusMessage buff;
-	if(!buff.ParsePartialFromArray(data, size)) {
-		log_err("SienaPlusContext::receive_handler(): unable to deserialize message.");
-		return;
-	}
+void SienaPlusContext::receive_handler(NetworkConnector* nc, SienaPlusMessage& buff) {
+    log_debug("\nSienaPlusContext::receive_handler: received message from " << buff.sender());
     switch(buff.type()) {
     case SienaPlusMessage_message_type_t_NOT: {
         simple_message msg;

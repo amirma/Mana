@@ -19,8 +19,8 @@ namespace sienaplus {
  * This constructor is used when we need to manually create a connection.
  */
 TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
-		const std::function<void(NetworkConnector*, const char*, int)>& hndlr) : 
-    NetworkConnector(srv, hndlr), io_service_(srv) {
+		const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr) : 
+    NetworkConnector(srv, hndlr) {
 	socket_ = make_shared<boost::asio::ip::tcp::socket>(io_service_);
     read_hndlr_strand_ = make_shared<boost::asio::io_service::strand>(io_service_);
 }
@@ -32,9 +32,8 @@ TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
  * has to outlive the instance of this class.
  */
 TCPNetworkConnector::TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>& skt,
-	const std::function<void(NetworkConnector*, const char*, int size)>& hndlr) :
-	io_service_(skt->get_io_service()), socket_(skt),
-    NetworkConnector(skt->get_io_service(), hndlr) {
+	const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr) :
+	socket_(skt), NetworkConnector(skt->get_io_service(), hndlr) {
     read_hndlr_strand_ = make_shared<boost::asio::io_service::strand>(io_service_);
 	if(socket_->is_open()) {
 		flag_is_connected = true;
@@ -48,14 +47,12 @@ TCPNetworkConnector::~TCPNetworkConnector() {
 }
 
 void TCPNetworkConnector::set_socket_options() {
-    // enabled debuggin mode
-    //boost::asio::socket_base::debug option_dbg(true);
-    //socket_->set_option(option_dbg); 
-
+#ifdef DISABLE_NAGLE_ALG
     //disable the Nagle's algorithm so that small-sized messages 
     //will be pushed as soon as send is called
-    //boost::asio::ip::tcp::no_delay option_op(true);
-    //socket_->set_option(option_op);
+    boost::asio::ip::tcp::no_delay option_op(true);
+    socket_->set_option(option_op);
+#endif
 }
 
 void TCPNetworkConnector::async_connect(const string& url) {
@@ -130,11 +127,11 @@ void TCPNetworkConnector::read_handler(const boost::system::error_code& ec, std:
     log_debug("\nTCPNetworkConnector::read_handler(): read " << bytes_num << " bytes.");
 	assert(receive_handler != NULL);
 
-    // FIXME:
-    //char* tmp_buffer = new char[bytes_num];
-    //memcpy(tmp_buffer, read_buffer_.data(), bytes_num);
+    SienaPlusMessage msg;
+    message_stream_.consume(read_buffer_.data(), bytes_num);
+    while(message_stream_.produce(msg))
+	    receive_handler(this, msg);
 
-	receive_handler(this, read_buffer_.data(), bytes_num);
     if(is_connected())
         start_read();
     //
@@ -147,7 +144,10 @@ void TCPNetworkConnector::start_sync_read() {
         for(;;) {
             try {
             size_t bytes_num = socket_->read_some(boost::asio::buffer(read_buffer_, MAX_MSG_SIZE));
-            receive_handler(this, read_buffer_.data(), bytes_num);
+            SienaPlusMessage msg;
+            message_stream_.consume(read_buffer_.data(), bytes_num);
+            while(message_stream_.produce(msg))
+        	    receive_handler(this, msg);
             log_debug("\nTCPNetworkConnector::start_sync_read: read " << bytes_num << " bytes.");
             } catch(exception& e) {
                 disconnect();        
@@ -172,6 +172,18 @@ void TCPNetworkConnector::send(const string& str) {
     send(str.c_str(), str.length()); 
 }
 
+
+void TCPNetworkConnector::send(const SienaPlusMessage& msg) {
+    int data_size = msg.ByteSize();
+    int total_size = MSG_HEADER_SIZE + data_size;
+    //FIXME: memory leak !
+    unsigned char* arr_buf = new unsigned char[total_size];
+    arr_buf[0] = BUFF_SEPERATOR;
+    *((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) = data_size;
+    msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE);
+    send(arr_buf, total_size);
+}
+
 bool TCPNetworkConnector::connect(const string& url) {
 	if(is_connected()) {
 		return true;
@@ -184,7 +196,7 @@ bool TCPNetworkConnector::connect(const string& url) {
 	} catch(exception& e) {
 		throw SienaPlusException("Could not connect: invalid port number: " + tokens[2]);
 	}
-	connect(tokens[1], port);
+	return connect(tokens[1], port);
 }
 
 bool TCPNetworkConnector::connect(const string& addr, int prt) {
@@ -203,13 +215,14 @@ bool TCPNetworkConnector::connect(const string& addr, int prt) {
 	flag_is_connected = true;
 	log_debug("\nTCPConnector is connected.");
 	start_read();
+    return true;
     //start_sync_read();
 }
 
 void TCPNetworkConnector::disconnect() {
-   //socket_->close();// Initiate graceful connection closure.
     boost::system::error_code ignored_ec;
     socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
+    socket_->close();
 }
 
 bool TCPNetworkConnector::is_connected() {

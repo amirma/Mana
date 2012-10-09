@@ -52,7 +52,7 @@ private:
 	string address_;
 	shared_ptr<boost::asio::io_service::work> work_;
 	shared_ptr<thread> thread_;
-	void receive_handler(NetworkConnector*, const char*, int);
+	void receive_handler(NetworkConnector*, SienaPlusMessage&);
     void send_message(SienaPlusMessage&);
 };
 
