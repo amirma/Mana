@@ -26,8 +26,8 @@ public:
 protected:
 	connection_type connection_type_;
 	bool flag_runing_;
-	std::function<void(NetworkConnector*, const char*, int size)> receive_handler_;
 	boost::asio::io_service& io_service_;
+	std::function<void(NetworkConnector*, const char*, int size)> receive_handler_;
 };
 
 } /* namespace sienaplus */

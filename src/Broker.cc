@@ -65,7 +65,7 @@ void Broker::start() {
 	for(auto tr : message_receivers)
 		tr->start();
     try {
-        for (int i = 0; i < num_of_threads_ - 1; i++)
+        for (unsigned int i = 0; i < num_of_threads_ - 1; i++)
             std::thread([&](){io_service_.run();}).detach();
         io_service_.run();
 	} catch (SienaPlusException& e) {
@@ -84,7 +84,7 @@ boost::asio::io_service& Broker::io_service() {
 }
 
 void Broker::handle_message(SienaPlusMessage& msg) {
-	log_debug("broker received message from sender " << msg.sender());
+	log_debug("\nbroker received message from sender " << msg.sender());
 }
 
 void Broker::handle_sub(NetworkConnector* nc, SienaPlusMessage& buff) {
@@ -127,35 +127,36 @@ void Broker::handle_not(SienaPlusMessage& buff) {
 void Broker::connect_handler(shared_ptr<NetworkConnector> connector) {
 }
 
-void Broker::receive_handler(NetworkConnector* nc, const char* data, int size) {
-	SienaPlusMessage msg;
-	if(!msg.ParsePartialFromArray(data, size)) {
-		log_err("Broker::receive_handler: unable to deserialize message.");
-		return;
-	}
-    switch(msg.type()) {
-    case SienaPlusMessage_message_type_t_SUB:
-        handle_sub(nc, msg);
-        break;
-    case SienaPlusMessage_message_type_t_NOT:
-        handle_not(msg);
-        break;
-    default: // other types ...
-        handle_message(msg);
+void Broker::receive_handler(NetworkConnector* nc, const char* buff, int size) {
+    SienaPlusMessage msg;
+    message_stream_.consume(buff, size);
+    while(message_stream_.produce(msg)) {
+        switch(msg.type()) {
+        case SienaPlusMessage_message_type_t_SUB:
+            handle_sub(nc, msg);
+            break;
+        case SienaPlusMessage_message_type_t_NOT:
+            handle_not(msg);
+            break;
+        default: // other types ...
+            handle_message(msg);
+        } 
+        msg.Clear();
     }
 }
 
 bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
-        log_debug("match for client " << neighbors_by_iface_[iface]->id_);
+        log_debug("\nBroker::handle_match(): match for client " << neighbors_by_iface_[iface]->id_);
         SienaPlusMessage buff;
         // set the sender id
         buff.set_sender(id_);
         // fill in the rest of the message parts 
         to_protobuf(dynamic_cast<const simple_message&>(msg), buff);
         //TODO: i'm sure this is very inefficient
-        string str = buff.SerializeAsString();
+        //FIXME: definite data leak here...
+        string* str = new string(buff.SerializeAsString());
         assert(is_in_container(neighbors_by_iface_, iface));
-        neighbors_by_iface_[iface]->net_connector_->send(std::move(str));
+        neighbors_by_iface_[iface]->net_connector_->send(*str);
         //
         char data[MAX_MSG_SIZE];
         assert(buff.SerializeToArray(data, MAX_MSG_SIZE));

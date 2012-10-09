@@ -11,12 +11,27 @@
 #include <siena/types.h>
 #include "SienaPlusMessage.pb.h"
 #include "sff.bzr/simple_fwd_types.h"
+#include <string>
 
 #define FLG_PR_DEBUG false
+#define FLG_PR_WARN  true
 
 #define is_in_container(container, key) container.find(key)!=container.end()
+
+#define log_err(txt) do { \
+                    cout << txt;\
+                    cout.flush();\
+                    } while(false);
+
+
+#define log_warn(txt) while(FLG_PR_WARN) { \
+                    cout << txt;\
+                    cout.flush();\
+                    break; \
+                    };
+
 #define log_debug(txt) while(FLG_PR_DEBUG) { \
-                    cout << endl << txt;\
+                    cout << txt;\
                     cout.flush();\
                     break; \
                     };
@@ -26,10 +41,6 @@
                     cout.flush();\
                     } while(false);
 
-#define log_err(txt) do { \
-                    cout << endl << txt;\
-                    cout.flush();\
-                    } while(false);
 
 namespace sienaplus {
 
@@ -53,6 +64,12 @@ namespace sienaplus {
     //
     void to_protobuf(const simple_message& msg, SienaPlusMessage& buff);
     void to_protobuf(const simple_filter& predg, SienaPlusMessage& buff);
+
+#define BUFF_SEPERATOR 23 //ETB
+
+#define BUFF_SEPERATOR_LEN_BYTE 1
+
+const int MSG_HEADER_SIZE = sizeof(int) + BUFF_SEPERATOR_LEN_BYTE;
 
 };
 

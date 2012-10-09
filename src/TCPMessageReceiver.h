@@ -27,6 +27,7 @@ public:
 	TCPMessageReceiver(boost::asio::io_service&, const int, const string&,
 			const std::function<void(NetworkConnector*, const char*, int)>&,
             const std::function<void(shared_ptr<NetworkConnector>)>&);
+    TCPMessageReceiver(const TCPMessageReceiver&) = delete; //disable copy const.
 	virtual ~TCPMessageReceiver();
 	void start();
 	void stop();

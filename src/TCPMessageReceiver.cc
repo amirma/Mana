@@ -58,7 +58,7 @@ void TCPMessageReceiver::accept_handler(const boost::system::error_code& ec) {
 		log_err("error: " << ec.message());
 	}
 
-	log_debug("Accepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string());
+	log_debug("\nAccepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string());
 	//once the connection in created we move the pointer
 	auto c = make_shared<TCPNetworkConnector>(next_connection_socket_, receive_handler_);
 	remote_endpoints.push_back(std::move(next_connection_socket_));

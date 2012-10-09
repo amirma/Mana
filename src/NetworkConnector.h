@@ -23,7 +23,7 @@ public:
 	NetworkConnector(boost::asio::io_service&, const std::function<void(NetworkConnector*, 
                 const char*, int size)>&);
 	virtual ~NetworkConnector();
-	virtual void send(const char*, size_t) = 0;
+	virtual void send(const void*, size_t) = 0;
 	virtual void send(const string&) = 0;
 	virtual void async_connect(const string&, int) = 0;
 	virtual void async_connect(const string&) = 0;
@@ -43,6 +43,7 @@ protected:
 	array<char, MAX_MSG_SIZE> read_buffer_;
 	std::function<void(NetworkConnector*, const char*, int size)> receive_handler;
 	boost::asio::strand strand_;
+    unsigned char remained_buffer_[MAX_MSG_SIZE];
 };
 
 } /* namespace sienaplus */

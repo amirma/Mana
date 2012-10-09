@@ -68,14 +68,22 @@ void SienaPlusContext::publish(const simple_message& msg) {
 
 void SienaPlusContext::send_message(SienaPlusMessage& msg) {
     // FIXME: this test is expensive ...
-    char arr_buf[MAX_MSG_SIZE];
-    assert(msg.SerializeToArray(arr_buf, MAX_MSG_SIZE));
+    //char* arr_buf = new char[MAX_MSG_SIZE];
+    //assert(msg.SerializeToArray(arr_buf, MAX_MSG_SIZE));
 
     // seriazlie the message to a buffer ...
     //Send out the buffer
     //TODO: i'm sute this is very inefficient
-    string str = msg.SerializeAsString();
-    net_connection_->send(str.c_str(), str.length());
+    //string* str = new string(msg.SerializeAsString());
+    int data_size = msg.ByteSize();
+    int header_size = sizeof(int) + 1;
+    int total_size = header_size + data_size;
+    unsigned char* arr_buf = new unsigned char[total_size];
+    arr_buf[0] = BUFF_SEPERATOR;
+    *((int*)(arr_buf + 1)) = data_size;
+    msg.SerializeWithCachedSizesToArray(arr_buf + header_size);
+    log_debug("\nsize: " << total_size);
+    net_connection_->send(arr_buf, total_size);
 }
 
 /*
@@ -122,7 +130,7 @@ void SienaPlusContext::stop() {
 }
 
 void SienaPlusContext::receive_handler(NetworkConnector* nc, const char* data, int size) {
-    log_debug("SienaPlusContext::receive_handler: received " << size << " bytes.");
+    log_debug("\nSienaPlusContext::receive_handler: received " << size << " bytes.");
     SienaPlusMessage buff;
 	if(!buff.ParsePartialFromArray(data, size)) {
 		log_err("SienaPlusContext::receive_handler(): unable to deserialize message.");
@@ -132,7 +140,7 @@ void SienaPlusContext::receive_handler(NetworkConnector* nc, const char* data, i
     case SienaPlusMessage_message_type_t_NOT: {
         simple_message msg;
         to_simple_message(buff, msg);
-        log_debug("SienaPlusContext::receive_handler(): dispatching notification to the application.");
+        log_debug("\nSienaPlusContext::receive_handler(): dispatching notification to the application.");
         app_notification_handler_(msg);
         break;
     }
@@ -148,7 +156,7 @@ bool SienaPlusContext::connect() {
 	if(!(net_connection_->connect(address_, port_))) {
 		return false;
 	}
-	log_debug("Context connected to " << address_);
+	log_debug("\nContext connected to " << address_);
 	return true;
 }
 

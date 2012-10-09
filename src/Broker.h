@@ -12,13 +12,14 @@
 #include "MessageReceiver.h"
 #include "SienaPlusMessage.pb.h"
 #include "NetworkConnector.h"
+#include "MessageStream.h"
 #include <array>
 #include <queue>
 #include <mutex>
 
 #include "siena/fwdtable.h"
 
-#define DEFAULT_NUM_OF_THREADS 1
+#define DEFAULT_NUM_OF_THREADS 4
 
 using namespace std;
 
@@ -56,12 +57,11 @@ class IFaceNoGenerator {
 };
 
 struct NeighborNode {
-    siena::if_t interface_;
-    string id_;
-    siena::if_t iface_;
-    NetworkConnector* net_connector_;
     NeighborNode(NetworkConnector* nc,const string& id, siena::if_t ifc) : 
         net_connector_(nc), id_(id), iface_(ifc) {}
+    NetworkConnector* net_connector_;
+    string id_;
+    siena::if_t iface_;
     private:    
     NeighborNode() {} //disable this
 };
@@ -73,6 +73,7 @@ class BrokerMatchMessageHandler;
 class Broker {
 public:
 	Broker(const string& id);
+    Broker(const Broker&) = delete; //disable copy constructor
 	virtual ~Broker();
 	void start();
 	void shutdown();
@@ -105,21 +106,20 @@ private:
     bool handle_match(siena::if_t, const siena::message&);
     string id_;
     size_t num_of_threads_; 
+    MessageStream message_stream_;
 };
-
 
 class BrokerMatchMessageHandler : public siena::MatchMessageHandler {
     public:
         BrokerMatchMessageHandler(Broker* broker) : broker_(broker) {}
         virtual ~BrokerMatchMessageHandler () {}
         virtual bool output (siena::if_t iface, const siena::message& msg) {
-            broker_->handle_match(iface, msg);
+            return broker_->handle_match(iface, msg);
         }
 
     private:
         Broker* broker_;
 };
-
 
 } /* namespace sienaplus */
 

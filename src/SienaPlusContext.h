@@ -24,6 +24,7 @@ namespace sienaplus {
 class SienaPlusContext {
 public:
 	SienaPlusContext(const string&, const string& url, std::function<void(const simple_message&)>);
+    SienaPlusContext(const SienaPlusContext& other) = delete; //disable copy constructor
 	virtual ~SienaPlusContext();
 	void publish(const string&);
 	void publish(const simple_message&);
