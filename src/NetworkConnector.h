@@ -13,19 +13,30 @@
 #include "SienaPlusMessage.pb.h"
 #include "MessageStream.h"
 #include <functional>
+#include <queue>
 
 
 using namespace std;
 
 namespace sienaplus {
 
+struct WriteBufferItem {
+    const unsigned char* data_;
+    int size_;
+};
+
+// we put a shared data with its associated 
+// mutex in one place, for easy management and less bugs.
+struct WriteBufferItemQueueWrapper {
+    PROTECTED_WITH(std::mutex);
+    PROTECTED_MEMBER(queue<WriteBufferItem>, qu);
+};
+
 class NetworkConnector {
 public:
 	NetworkConnector(boost::asio::io_service&, const std::function<void(NetworkConnector*, SienaPlusMessage&)>&);
     NetworkConnector(const NetworkConnector&) = delete; // delete copy constructor
 	virtual ~NetworkConnector();
-	virtual void send(const void*, size_t) = 0;
-	virtual void send(const string&) = 0;
     virtual void send(const SienaPlusMessage&) = 0;
 	virtual void async_connect(const string&, int) = 0;
 	virtual void async_connect(const string&) = 0;
@@ -39,15 +50,17 @@ public:
 protected:
 	virtual void start_read() = 0;
 	boost::asio::io_service& io_service_;
+	std::function<void(NetworkConnector*, SienaPlusMessage&)> receive_handler;
+	boost::asio::strand read_hndlr_strand_;
+	boost::asio::strand write_hndlr_strand_;
+    MessageStream message_stream_;
+    array<unsigned char, MAX_MSG_SIZE> read_buffer_;
+    //WriteBufferItemQueueWrapper write_buff_item_qu_;
+    queue<WriteBufferItem> write_buff_item_qu_;
 	int port_;
 	string address_;
 	bool flag_is_connected;
-	array<char, MAX_MSG_SIZE> read_buffer_;
-	std::function<void(NetworkConnector*, SienaPlusMessage&)> receive_handler;
-	boost::asio::strand strand_;
-    unsigned char remained_buffer_[MAX_MSG_SIZE];
-    MessageStream message_stream_;
-
+    bool flag_write_op_in_prog_;
 };
 
 } /* namespace sienaplus */

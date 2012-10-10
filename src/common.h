@@ -12,11 +12,17 @@
 #include "SienaPlusMessage.pb.h"
 #include "sff.bzr/simple_fwd_types.h"
 #include <string>
+#include <mutex>
 
+
+// utility macros
+#define is_in_container(container, key) container.find(key)!=container.end()
+
+
+// logging macros 
 #define FLG_PR_DEBUG false
 #define FLG_PR_WARN  true
 
-#define is_in_container(container, key) container.find(key)!=container.end()
 
 #define log_err(txt) do { \
                     cout << txt;\
@@ -41,6 +47,26 @@
                     cout.flush();\
                     } while(false);
 
+// concurrency macros 
+/*  The following two macros are based on Herb Sutter's template at
+ *  http://www.drdobbs.com/windows/associate-mutexes-with-data-to-prevent-r/224701827?pgno=3
+ *  */
+#define PROTECTED_WITH(MutType)  \
+     public:    void    lock()            {  mut_.lock();  } \
+     public:    bool     try_lock()    {  return mut_.try_lock();  } \
+     public:    void     unlock()      {  mut_.unlock();  } \
+     private:   MutType mut_;
+
+#define PROTECTED_MEMBER(Type,name)\
+     public:    Type&    name()     { assert(!mut_.try_lock()); return name##_; } \
+     public:    const Type&    const_##name()     { return name##_; } \
+     private:   Type    name##_;
+
+
+// constants 
+#define BUFF_SEPERATOR 23 //ETB
+#define BUFF_SEPERATOR_LEN_BYTE 1
+#define MAX_MSG_SIZE 9000 //Bytes
 
 namespace sienaplus {
 
@@ -49,10 +75,7 @@ namespace sienaplus {
 		tcp,
 		udp
 	};
-
 	typedef enum_connection_type connection_type;
-
-	const int MAX_MSG_SIZE = 9000; //Bytes
 
 /*
  * These function conver from/to  a SienaMessagePlus to different 
@@ -65,12 +88,7 @@ namespace sienaplus {
     void to_protobuf(const simple_message& msg, SienaPlusMessage& buff);
     void to_protobuf(const simple_filter& predg, SienaPlusMessage& buff);
 
-#define BUFF_SEPERATOR 23 //ETB
-
-#define BUFF_SEPERATOR_LEN_BYTE 1
-
 const int MSG_HEADER_SIZE = sizeof(int) + BUFF_SEPERATOR_LEN_BYTE;
-
 };
 
 #endif /* COMMON_H_ */

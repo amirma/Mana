@@ -18,7 +18,7 @@
 
 #include "siena/fwdtable.h"
 
-#define DEFAULT_NUM_OF_THREADS 4
+#define DEFAULT_NUM_OF_THREADS 1
 
 using namespace std;
 
@@ -70,6 +70,13 @@ struct NeighborNode {
 class BrokerMatchMessageHandler;
 
 class Broker {
+    // we put a shared data with its associated 
+    // mutex in one place, for easy management and less bugs.
+    struct FwdTableWrapper {
+        PROTECTED_WITH(std::mutex);
+        PROTECTED_MEMBER(siena::FwdTable, fwd_table);
+    };
+
 public:
 	Broker(const string& id);
     Broker(const Broker&) = delete; //disable copy constructor
@@ -94,7 +101,7 @@ private:
     void connect_handler(shared_ptr<NetworkConnector>);
     // the main forwarding table
     //
-    siena::FwdTable fwd_table_;
+    FwdTableWrapper fwd_table_wrapper_;
     // a number generator for generating unique numbers to represnt
     // clients/neighbors 
     IFaceNoGenerator iface_no_generator_;

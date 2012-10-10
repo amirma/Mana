@@ -15,15 +15,17 @@ class MessageStream {
         MessageStream();
         virtual ~MessageStream();
         MessageStream(const MessageStream&) = delete; // delete copy constructor
-        void consume(const char* buff, int size);
+        void consume(const unsigned char* buff, int size);
         bool produce(SienaPlusMessage& msg);
 private:
 
-    bool do_produce(const char*, int size, SienaPlusMessage& msg, int& consumed);
+    bool do_produce(const unsigned char*, int size, SienaPlusMessage& msg, int& consumed) const;
     bool check_has_message_header();
-    char unconsumed_data_[MAX_MSG_SIZE];
+    unsigned char unconsumed_data_[MAX_MSG_SIZE];
     int unconsumed_data_size_;
-    const char* new_data_;
+    const unsigned char* new_data_;
+    const unsigned char* new_data_original_; // for debugging purposes
+    int new_data_original_size_; // for debugging purposes
     int new_data_size_;
 };
 

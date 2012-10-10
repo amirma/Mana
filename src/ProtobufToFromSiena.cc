@@ -42,7 +42,7 @@ void to_simple_message(const SienaPlusMessage& buff, simple_message& msg) {
             break;
         }
         default:
-            log_err("Warining: Broker.cc::handle_sub(): ignoring unrecognized attribute type");
+            log_warn("\nProtobufToFromSiena::to_simple_message: ignoring unrecognized attribute type");
         }
     }
 }
@@ -83,7 +83,7 @@ void to_simple_filter(const SienaPlusMessage& buff, simple_filter& fltr) {
             break;
         }
         default:
-            log_err("Warining: Broker.cc::handle_sub(): ignoring unrecognized constraint type");
+            log_warn("\nProtobufToFromSiena::to_simple_filter: ignoring unrecognized attribute type");
         }
     }
 }
@@ -113,9 +113,13 @@ void to_protobuf(const simple_message& msg, SienaPlusMessage& buff) {
             case siena::bool_id:
                 att->mutable_value()->set_bool_value(attr.bool_value());
                 break;
+            /*
             case siena::any_id:
-                log_err("ProtobugToFromSiena::to_protobuf: type \'any_id\' is not supported");
+                log_warn("ProtobugToFromSiena::to_protobuf: type \'any_id\' is not supported");
                 break;
+            */
+            default:
+                log_warn("\nProtobufToFromSiena::to_protobuf: ignoring unrecognized attribute type");
         }
     }
 }
@@ -146,9 +150,14 @@ void to_protobuf(const simple_filter& fltr, SienaPlusMessage& buff) {
             case siena::type_id::bool_id:
             	c->mutable_value()->set_bool_value(cnst.bool_value());
                 break;
+            /*
             case siena::type_id::anytype_id:
                 log_err("Type any is not supported yet.");
                 break;
+            */
+            default:
+                log_warn("\nProtobufToFromSiena::to_protobuf: ignoring unrecognized attribute type");
+
        }
 
         //make sure all required fields are filled
@@ -156,7 +165,6 @@ void to_protobuf(const simple_filter& fltr, SienaPlusMessage& buff) {
         assert(c->has_op());
         assert(c->has_value());
     }
-
 }
 
 

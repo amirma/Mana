@@ -50,9 +50,7 @@ void Broker::add_transport(string url) {
 	if(tokens[0] == "tcp") {
 		auto h = std::bind(&Broker::receive_handler, this, std::placeholders::_1, std::placeholders::_2);
 		function<void(shared_ptr<NetworkConnector>)> h_c = std::bind(&Broker::connect_handler, this, std::placeholders::_1);
-		std::shared_ptr<MessageReceiver> mr(new TCPMessageReceiver(io_service_ ,port, addr, h, h_c));
-		//std::shared_ptr<MessageReceiver> mr(new TCPMessageReceiver(io_service_ ,port, addr, [&](const char* data,
-				//int size){receive_handler(data, size);}, h_c));
+		auto mr = make_shared<TCPMessageReceiver>(io_service_ ,port, addr, h, h_c);
 		message_receivers.push_back(mr);
 
 	} else {
@@ -106,16 +104,18 @@ void Broker::handle_sub(NetworkConnector* nc, SienaPlusMessage& buff) {
         neighbors_by_id_[buff.sender()] = tmp;
         neighbors_by_iface_[if_] = std::move(tmp);
     }
-
-    // FIXME: we definately need locking here ... 
-    fwd_table_.ifconfig(if_, pred);
-    fwd_table_.consolidate();
+    {// lock the forwarding table before inserting filters into it
+        lock_guard<FwdTableWrapper> lock(fwd_table_wrapper_);
+        fwd_table_wrapper_.fwd_table().ifconfig(if_, pred);
+        fwd_table_wrapper_.fwd_table().consolidate();
+    }
 }
 
 void Broker::handle_not(SienaPlusMessage& buff) {
   simple_message msg;
   to_simple_message(buff, msg);
-  fwd_table_.match(msg, *message_match_handler_);
+  // FIXME : do we need locking here ?
+  fwd_table_wrapper_.const_fwd_table().match(msg, *message_match_handler_);
 }
 
 /*
@@ -151,7 +151,7 @@ bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
         assert(is_in_container(neighbors_by_iface_, iface));
         neighbors_by_iface_[iface]->net_connector_->send(buff);
         //
-        char data[MAX_MSG_SIZE];
+        unsigned char data[MAX_MSG_SIZE];
         assert(buff.SerializeToArray(data, MAX_MSG_SIZE));
         return true;
     }

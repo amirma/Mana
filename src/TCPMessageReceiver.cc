@@ -31,7 +31,6 @@ TCPMessageReceiver::~TCPMessageReceiver() {
 void TCPMessageReceiver::start() {
 	if(flag_runing_)
 		return;
-	//acceptor_ptr_ = shared_ptr<boost::asio::ip::tcp::acceptor>(new boost::asio::ip::tcp::acceptor(io_service_));
 	acceptor_ptr_ = make_shared<boost::asio::ip::tcp::acceptor>(io_service_);
 	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port_);
 	acceptor_ptr_->open(endpoint.protocol());

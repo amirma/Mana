@@ -22,7 +22,6 @@ TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
 		const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr) : 
     NetworkConnector(srv, hndlr) {
 	socket_ = make_shared<boost::asio::ip::tcp::socket>(io_service_);
-    read_hndlr_strand_ = make_shared<boost::asio::io_service::strand>(io_service_);
 }
 
 /*
@@ -33,13 +32,11 @@ TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
  */
 TCPNetworkConnector::TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>& skt,
 	const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr) :
-	socket_(skt), NetworkConnector(skt->get_io_service(), hndlr) {
-    read_hndlr_strand_ = make_shared<boost::asio::io_service::strand>(io_service_);
+	NetworkConnector(skt->get_io_service(), hndlr), socket_(skt){
 	if(socket_->is_open()) {
 		flag_is_connected = true;
         set_socket_options();
 		start_read();
-		//start_sync_read();
 	}
 }
 
@@ -81,34 +78,40 @@ void TCPNetworkConnector::async_connect(const string& addr, int prt) {
 	}
 }
 
+/*  this method mutates 'write_buff_item_qu_' and so must be run by 
+ *  one thread at a time. This is guaranteed by using 'write_strand_' 
+ *  */
 void TCPNetworkConnector::write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
+    lock_guard<std::mutex> lock(qu_mutex_);
+    if(write_buff_item_qu_.empty())
+        return;
     log_debug("\nTCPNetworkConnector::write_handler(): wrote " << bytes_transferred << " bytes.");
+    assert(!write_buff_item_qu_.empty()); // at least the last 
+    // buffer that was written must be in the queue
+    assert(write_buff_item_qu_.front().size_ != 0);
+    // delete the memory and remove the item from the queue
+    delete[] const_cast<unsigned char*>(write_buff_item_qu_.front().data_);
+    write_buff_item_qu_.pop();
+    // if there's more items in the queue waiting to be written 
+    // to the socket continute sending ...
+    if(!write_buff_item_qu_.empty())
+        send_buffer(write_buff_item_qu_.front().data_, write_buff_item_qu_.front().size_);
 }
 
 void TCPNetworkConnector::connect_handler(const boost::system::error_code& ec) {
 	if(!ec && ec.value() != 0) {
-	    log_info("could not connect...");
+	    log_info("\ncTCPNetworkConnector::connect_handler: could not connect.");
         return;
 	}
     set_socket_options();
 	flag_is_connected = true;
 	start_read();
-	//start_sync_read();
 }
 
 void TCPNetworkConnector::start_read() {
-    // TODO : allocate a buffer and remove it later...this is not efficient for
-    // sure !
-
     socket_->async_read_some(boost::asio::buffer(read_buffer_, MAX_MSG_SIZE), 
-            read_hndlr_strand_->wrap(boost::bind(&TCPNetworkConnector::read_handler, this,
+            read_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector::read_handler, this,
     	boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
-    
-    /*
-    async_read(*socket_, boost::asio::buffer(read_buffer_), 
-            read_hndlr_strand_->wrap(boost::bind(&TCPNetworkConnector::read_handler, this,
-		boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
-    */
 }
 
 void TCPNetworkConnector::read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
@@ -128,15 +131,16 @@ void TCPNetworkConnector::read_handler(const boost::system::error_code& ec, std:
 	assert(receive_handler != NULL);
 
     SienaPlusMessage msg;
+    // Note: message_stream MUST be acessed by only one thread at a time - it's
+    // not thread safe. Here the assumption is that read_handler is run only
+    // by one thread at a time. This is guaranteed by using strand_ for async
+    // read.
     message_stream_.consume(read_buffer_.data(), bytes_num);
     while(message_stream_.produce(msg))
 	    receive_handler(this, msg);
 
     if(is_connected())
         start_read();
-    //
-	//receive_handler(this, tmp_buffer, bytes_num);
-	//io_service_.post(bind(receive_handler, this, tmp_buffer, bytes_num));
 }
 
 void TCPNetworkConnector::start_sync_read() {
@@ -156,32 +160,54 @@ void TCPNetworkConnector::start_sync_read() {
     }).detach();
 }
 
-void TCPNetworkConnector::send(const void* data, size_t length) {
+void TCPNetworkConnector::send_buffer(const unsigned char* data, size_t length) {
 	if(!is_connected()) {
-		log_err("TCPNetworkConnector::send(): socket is not connected. not sending.");
+		log_err("TCPNetworkConnector::send_buffer(): socket is not connected. not sending.");
 		return;
 	}
+    assert(data[0] == BUFF_SEPERATOR);
+    assert(*((int*)(data + BUFF_SEPERATOR_LEN_BYTE)) + MSG_HEADER_SIZE ==  length);
     boost::asio::async_write(*socket_, boost::asio::buffer(data, length), 
-            boost::bind(&TCPNetworkConnector::write_handler, this, boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));
-    log_debug("\nTCPNetworkConnector::send(): sent " << length << " bytes.");
-	//socket_->write_some(boost::asio::buffer(data, length));
+        write_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector::write_handler, 
+        this, boost::asio::placeholders::error,
+        boost::asio::placeholders::bytes_transferred)));
+    log_debug("\nTCPNetworkConnector::send_buffer(): sent " << length << " bytes.");
 }
 
-void TCPNetworkConnector::send(const string& str) {
-    send(str.c_str(), str.length()); 
+/*
+ * Note that this method mutates the 'write_buff_item_qu_'
+ * and so must be called by one thread only. This is 
+ * guaranteed by using strand 
+ */
+void TCPNetworkConnector::prepare_buffer(const unsigned char* data, size_t length) {
+    //lock_guard<WriteBufferItemQueueWrapper>(write_buff_item_qu_);
+    lock_guard<std::mutex> lock(qu_mutex_);
+    assert(length != 0);
+    WriteBufferItem item;
+    item.data_ = data;
+    item.size_ = length;
+    bool flg_send_not_in_progress = write_buff_item_qu_.empty();
+    write_buff_item_qu_.push(item);
+    if(flg_send_not_in_progress)
+        send_buffer(item.data_, item.size_);
+    assert(!write_buff_item_qu_.empty());
+    assert(write_buff_item_qu_.front().size_ != 0);
 }
-
 
 void TCPNetworkConnector::send(const SienaPlusMessage& msg) {
+    // add buffer separators and header and then serialize
+    // the message into a protobuf
     int data_size = msg.ByteSize();
     int total_size = MSG_HEADER_SIZE + data_size;
-    //FIXME: memory leak !
     unsigned char* arr_buf = new unsigned char[total_size];
     arr_buf[0] = BUFF_SEPERATOR;
     *((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) = data_size;
-    msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE);
-    send(arr_buf, total_size);
+    assert(*((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) == data_size);
+    if(!msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE)) {
+        log_err("\nTCPNetworkConnector::send(): Could not serialize message to buffer.");
+        return;
+    }
+    prepare_buffer(arr_buf, total_size);
 }
 
 bool TCPNetworkConnector::connect(const string& url) {
@@ -216,7 +242,6 @@ bool TCPNetworkConnector::connect(const string& addr, int prt) {
 	log_debug("\nTCPConnector is connected.");
 	start_read();
     return true;
-    //start_sync_read();
 }
 
 void TCPNetworkConnector::disconnect() {
@@ -227,6 +252,14 @@ void TCPNetworkConnector::disconnect() {
 
 bool TCPNetworkConnector::is_connected() {
 	return socket_->is_open();
+}
+
+void *  TCPNetworkConnector::asio_handler_allocate(std::size_t size) {
+    return new unsigned char[size];
+}
+
+void  TCPNetworkConnector::asio_handler_deallocate(void * pointer, std::size_t size) {
+
 }
 
 } /* namespace sienaplus */

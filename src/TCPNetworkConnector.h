@@ -25,10 +25,10 @@ public:
 	bool connect(const string&); // sync
 	void disconnect();
 	// data, length
-	void send(const void*, size_t);
-	void send(const string&);
     void send(const SienaPlusMessage&);
 	bool is_connected();
+    void * asio_handler_allocate(std::size_t size);
+    void asio_handler_deallocate(void * pointer, std::size_t size);
 
 private:
 	void connect_handler(const boost::system::error_code& error);
@@ -37,12 +37,14 @@ private:
     void start_sync_read();
     void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred);
     void set_socket_options();
+	void prepare_buffer(const unsigned char*, size_t);
+	void send_buffer(const unsigned char*, size_t);
 	//
 	shared_ptr<boost::asio::ip::tcp::socket> socket_;
 	// this flag specifies the behavior in case of connection termination, whether
 	// a re-connection should be tried or not
 	bool flag_try_reconnect;
-    shared_ptr<boost::asio::io_service::strand> read_hndlr_strand_;
+    std::mutex qu_mutex_;
 };
 
 } /* namespace sienaplus */
