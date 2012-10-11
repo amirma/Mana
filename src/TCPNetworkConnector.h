@@ -44,7 +44,6 @@ private:
 	// this flag specifies the behavior in case of connection termination, whether
 	// a re-connection should be tried or not
 	bool flag_try_reconnect;
-    std::mutex qu_mutex_;
 };
 
 } /* namespace sienaplus */

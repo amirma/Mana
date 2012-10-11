@@ -24,8 +24,6 @@ private:
     unsigned char unconsumed_data_[MAX_MSG_SIZE];
     int unconsumed_data_size_;
     const unsigned char* new_data_;
-    const unsigned char* new_data_original_; // for debugging purposes
-    int new_data_original_size_; // for debugging purposes
     int new_data_size_;
 };
 

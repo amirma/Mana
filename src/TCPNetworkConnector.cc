@@ -78,24 +78,24 @@ void TCPNetworkConnector::async_connect(const string& addr, int prt) {
 	}
 }
 
-/*  this method mutates 'write_buff_item_qu_' and so must be run by 
+/*  this method mutates 'write_buff_item_qu_.qu()' and so must be run by 
  *  one thread at a time. This is guaranteed by using 'write_strand_' 
  *  */
 void TCPNetworkConnector::write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
-    lock_guard<std::mutex> lock(qu_mutex_);
-    if(write_buff_item_qu_.empty())
+    lock_guard<WriteBufferItemQueueWrapper> lock(write_buff_item_qu_);
+    if(write_buff_item_qu_.qu().empty())
         return;
     log_debug("\nTCPNetworkConnector::write_handler(): wrote " << bytes_transferred << " bytes.");
-    assert(!write_buff_item_qu_.empty()); // at least the last 
+    assert(!write_buff_item_qu_.qu().empty()); // at least the last 
     // buffer that was written must be in the queue
-    assert(write_buff_item_qu_.front().size_ != 0);
+    assert(write_buff_item_qu_.qu().front().size_ != 0);
     // delete the memory and remove the item from the queue
-    delete[] const_cast<unsigned char*>(write_buff_item_qu_.front().data_);
-    write_buff_item_qu_.pop();
+    delete[] write_buff_item_qu_.qu().front().data_;
+    write_buff_item_qu_.qu().pop();
     // if there's more items in the queue waiting to be written 
     // to the socket continute sending ...
-    if(!write_buff_item_qu_.empty())
-        send_buffer(write_buff_item_qu_.front().data_, write_buff_item_qu_.front().size_);
+    if(!write_buff_item_qu_.qu().empty())
+        send_buffer(write_buff_item_qu_.qu().front().data_, write_buff_item_qu_.qu().front().size_);
 }
 
 void TCPNetworkConnector::connect_handler(const boost::system::error_code& ec) {
@@ -175,23 +175,22 @@ void TCPNetworkConnector::send_buffer(const unsigned char* data, size_t length) 
 }
 
 /*
- * Note that this method mutates the 'write_buff_item_qu_'
+ * Note that this method mutates the 'write_buff_item_qu_.qu()'
  * and so must be called by one thread only. This is 
  * guaranteed by using strand 
  */
 void TCPNetworkConnector::prepare_buffer(const unsigned char* data, size_t length) {
-    //lock_guard<WriteBufferItemQueueWrapper>(write_buff_item_qu_);
-    lock_guard<std::mutex> lock(qu_mutex_);
+    lock_guard<WriteBufferItemQueueWrapper> lock(write_buff_item_qu_);
     assert(length != 0);
     WriteBufferItem item;
     item.data_ = data;
     item.size_ = length;
-    bool flg_send_not_in_progress = write_buff_item_qu_.empty();
-    write_buff_item_qu_.push(item);
+    bool flg_send_not_in_progress = write_buff_item_qu_.qu().empty();
+    write_buff_item_qu_.qu().push(item);
     if(flg_send_not_in_progress)
         send_buffer(item.data_, item.size_);
-    assert(!write_buff_item_qu_.empty());
-    assert(write_buff_item_qu_.front().size_ != 0);
+    assert(!write_buff_item_qu_.qu().empty());
+    assert(write_buff_item_qu_.qu().front().size_ != 0);
 }
 
 void TCPNetworkConnector::send(const SienaPlusMessage& msg) {

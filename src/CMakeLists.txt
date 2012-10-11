@@ -1,5 +1,5 @@
 SET (CMAKE_CXX_FLAGS "-std=c++0x -g -Wall")
-#SET (CMAKE_CXX_FLAGS "-std=c++0x -DNDEBUG -g")
+#SET (CMAKE_CXX_FLAGS "-std=c++0x -DNDEBUG -g -O2")
 #
 include_directories(/opt/include/)
 link_directories(/opt/lib)

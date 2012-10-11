@@ -18,7 +18,7 @@
 
 #include "siena/fwdtable.h"
 
-#define DEFAULT_NUM_OF_THREADS 1
+#define DEFAULT_NUM_OF_THREADS 4
 
 using namespace std;
 

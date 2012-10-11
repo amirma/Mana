@@ -35,7 +35,7 @@ class SimpleClient {
         log_info("\nStarting client...");
         string url = "ka:127.0.0.1:2350";
         auto hndlr = std::bind(&SimpleClient::handle_notification, this, std::placeholders::_1);
-        context_ = make_shared<sienaplus::SienaPlusContext>("node1", url, hndlr);
+        context_ = make_shared<sienaplus::SienaPlusContext>("node-sub", url, hndlr);
         context_->start();
         // fisrt subscription
         siena::int_t v1 = 5;
@@ -58,11 +58,11 @@ class SimpleClient {
         log_info("\nStarting client...");
         string url = "ka:127.0.0.1:2350";
         auto hndlr = std::bind(&SimpleClient::handle_notification, this, std::placeholders::_1);
-        context_ = make_shared<sienaplus::SienaPlusContext>("node1", url, hndlr);
+        context_ = make_shared<sienaplus::SienaPlusContext>("node1-pub", url, hndlr);
         context_->start();
         // publish messages
         siena::string_t cst1 = "const1";
-        for(int i = 0; i < 1000000; i++) {
+        for(int i = 0; i < 10000000; i++) {
             simple_value* sv1 = new simple_value(static_cast<siena::int_t>(5));
             simple_message msg1;
             msg1.add(cst1, sv1);

@@ -11,15 +11,12 @@ namespace sienaplus {
 
 void to_simple_message(const SienaPlusMessage& buff, simple_message& msg) {
     for(int i = 0; i < buff.notification().attribute().size(); i++) {
-        string* st = new string(buff.notification().attribute(i).name());
-        siena::string_t name(st->c_str());
+        const string& st = buff.notification().attribute(i).name();
+        siena::string_t name(st.c_str());
         switch(buff.notification().attribute(i).value().type()) {
         case SienaPlusMessage_tag_type_t_STRING: {
-            // TODO : I don't like the conversion of string to siena string
-            // ...
-            string* st = new string(buff.notification().attribute(i).value().string_value());
-            // TODO: string_t again...
-            simple_value* sv = new simple_value(siena::string_t(st->c_str()));
+            const string& st = buff.notification().attribute(i).value().string_value();
+            simple_value* sv = new simple_value(siena::string_t(st.c_str()));
             msg.add(name, sv);
             break;
         }
@@ -49,18 +46,14 @@ void to_simple_message(const SienaPlusMessage& buff, simple_message& msg) {
 
 void to_simple_filter(const SienaPlusMessage& buff, simple_filter& fltr) {
     for(int i = 0; i < buff.subscription().constraints_size(); i++) {
-        string* st = new string(buff.subscription().constraints(i).name());
-        // TODO: string_t
-        siena::string_t name(st->c_str());
+        const string& st = buff.subscription().constraints(i).name();
+        siena::string_t name(st.c_str());
         siena::operator_id op_id = siena::operator_id(buff.subscription().constraints(i).op());
         switch(buff.subscription().constraints(i).value().type()) {
         case SienaPlusMessage_tag_type_t_STRING: {
-            // TODO : I don't like the conversion of string to siena string
-            // ...
-            string* st = new string(buff.subscription().constraints(i).value().string_value());
-            // TODO: string_t again...
+            const string& st = buff.subscription().constraints(i).value().string_value();
             simple_op_value* sopv = 
-                new simple_op_value(op_id, siena::string_t(st->c_str()));
+                new simple_op_value(op_id, siena::string_t(st.c_str()));
             fltr.add(name, sopv);
             break;
         }

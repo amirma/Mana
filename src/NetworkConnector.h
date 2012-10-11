@@ -55,8 +55,7 @@ protected:
 	boost::asio::strand write_hndlr_strand_;
     MessageStream message_stream_;
     array<unsigned char, MAX_MSG_SIZE> read_buffer_;
-    //WriteBufferItemQueueWrapper write_buff_item_qu_;
-    queue<WriteBufferItem> write_buff_item_qu_;
+    WriteBufferItemQueueWrapper write_buff_item_qu_;
 	int port_;
 	string address_;
 	bool flag_is_connected;

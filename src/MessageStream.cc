@@ -18,8 +18,6 @@ void MessageStream::consume(const unsigned char* buff, int size) {
     // access the same instance of MessageStream.
     new_data_ = buff;
     new_data_size_ = size;
-    new_data_original_ = buff;
-    new_data_original_size_ = size;
     log_debug("\nMessageStream:consume(): received new buffer. Buffer size: " << size);
 }
 
