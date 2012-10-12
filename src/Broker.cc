@@ -28,7 +28,6 @@ namespace sienaplus {
 
 Broker::Broker(const string& id) : id_(id) {
     message_match_handler_ = new BrokerMatchMessageHandler(this);
-    // TODO: the broker id has to be set at command line...
     num_of_threads_ = DEFAULT_NUM_OF_THREADS;
 }
 

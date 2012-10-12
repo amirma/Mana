@@ -14,6 +14,7 @@
 #include "MessageStream.h"
 #include <functional>
 #include <queue>
+#include <array>
 
 
 using namespace std;

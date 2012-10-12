@@ -24,8 +24,9 @@ using namespace std;
 
 namespace sienaplus {
 
-/*  this class generates interface numbers and maintains 
-*  a list of interface numbers that are freed. */
+/**  \brief This class generates interface numbers and maintains 
+*   a list of interface numbers that are freed. 
+*/
 class IFaceNoGenerator {
     public:
 
@@ -55,6 +56,9 @@ class IFaceNoGenerator {
         mutex mutex_;
 };
 
+/** \brief Represents a neighboring node (client, broker) with which a broker has
+ * a session.
+*/
 struct NeighborNode {
     NeighborNode(NetworkConnector* nc,const string& id, siena::if_t ifc) : 
         net_connector_(nc), id_(id), iface_(ifc) {}
@@ -114,6 +118,9 @@ private:
     size_t num_of_threads_; 
 };
 
+/**
+ * \brief Helper class to pass to the forwarding table. 
+ **/
 class BrokerMatchMessageHandler : public siena::MatchMessageHandler {
     public:
         BrokerMatchMessageHandler(Broker* broker) : broker_(broker) {}
