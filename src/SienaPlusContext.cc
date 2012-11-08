@@ -16,12 +16,9 @@
 
 namespace sienaplus {
 
-SienaPlusContext::SienaPlusContext(const string& id, const string& url, std::function<void(const simple_message&)> h) {
-    local_id_ = id;
-	flag_has_subscription = false;
-	url_ = url;
-	app_notification_handler_ = h;
-	vector<string> tokens;
+SienaPlusContext::SienaPlusContext(const string& id, const string& url, std::function<void(const simple_message&)> h) :
+    local_id_(id), url_(url), app_notification_handler_(h), flag_has_subscription(false), flag_session_established_(false) {
+    vector<string> tokens;
 	boost::split(tokens, url_, boost::is_any_of(":"));
 	address_ = tokens[1];
 	try {
@@ -39,7 +36,8 @@ SienaPlusContext::SienaPlusContext(const string& id, const string& url, std::fun
 		net_connection_ = make_shared<TCPNetworkConnector>(io_service_,
 				std::bind(&SienaPlusContext::receive_handler, this,
 				std::placeholders::_1, std::placeholders::_2));
-		connect();
+        if(!connect())
+		    throw SienaPlusException("Could not connect to broker.");
 		connection_type = sienaplus::connection_type::ka;
 	} else {
 		log_err("Malformed URL or method not supported:" << url_);
@@ -107,11 +105,21 @@ void SienaPlusContext::start() {
 		work_ = make_shared<boost::asio::io_service::work>(io_service_);
 		io_service_.run();
 	});
+    // TODO: we should use heartbeat messages 
+    flag_session_established_  = true;
 }
 
 void SienaPlusContext::stop() {
 	//work_->reset();
     net_connection_->disconnect();
+	io_service_.stop();
+    if(thread_->joinable())
+        thread_->join();
+    flag_session_established_ = false;
+}
+
+bool SienaPlusContext::session_established() const {
+    return flag_session_established_;
 }
 
 void SienaPlusContext::receive_handler(NetworkConnector* nc, SienaPlusMessage& buff) {

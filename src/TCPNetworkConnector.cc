@@ -5,12 +5,12 @@
  *      Author: amir
  */
 
-#include "TCPNetworkConnector.h"
-#include "boost/bind.hpp"
 #include <boost/algorithm/string.hpp>
 #include <thread>
 #include "exception"
 #include "SienaPlusException.h"
+#include "TCPNetworkConnector.h"
+#include "boost/bind.hpp"
 
 namespace sienaplus {
 
@@ -128,7 +128,7 @@ void TCPNetworkConnector::read_handler(const boost::system::error_code& ec, std:
         return;
 	}
     log_debug("\nTCPNetworkConnector::read_handler(): read " << bytes_num << " bytes.");
-	assert(receive_handler != NULL);
+	assert(receive_handler != nullptr);
 
     SienaPlusMessage msg;
     // Note: message_stream MUST be acessed by only one thread at a time - it's
@@ -160,6 +160,10 @@ void TCPNetworkConnector::start_sync_read() {
     }).detach();
 }
 
+/* 
+ * \brief this method had only internal purposes and is used to send a buffer of given
+*  size to the socket 
+*/
 void TCPNetworkConnector::send_buffer(const unsigned char* data, size_t length) {
 	if(!is_connected()) {
 		log_err("TCPNetworkConnector::send_buffer(): socket is not connected. not sending.");
@@ -175,9 +179,16 @@ void TCPNetworkConnector::send_buffer(const unsigned char* data, size_t length) 
 }
 
 /*
- * Note that this method mutates the 'write_buff_item_qu_.qu()'
- * and so must be called by one thread only. This is 
- * guaranteed by using strand 
+ * \brief For internal purposes only. Prepares a buffer for transmission over
+ * the network. 
+ *
+ * If there is a transmission going on already, the buffer will be queued for
+ * later transmission. Otherwise the buffer is sent out without being queued.
+ *
+ * Note that this method mutates the 'write_buff_item_qu_.qu()' and so must be
+ * called by one thread only. This is guaranteed by using strand 
+ * \param data data A pointer to the buffer 
+ * \param length length of the buffer
  */
 void TCPNetworkConnector::prepare_buffer(const unsigned char* data, size_t length) {
     lock_guard<WriteBufferItemQueueWrapper> lock(write_buff_item_qu_);
@@ -193,6 +204,14 @@ void TCPNetworkConnector::prepare_buffer(const unsigned char* data, size_t lengt
     assert(write_buff_item_qu_.qu().front().size_ != 0);
 }
 
+/* 
+ * \brief Send a SienPlusMessage out to the network. This is the only public
+ * interface for message transmission. 
+ *
+ * Send is asynchronous and the message is converted to a buffer and the memory
+ * is taken care of by the network connector. This means that after this method
+ * returns the caller can safely reuse msg.
+ */
 void TCPNetworkConnector::send(const SienaPlusMessage& msg) {
     // add buffer separators and header and then serialize
     // the message into a protobuf
@@ -243,7 +262,12 @@ bool TCPNetworkConnector::connect(const string& addr, int prt) {
     return true;
 }
 
+/* 
+ * \brief Wait for the ongoing transmissions to finish and then 
+ * terminate the connection
+ */
 void TCPNetworkConnector::disconnect() {
+    // TODO: check if there's an ongoing transmission...
     boost::system::error_code ignored_ec;
     socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
     socket_->close();

@@ -33,16 +33,15 @@ public:
 	void unsubscribe();
 	void start();
 	void stop();
-	bool is_connected();
 	void join();
+    bool session_established() const;
 private:
 	shared_ptr<NetworkConnector> net_connection_;
 	boost::asio::io_service io_service_;
-	bool flag_has_subscription;
-    // url of the remote broker
-	string url_;
     // id of this connector 
     string local_id_;
+    // url of the remote broker
+	string url_;
     // id of the remote node
     //unsigned int remote_id;
 	bool connect();
@@ -54,6 +53,9 @@ private:
 	shared_ptr<thread> thread_;
 	void receive_handler(NetworkConnector*, SienaPlusMessage&);
     void send_message(SienaPlusMessage&);
+	bool is_connected();
+	bool flag_has_subscription;
+    bool flag_session_established_;
 };
 
 } /* namespace sienaplus */

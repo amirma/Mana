@@ -15,12 +15,14 @@ using namespace std;
 
 namespace sienaplus {
 
+// virtual inheritence for exceptions is a good practice...
 class SienaPlusException: virtual public std::exception {
 public:
-	SienaPlusException();
-	SienaPlusException(const string&);
-	SienaPlusException(const char*);
+	SienaPlusException(const string& str = "");
+    virtual const char* what();
 	virtual ~SienaPlusException() throw();
+private:
+    string message_;
 };
 
 } /* namespace sienaplus */

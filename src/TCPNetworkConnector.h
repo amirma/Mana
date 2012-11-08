@@ -18,6 +18,7 @@ public:
 	TCPNetworkConnector(boost::asio::io_service&, const std::function<void(NetworkConnector*, SienaPlusMessage&)>&);
 	TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&, const std::function<void(NetworkConnector*, SienaPlusMessage&)>&);
     TCPNetworkConnector(const TCPNetworkConnector& other) = delete; // delete copy constructor
+    TCPNetworkConnector& operator=(const TCPNetworkConnector&) = delete; // delete assignment operator
     virtual ~TCPNetworkConnector();
 	void async_connect(const string&, int);
 	void async_connect(const string&);

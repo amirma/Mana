@@ -14,18 +14,13 @@ using namespace std;
 
 namespace sienaplus {
 
-SienaPlusException::SienaPlusException() {
+SienaPlusException::SienaPlusException(const string& str): message_(str) {
 }
 
-SienaPlusException::SienaPlusException(const char* msg) {
-	log_err(msg);
-}
+SienaPlusException::~SienaPlusException() throw(){}
 
-SienaPlusException::SienaPlusException(const string& msg) {
-	log_err(msg);
-}
-
-SienaPlusException::~SienaPlusException() throw(){
+const char* SienaPlusException::what() {
+    return message_.c_str();
 }
 
 } /* namespace sienaplus */
