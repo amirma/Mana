@@ -1,4 +1,4 @@
-SET (CMAKE_CXX_FLAGS "-std=c++0x -g -Wall")
+SET (CMAKE_CXX_FLAGS "-std=c++0x -g -Wall -fstack-protector-all")
 #SET (CMAKE_CXX_FLAGS "-std=c++0x -DNDEBUG -g -O2")
 #
 include_directories(/opt/include/)
@@ -10,12 +10,12 @@ add_executable (StartBroker StartBroker.cc Broker.cc MessageReceiver.cc
     SienaPlusContext.cc ProtobufToFromSiena.cc MessageStream.cc)
 target_link_libraries (StartBroker sff boost_system boost_thread-mt pthread protobuf profiler)
 #
-add_executable (TestClient TestClient.cc SimpleClient.cc SienaPlusContext.cc TCPNetworkConnector.cc 
+add_executable (TestClient TestClient.cc SimpleClient.cc SienaPlusContext.cc TCPNetworkConnector.cc
     NetworkConnector.cc SienaPlusException.cc SienaPlusMessage.pb.cc ProtobufToFromSiena.cc
     MessageStream.cc)
 target_link_libraries (TestClient sff boost_system boost_thread-mt pthread protobuf profiler)
 
-add_executable (TestClientInput TestClientInput.cc SimpleClient.cc SienaPlusContext.cc TCPNetworkConnector.cc 
+add_executable (TestClientInput TestClientInput.cc SimpleClient.cc SienaPlusContext.cc TCPNetworkConnector.cc
     NetworkConnector.cc SienaPlusException.cc SienaPlusMessage.pb.cc ProtobufToFromSiena.cc
     MessageStream.cc)
 target_link_libraries (TestClientInput sff boost_system boost_thread-mt pthread protobuf profiler)

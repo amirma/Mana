@@ -15,7 +15,7 @@
 #include "common.h"
 #include <thread>
 #include "SienaPlusMessage.pb.h"
-#include "sff.bzr/simple_fwd_types.h"
+#include "ManaFwdTypes.h"
 
 using namespace std;
 
@@ -23,13 +23,13 @@ namespace sienaplus {
 
 class SienaPlusContext {
 public:
-	SienaPlusContext(const string&, const string& url, std::function<void(const simple_message&)>);
+	SienaPlusContext(const string&, const string& url, std::function<void(const mana_message&)>);
     SienaPlusContext(const SienaPlusContext& other) = delete; //disable copy constructor
 	virtual ~SienaPlusContext();
 	void publish(const string&);
-	void publish(const simple_message&);
+	void publish(const mana_message&);
 	void subscribe(const string& sub);
-    void subscribe(const simple_filter&);
+    void subscribe(const mana_filter&);
 	void unsubscribe();
 	void start();
 	void stop();
@@ -38,7 +38,7 @@ public:
 private:
 	shared_ptr<NetworkConnector> net_connection_;
 	boost::asio::io_service io_service_;
-    // id of this connector 
+    // id of this connector
     string local_id_;
     // url of the remote broker
 	string url_;
@@ -46,7 +46,7 @@ private:
     //unsigned int remote_id;
 	bool connect();
 	sienaplus::connection_type connection_type;
-	std::function<void(const simple_message&)> app_notification_handler_;
+	std::function<void(const mana_message&)> app_notification_handler_;
 	int port_;
 	string address_;
 	shared_ptr<boost::asio::io_service::work> work_;

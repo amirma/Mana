@@ -10,7 +10,7 @@
 
 #include <siena/types.h>
 #include "SienaPlusMessage.pb.h"
-#include "sff.bzr/simple_fwd_types.h"
+#include "ManaFwdTypes.h"
 #include <string>
 #include <mutex>
 
@@ -19,7 +19,7 @@
 #define is_in_container(container, key) container.find(key)!=container.end()
 
 
-// logging macros 
+// logging macros
 #define FLG_PR_DEBUG false
 #define FLG_PR_WARN  true
 
@@ -47,7 +47,7 @@
                     cout.flush();\
                     } while(false);
 
-// concurrency macros 
+// concurrency macros
 /*  The following two macros are based on Herb Sutter's template at
  *  http://www.drdobbs.com/windows/associate-mutexes-with-data-to-prevent-r/224701827?pgno=3
  *  */
@@ -63,7 +63,7 @@
      private:   Type    name##_;
 
 
-// constants 
+// constants
 #define BUFF_SEPERATOR 23 //ETB
 #define BUFF_SEPERATOR_LEN_BYTE 1
 #define MAX_MSG_SIZE 9000 //Bytes
@@ -78,15 +78,15 @@ namespace sienaplus {
 	typedef enum_connection_type connection_type;
 
 /*
- * These function conver from/to  a SienaMessagePlus to different 
- * siena types. Note that when filling in a protobuf the field 
- * 'sender' is not set in these function. 
+ * These function conver from/to  a SienaMessagePlus to different
+ * siena types. Note that when filling in a protobuf the field
+ * 'sender' is not set in these function.
  */
-    void to_simple_message(const SienaPlusMessage& buff, simple_message& msg);
-    void to_simple_filter(const SienaPlusMessage& buff, simple_filter& pred);
+    void to_mana_message(const SienaPlusMessage& buff, mana_message& msg);
+    void to_mana_filter(const SienaPlusMessage& buff, mana_filter& pred);
     //
-    void to_protobuf(const simple_message& msg, SienaPlusMessage& buff);
-    void to_protobuf(const simple_filter& predg, SienaPlusMessage& buff);
+    void to_protobuf(const mana_message& msg, SienaPlusMessage& buff);
+    void to_protobuf(const mana_filter& predg, SienaPlusMessage& buff);
 
 const int MSG_HEADER_SIZE = sizeof(int) + BUFF_SEPERATOR_LEN_BYTE;
 };

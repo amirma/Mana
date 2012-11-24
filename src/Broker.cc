@@ -18,7 +18,7 @@
 #include "MessageReceiver.h"
 #include "TCPMessageReceiver.h"
 #include "UDPMessageReceiver.h"
-#include "sff.bzr/simple_fwd_types.h"
+#include "ManaFwdTypes.h"
 
 
 using namespace std;
@@ -77,21 +77,21 @@ void Broker::shutdown() {
 }
 
 boost::asio::io_service& Broker::io_service() {
-	return io_service_;
+   return io_service_;
 }
 
 void Broker::handle_message(SienaPlusMessage& msg) {
-	log_debug("\nbroker received message from sender " << msg.sender());
+   log_debug("\nbroker received message from sender " << msg.sender());
 }
 
 void Broker::handle_sub(NetworkConnector* nc, SienaPlusMessage& buff) {
-    simple_filter* fltr = new simple_filter();
-    to_simple_filter(buff, *fltr);
+    mana_filter* fltr = new mana_filter();
+    to_mana_filter(buff, *fltr);
     //TODO: one predicate per filter is not the right way...
-    simple_predicate pred;
+    mana_predicate pred;
     pred.add(fltr);
     // if the subscribing node is already in the list of neighbor
-    // nodes then use the entry that was already created for this 
+    // nodes then use the entry that was already created for this
     // neighbor to obtain interface number, etc. Otherwise create
     // a new entry for this subscriber.
     siena::if_t  if_ = 0;
@@ -111,8 +111,8 @@ void Broker::handle_sub(NetworkConnector* nc, SienaPlusMessage& buff) {
 }
 
 void Broker::handle_not(SienaPlusMessage& buff) {
-  simple_message msg;
-  to_simple_message(buff, msg);
+  mana_message msg;
+  to_mana_message(buff, msg);
   // FIXME : do we need locking here ?
   fwd_table_wrapper_.const_fwd_table().match(msg, *message_match_handler_);
 }
@@ -136,7 +136,7 @@ void Broker::receive_handler(NetworkConnector* nc, SienaPlusMessage& msg) {
             break;
         default: // other types ...
             handle_message(msg);
-        } 
+        }
         msg.Clear();
 }
 
@@ -145,8 +145,8 @@ bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
         SienaPlusMessage buff;
         // set the sender id
         buff.set_sender(id_);
-        // fill in the rest of the message parts 
-        to_protobuf(dynamic_cast<const simple_message&>(msg), buff);
+        // fill in the rest of the message parts
+        to_protobuf(dynamic_cast<const mana_message&>(msg), buff);
         assert(is_in_container(neighbors_by_iface_, iface));
         neighbors_by_iface_[iface]->net_connector_->send(buff);
         //

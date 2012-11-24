@@ -18,14 +18,14 @@
 
 #include "siena/fwdtable.h"
 
-#define DEFAULT_NUM_OF_THREADS 4
+#define DEFAULT_NUM_OF_THREADS 1
 
 using namespace std;
 
 namespace sienaplus {
 
-/**  \brief This class generates interface numbers and maintains 
-*   a list of interface numbers that are freed. 
+/**  \brief This class generates interface numbers and maintains
+*   a list of interface numbers that are freed.
 */
 class IFaceNoGenerator {
     public:
@@ -60,21 +60,21 @@ class IFaceNoGenerator {
  * a session.
 */
 struct NeighborNode {
-    NeighborNode(NetworkConnector* nc,const string& id, siena::if_t ifc) : 
+    NeighborNode(NetworkConnector* nc,const string& id, siena::if_t ifc) :
         net_connector_(nc), id_(id), iface_(ifc) {}
     NetworkConnector* net_connector_;
     string id_;
     siena::if_t iface_;
-    private:    
+    private:
     NeighborNode() {} //disable this
 };
 
-// forward declaration so that we can have a pointer to 
+// forward declaration so that we can have a pointer to
 // the broker in BrokerMatchMessageHandler
 class BrokerMatchMessageHandler;
 
 class Broker {
-    // we put a shared data with its associated 
+    // we put a shared data with its associated
     // mutex in one place, for easy management and less bugs.
     struct FwdTableWrapper {
         PROTECTED_WITH(std::mutex);
@@ -107,7 +107,7 @@ private:
     //
     FwdTableWrapper fwd_table_wrapper_;
     // a number generator for generating unique numbers to represnt
-    // clients/neighbors 
+    // clients/neighbors
     IFaceNoGenerator iface_no_generator_;
     // map interface/client/neighbors to the connections
     map<string, shared_ptr<NeighborNode>> neighbors_by_id_;
@@ -115,11 +115,11 @@ private:
     BrokerMatchMessageHandler* message_match_handler_;
     bool handle_match(siena::if_t, const siena::message&);
     string id_;
-    size_t num_of_threads_; 
+    size_t num_of_threads_;
 };
 
 /**
- * \brief Helper class to pass to the forwarding table. 
+ * \brief Helper class to pass to the forwarding table.
  **/
 class BrokerMatchMessageHandler : public siena::MatchMessageHandler {
     public:

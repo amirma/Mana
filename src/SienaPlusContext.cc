@@ -11,12 +11,12 @@
 #include "SienaPlusException.h"
 #include "TCPNetworkConnector.h"
 #include "common.h"
-#include "sff.bzr/simple_fwd_types.h"
+#include "ManaFwdTypes.h"
 #include <thread>
 
 namespace sienaplus {
 
-SienaPlusContext::SienaPlusContext(const string& id, const string& url, std::function<void(const simple_message&)> h) :
+SienaPlusContext::SienaPlusContext(const string& id, const string& url, std::function<void(const mana_message&)> h) :
     local_id_(id), url_(url), app_notification_handler_(h), flag_has_subscription(false), flag_session_established_(false) {
     vector<string> tokens;
 	boost::split(tokens, url_, boost::is_any_of(":"));
@@ -54,11 +54,11 @@ void SienaPlusContext::publish(const string& msg) {
     throw SienaPlusException("SienaPlusContext::publish(): not implemented.");
 }
 
-void SienaPlusContext::publish(const simple_message& msg) {
+void SienaPlusContext::publish(const mana_message& msg) {
     SienaPlusMessage buff;
     // set the sender id
     buff.set_sender(local_id_);
-    // fill in the rest of the message parts 
+    // fill in the rest of the message parts
     to_protobuf(msg, buff);
     // make sure required fields are filled in
     assert(buff.IsInitialized());
@@ -79,7 +79,7 @@ void SienaPlusContext::subscribe(const string& str) {
     throw SienaPlusException("not implemented");
 }
 
-void SienaPlusContext::subscribe(const simple_filter& filtr) {
+void SienaPlusContext::subscribe(const mana_filter& filtr) {
     SienaPlusMessage buff;
 
     // set sender id
@@ -90,7 +90,7 @@ void SienaPlusContext::subscribe(const simple_filter& filtr) {
     //make sure all required fields are filled
     assert(buff.IsInitialized());
     assert(buff.has_subscription());
-    
+
     send_message(buff);
 }
 
@@ -105,7 +105,7 @@ void SienaPlusContext::start() {
 		work_ = make_shared<boost::asio::io_service::work>(io_service_);
 		io_service_.run();
 	});
-    // TODO: we should use heartbeat messages 
+    // TODO: we should use heartbeat messages
     flag_session_established_  = true;
 }
 
@@ -126,8 +126,8 @@ void SienaPlusContext::receive_handler(NetworkConnector* nc, SienaPlusMessage& b
     log_debug("\nSienaPlusContext::receive_handler: received message from " << buff.sender());
     switch(buff.type()) {
     case SienaPlusMessage_message_type_t_NOT: {
-        simple_message msg;
-        to_simple_message(buff, msg);
+        mana_message msg;
+        to_mana_message(buff, msg);
         log_debug("\nSienaPlusContext::receive_handler(): dispatching notification to the application.");
         app_notification_handler_(msg);
         break;

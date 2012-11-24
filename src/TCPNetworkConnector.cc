@@ -19,7 +19,7 @@ namespace sienaplus {
  * This constructor is used when we need to manually create a connection.
  */
 TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
-		const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr) : 
+		const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr) :
     NetworkConnector(srv, hndlr) {
 	socket_ = make_shared<boost::asio::ip::tcp::socket>(io_service_);
 }
@@ -40,12 +40,12 @@ TCPNetworkConnector::TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket
 	}
 }
 
-TCPNetworkConnector::~TCPNetworkConnector() { 
+TCPNetworkConnector::~TCPNetworkConnector() {
 }
 
 void TCPNetworkConnector::set_socket_options() {
 #ifdef DISABLE_NAGLE_ALG
-    //disable the Nagle's algorithm so that small-sized messages 
+    //disable the Nagle's algorithm so that small-sized messages
     //will be pushed as soon as send is called
     boost::asio::ip::tcp::no_delay option_op(true);
     socket_->set_option(option_op);
@@ -78,21 +78,21 @@ void TCPNetworkConnector::async_connect(const string& addr, int prt) {
 	}
 }
 
-/*  this method mutates 'write_buff_item_qu_.qu()' and so must be run by 
- *  one thread at a time. This is guaranteed by using 'write_strand_' 
+/*  this method mutates 'write_buff_item_qu_.qu()' and so must be run by
+ *  one thread at a time. This is guaranteed by using 'write_strand_'
  *  */
 void TCPNetworkConnector::write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
     lock_guard<WriteBufferItemQueueWrapper> lock(write_buff_item_qu_);
     if(write_buff_item_qu_.qu().empty())
         return;
     log_debug("\nTCPNetworkConnector::write_handler(): wrote " << bytes_transferred << " bytes.");
-    assert(!write_buff_item_qu_.qu().empty()); // at least the last 
+    assert(!write_buff_item_qu_.qu().empty()); // at least the last
     // buffer that was written must be in the queue
     assert(write_buff_item_qu_.qu().front().size_ != 0);
     // delete the memory and remove the item from the queue
     delete[] write_buff_item_qu_.qu().front().data_;
     write_buff_item_qu_.qu().pop();
-    // if there's more items in the queue waiting to be written 
+    // if there's more items in the queue waiting to be written
     // to the socket continute sending ...
     if(!write_buff_item_qu_.qu().empty())
         send_buffer(write_buff_item_qu_.qu().front().data_, write_buff_item_qu_.qu().front().size_);
@@ -109,7 +109,7 @@ void TCPNetworkConnector::connect_handler(const boost::system::error_code& ec) {
 }
 
 void TCPNetworkConnector::start_read() {
-    socket_->async_read_some(boost::asio::buffer(read_buffer_, MAX_MSG_SIZE), 
+    socket_->async_read_some(boost::asio::buffer(read_buffer_, MAX_MSG_SIZE),
             read_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector::read_handler, this,
     	boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
 }
@@ -119,8 +119,8 @@ void TCPNetworkConnector::read_handler(const boost::system::error_code& ec, std:
 		log_err("error reading:" << ec.message());
 		return;
 	}
-	// TODO: i'm using the number of bytes as a hint that the connection 
-    // terminated. I'm not sure this is a good way though. For some 
+	// TODO: i'm using the number of bytes as a hint that the connection
+    // terminated. I'm not sure this is a good way though. For some
     // reason socket.is_open() does not do it's job...
 	if(bytes_num == 0) {
         flag_is_connected = false;
@@ -154,15 +154,15 @@ void TCPNetworkConnector::start_sync_read() {
         	    receive_handler(this, msg);
             log_debug("\nTCPNetworkConnector::start_sync_read: read " << bytes_num << " bytes.");
             } catch(exception& e) {
-                disconnect();        
+                disconnect();
             }
         }
     }).detach();
 }
 
-/* 
+/*
  * \brief this method had only internal purposes and is used to send a buffer of given
-*  size to the socket 
+*  size to the socket
 */
 void TCPNetworkConnector::send_buffer(const unsigned char* data, size_t length) {
 	if(!is_connected()) {
@@ -170,9 +170,9 @@ void TCPNetworkConnector::send_buffer(const unsigned char* data, size_t length) 
 		return;
 	}
     assert(data[0] == BUFF_SEPERATOR);
-    assert(*((int*)(data + BUFF_SEPERATOR_LEN_BYTE)) + MSG_HEADER_SIZE ==  length);
-    boost::asio::async_write(*socket_, boost::asio::buffer(data, length), 
-        write_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector::write_handler, 
+    assert(*((int*)(data + BUFF_SEPERATOR_LEN_BYTE)) + MSG_HEADER_SIZE ==  static_cast<long>(length));
+    boost::asio::async_write(*socket_, boost::asio::buffer(data, length),
+        write_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector::write_handler,
         this, boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred)));
     log_debug("\nTCPNetworkConnector::send_buffer(): sent " << length << " bytes.");
@@ -180,14 +180,14 @@ void TCPNetworkConnector::send_buffer(const unsigned char* data, size_t length) 
 
 /*
  * \brief For internal purposes only. Prepares a buffer for transmission over
- * the network. 
+ * the network.
  *
  * If there is a transmission going on already, the buffer will be queued for
  * later transmission. Otherwise the buffer is sent out without being queued.
  *
  * Note that this method mutates the 'write_buff_item_qu_.qu()' and so must be
- * called by one thread only. This is guaranteed by using strand 
- * \param data data A pointer to the buffer 
+ * called by one thread only. This is guaranteed by using strand
+ * \param data data A pointer to the buffer
  * \param length length of the buffer
  */
 void TCPNetworkConnector::prepare_buffer(const unsigned char* data, size_t length) {
@@ -204,9 +204,9 @@ void TCPNetworkConnector::prepare_buffer(const unsigned char* data, size_t lengt
     assert(write_buff_item_qu_.qu().front().size_ != 0);
 }
 
-/* 
+/*
  * \brief Send a SienPlusMessage out to the network. This is the only public
- * interface for message transmission. 
+ * interface for message transmission.
  *
  * Send is asynchronous and the message is converted to a buffer and the memory
  * is taken care of by the network connector. This means that after this method
@@ -262,8 +262,8 @@ bool TCPNetworkConnector::connect(const string& addr, int prt) {
     return true;
 }
 
-/* 
- * \brief Wait for the ongoing transmissions to finish and then 
+/*
+ * \brief Wait for the ongoing transmissions to finish and then
  * terminate the connection
  */
 void TCPNetworkConnector::disconnect() {

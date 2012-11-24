@@ -1,0 +1,256 @@
+// -*- C++ -*-
+//
+//  This file is part of Siena, a wide-area event notification system.
+//  See http://www.inf.usi.ch/carzaniga/siena/
+//
+//  Authors: Antonio Carzaniga
+//  See the file AUTHORS for full details.
+//
+//  Copyright (C) 2001-2003 University of Colorado
+//
+//  Siena is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  Siena is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with Siena.  If not, see <http://www.gnu.org/licenses/>.
+//
+#include <siena/types.h>
+#include "ManaFwdTypes.h"
+
+inline siena::type_id mana_value::type() const { return t; }
+inline siena::int_t mana_value::int_value() const { return i; }
+inline siena::string_t mana_value::string_value() const { return s; }
+inline siena::bool_t mana_value::bool_value() const { return b; }
+inline siena::double_t mana_value::double_value() const { return d; }
+
+inline mana_value::mana_value()
+    : t(siena::anytype_id) {}
+inline mana_value::mana_value(siena::int_t x)
+    : t(siena::int_id), i(x) {}
+inline mana_value::mana_value(siena::bool_t x)
+    : t(siena::bool_id), b(x) {}
+inline mana_value::mana_value(siena::double_t x)
+    : t(siena::double_id), d(x) {}
+inline mana_value::mana_value(const siena::string_t & x)
+    : t(siena::string_id) {
+    char* temp = new char[x.length()+1];
+    strcpy(temp, x.begin);
+    assert(temp[x.length()] == '\0');
+    s = temp;
+}
+
+inline mana_value::~mana_value() {
+    if(s.begin)
+        delete[] s.begin;
+    s.begin = s.end = 0;
+}
+
+inline mana_attribute::mana_attribute(attribute_map::const_iterator b,
+					  attribute_map::const_iterator e)
+
+    : i(b), end(e) {}
+
+inline siena::string_t mana_attribute::name() const { return (*i).first; }
+inline siena::type_id mana_attribute::type() const { return (*i).second->type(); }
+inline siena::int_t mana_attribute::int_value() const { return (*i).second->int_value(); }
+inline siena::string_t mana_attribute::string_value() const { return (*i).second->string_value(); }
+inline siena::bool_t mana_attribute::bool_value() const { return (*i).second->bool_value(); }
+inline siena::double_t mana_attribute::double_value() const { return (*i).second->double_value(); }
+
+inline bool mana_attribute::next() {
+    if (i != end) ++i;
+    return i != end;
+}
+
+inline bool mana_attribute::operator != (const mana_attribute & other) const {
+    return i != other.i;
+}
+
+inline const mana_attribute& mana_attribute::operator++ () {
+    if (i != end) ++i;
+    return *this;
+}
+
+inline mana_attribute& mana_attribute::operator* () {
+    return *this;
+}
+
+inline mana_message::mana_message() : attrs() {}
+
+inline mana_message::iterator * mana_message::first() const {
+    if (attrs.begin() == attrs.end()) {
+	return 0;
+    } else {
+	return new mana_attribute(attrs.begin(), attrs.end());
+    }
+}
+
+inline mana_attribute mana_message::begin() const {
+	return mana_attribute(attrs.begin(), attrs.end());
+}
+
+inline mana_attribute mana_message::end() const {
+	return mana_attribute(attrs.end(), attrs.end());
+}
+
+inline mana_message::iterator * mana_message::find(const siena::string_t & name) const {
+    attribute_map::const_iterator i = attrs.find(name);
+    if (i == attrs.end()) {
+	return 0;
+    } else {
+	return new mana_attribute(i, attrs.end());
+    }
+}
+
+inline bool mana_message::contains(const siena::string_t & name) const {
+    return attrs.find(name) != attrs.end();
+}
+
+inline bool mana_message::add(const siena::string_t & name,
+				const mana_value * a) {
+    return attrs.insert(attribute_map::value_type(memmgr.get_managed_copy(name), a)).second;
+}
+
+inline mana_op_value::mana_op_value(siena::operator_id xo)
+    : mana_value(), o(xo) {}
+inline mana_op_value::mana_op_value(siena::operator_id xo,
+					siena::int_t x)
+    : mana_value(x), o(xo) {}
+inline mana_op_value::mana_op_value(siena::operator_id xo,
+					siena::bool_t x)
+    : mana_value(x), o(xo) {}
+inline mana_op_value::mana_op_value(siena::operator_id xo,
+					siena::double_t x)
+    : mana_value(x), o(xo) {}
+inline mana_op_value::mana_op_value(siena::operator_id xo,
+					const siena::string_t & x)
+    : mana_value(x), o(xo) {}
+
+inline siena::operator_id mana_op_value::op() const { return o; }
+
+inline siena::string_t mana_constraint::name() const {
+    return (*i).first;
+}
+inline siena::type_id mana_constraint::type() const {
+    return (*i).second->type();
+}
+inline siena::int_t mana_constraint::int_value() const {
+    return (*i).second->int_value();
+}
+inline siena::string_t mana_constraint::string_value() const {
+    return (*i).second->string_value();
+}
+inline siena::bool_t mana_constraint::bool_value() const {
+    return (*i).second->bool_value();
+}
+inline siena::double_t mana_constraint::double_value() const {
+    return (*i).second->double_value();
+}
+inline siena::operator_id mana_constraint::op() const {
+    return (*i).second->op();
+}
+
+inline bool mana_constraint::operator!= (const mana_constraint& other) const {
+           return i != other.i;
+}
+
+inline const mana_constraint& mana_constraint::operator++ ()
+	{
+	++i;
+	return *this;
+}
+
+inline mana_constraint& mana_constraint::operator* () {
+	return *this;
+}
+
+inline bool mana_constraint::next() {
+    if (i != end) ++i;
+    return i != end;
+}
+
+inline mana_constraint::mana_constraint(constraint_map::const_iterator b,
+					    constraint_map::const_iterator e)
+
+    : i(b), end(e) {}
+
+inline mana_filter::iterator * mana_filter::first() const {
+    if (constraints.begin() == constraints.end()) {
+	return 0;
+    } else {
+	return new mana_constraint(constraints.begin(),
+				     constraints.end());
+    }
+}
+
+inline mana_constraint mana_filter::begin() const {
+	return mana_constraint(constraints.begin(), constraints.end());
+}
+
+inline mana_constraint mana_filter::end() const {
+	return mana_constraint(constraints.end(), constraints.end());
+}
+
+inline void mana_filter::add(const siena::string_t name,
+			       const mana_op_value * v) {
+    constraints.insert(constraint_map::value_type(memmgr.get_managed_copy(name), v));
+}
+
+inline mana_filter::mana_filter() : constraints() {}
+
+inline siena::filter::iterator * mana_predicate_i::first() const {
+    return (*i)->first();
+}
+
+inline bool mana_predicate_i::next() {
+    if (i != end) ++i;
+    return i != end;
+}
+
+inline mana_predicate_i::mana_predicate_i(filter_list::const_iterator b,
+					      filter_list::const_iterator e)
+
+    : i(b), end(e) {}
+
+inline mana_predicate::iterator * mana_predicate::first() const {
+    if (filters.begin() == filters.end()) {
+	return 0;
+    } else {
+	return new mana_predicate_i(filters.begin(), filters.end());
+    }
+}
+
+inline void mana_predicate::add(mana_filter * v) {
+    filters.push_back(v);
+}
+
+inline mana_filter * mana_predicate::back() {
+    return filters.back();
+}
+
+inline mana_predicate::mana_predicate() : filters() {}
+
+inline mana_message::~mana_message() {
+    for (attribute_map::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
+	if (i->second) delete(i->second);
+}
+
+inline mana_filter::~mana_filter() {
+    for (constraint_map::const_iterator i = constraints.begin();
+	 i != constraints.end(); ++i)
+	if (i->second) delete(i->second);
+}
+
+inline mana_predicate::~mana_predicate() {
+    for (filter_list::const_iterator i = filters.begin();
+	 i != filters.end(); ++i)
+	if (*i) delete(*i);
+}
+

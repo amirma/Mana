@@ -9,15 +9,15 @@
 
 using namespace std;
 
-SimpleClient::SimpleClient(const string& str) : client_id_(str), 
+SimpleClient::SimpleClient(const string& str) : client_id_(str),
     broker_url_("ka:127.0.0.1:2350"), flag_session_established_(false) {}
 
 SimpleClient::~SimpleClient() {}
 
-void SimpleClient::handle_notification(const simple_message& m) {
+void SimpleClient::handle_notification(const mana_message& m) {
     log_info("\nApplication received notification: ");
     for(auto attr : m)
-        log_info(attr.name().c_str() << " ");
+        log_info(attr.name().begin << " ");
 }
 
 void SimpleClient::start() {
@@ -39,7 +39,7 @@ void SimpleClient::stop() {
     context_->stop();
 }
 
-/*  
+/*
  *  \brief A concrete implementation could implement this to do something
  *  useful, like subscribing or publishing. See details.
  *
@@ -47,16 +47,16 @@ void SimpleClient::stop() {
 
     // subscribe to something:
     siena::int_t val = 5;
-    simple_op_value* sov = new simple_op_value(siena::eq_id, val);
+    mana_op_value* sov = new mana_op_value(siena::eq_id, val);
     siena::string_t cst = "const1";
-    simple_filter fltr;
+    mana_filter fltr;
     fltr.add(cst, sov);
     context_->subscribe(fltr);
 
     //or publish something:
-    simple_value* sv = new simple_value(static_cast<siena::int_t>(10));
+    mana_value* sv = new mana_value(static_cast<siena::int_t>(10));
     siena::string_t cst = "const1";
-    simple_message msg;
+    mana_message msg;
     msg.add(cst, sv);
     context_->publish(msg);
  *
@@ -72,12 +72,11 @@ bool SimpleClient::set_broker(const string& str) {
     return true;
 }
 
-simple_message SimpleClient::string_to_simple_message(const string& str) const {
+void SimpleClient::string_to_mana_message(const string& str, mana_message& m) const {
     //log_info("\n" << str);
     try {
         vector<string> attr_vector;
     	boost::split(attr_vector, str, boost::is_any_of(","));
-        simple_message m;
         for(auto attr_item : attr_vector) {
             // get rid of the white space at the two ends of the string...
             size_t len = attr_item.length();
@@ -94,44 +93,43 @@ simple_message SimpleClient::string_to_simple_message(const string& str) const {
             switch(tokens[0][0]) {
                 case 's': {
                     siena::string_t val = tokens[2].c_str();
-                    simple_value* sv = new simple_value(val);
+                    mana_value* sv = new mana_value(val);
                     m.add(cst, sv);
                     break;
                 }
                 case 'i': {
                     siena::int_t val = static_cast<int>(stoi(tokens[2]));
-                    simple_value* sv = new simple_value(val);
+                    mana_value* sv = new mana_value(val);
                     m.add(cst, sv);
                     break;
                 }
                 case 'd': {
                     siena::double_t val = static_cast<double>(stod(tokens[2]));
-                    simple_value* sv = new simple_value(val);
+                    mana_value* sv = new mana_value(val);
                     m.add(cst, sv);
                     break;
-                } 
+                }
                 case 'b': {
-                    siena::bool_t val = tokens[2] == "1" ? true : false;
-                    simple_value* sv = new simple_value(val);
+                    siena::bool_t val = tokens[2] == "0" ? false : true;
+                    mana_value* sv = new mana_value(val);
                     m.add(cst, sv);
                     break;
                 }
                 default:
                     log_warn("\nWarning: unrecognized type \'" << tokens[0] << "\'");
+                    break;
             }
         }
-        return m;
     } catch(exception& e) {
-        throw sienaplus::SienaPlusException("string_to_simple_message(): Invalid string.");
+        throw sienaplus::SienaPlusException("string_to_mana_message(): Invalid string.");
     }
 }
 
-simple_filter SimpleClient::string_to_simple_filter(const string& str) const {
+void SimpleClient::string_to_mana_filter(const string& str, mana_filter& f) const {
     try {
         //log_info("\n" << str);
         vector<string> constraint_vector;
     	boost::split(constraint_vector, str, boost::is_any_of(","));
-        simple_filter f;
         for(auto constraint_item : constraint_vector) {
             // get rid of the white space at the two ends of the string...
             size_t len = constraint_item.length();
@@ -144,7 +142,7 @@ simple_filter SimpleClient::string_to_simple_filter(const string& str) const {
             vector<string> tokens;
         	boost::split(tokens, constraint_item, boost::is_any_of(" "));
             if(!validate_constraint(tokens)) {
-                log_warn("\nSimpleClinet::string_to_simple_filter(): Invalid constraint in: " << str);
+                log_warn("\nSimpleClinet::string_to_mana_filter(): Invalid constraint in: " << str);
                 continue;
             }
             siena::string_t cst =  tokens[1].c_str();
@@ -152,33 +150,33 @@ simple_filter SimpleClient::string_to_simple_filter(const string& str) const {
             switch(tokens[0][0]) {
                 case 's': {
                     siena::string_t val = tokens[3].c_str();
-                    simple_op_value* sov = new simple_op_value(siena::eq_id, val);
+                    mana_op_value* sov = new mana_op_value(siena::eq_id, val);
                     f.add(cst, sov);
                     break;
                 }
                 case 'i': {
                     siena::int_t val = static_cast<int>(stoi(tokens[3]));
-                    simple_op_value* sov = new simple_op_value(siena::eq_id, val);
+                    mana_op_value* sov = new mana_op_value(siena::eq_id, val);
                     f.add(cst, sov);
                     break;
                 }
                 case 'd': {
                     siena::double_t val = static_cast<double>(stod(tokens[3]));
-                    simple_op_value* sov = new simple_op_value(siena::eq_id, val);
+                    mana_op_value* sov = new mana_op_value(siena::eq_id, val);
                     f.add(cst, sov);
                     break;
-                } 
+                }
                 case 'b': {
-                    siena::bool_t val = tokens[3] == "1" ? true : false;
-                    simple_op_value* sov = new simple_op_value(siena::eq_id, val);
+                    siena::bool_t val = tokens[3] == "0" ? false : true;
+                    mana_op_value* sov = new mana_op_value(siena::eq_id, val);
                     f.add(cst, sov);
                     break;
                 }
                 default:
                     log_warn("\nWarning: unrecognized type \'" << tokens[0] << "\'");
+                    break;
             }
         }
-        return f;
     } catch(exception& e) {
         throw sienaplus::SienaPlusException("string_to_filter_message(): Invalid string.");
     }
@@ -189,7 +187,7 @@ simple_filter SimpleClient::string_to_simple_filter(const string& str) const {
  * and verify it's semantic correctness.
  *
  * By semantic correctness we mean a logical match between 'type' and
- * 'operator'. For instance with a type siena::bool_t we can only have 
+ * 'operator'. For instance with a type siena::bool_t we can only have
  * 'eq_id'.
  */
 bool SimpleClient::validate_constraint(const vector<string>& tokens) const {
