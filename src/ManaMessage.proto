@@ -1,6 +1,6 @@
-package sienaplus;
+package mana;
 
-message SienaPlusMessage {
+message ManaMessage {
 
  	// constants and type definitions
 
@@ -8,10 +8,11 @@ message SienaPlusMessage {
         SUB = 1;
         NOT = 2;
         UNSUB = 3;
-        TERMINATE_SESSION = 4; // In a graceful session termination this should 
+        HEARTBEAT = 4;
+        TERMINATE_SESSION = 5; // In a graceful session termination this should
         // be sent from one of the two endpoints
     }
-    
+
     /*
     	IMPORTANT NOTE: THE ORDER AND VALUE OF ITEMS IN tag_type_t ARE IMPORTANT,
     	and must be the same as in Siena/types.h. This makes it easy and efficient to
@@ -26,67 +27,63 @@ message SienaPlusMessage {
         BOOL = 4;
         ANY_TYPE = 5;
     };
-    
+
     message value_t {
         required tag_type_t type = 1;
-		optional string string_value = 2;
-		optional int32 int_value = 3;
-		optional double double_value = 4;
-		optional bool bool_value = 5;
+        optional string string_value = 2;
+        optional int32 int_value = 3;
+        optional double double_value = 4;
+        optional bool bool_value = 5;
     }
-    
+
     message subscription_t {
-    
+
     /*
     	IMPORTANT NOTE: THE ORDER AND VALUE OF ITEMS IN operator_t ARE IMPORTANT.
     	See the above explanation for tag_type_t.
     */
-    
+
         enum operator_t {
-    		EQUAL = 1;
-    		LESS_THAN = 2;
-    		GREATER_THAN = 3;
-    		SUFFIX = 4;
+            EQUAL = 1;
+            LESS_THAN = 2;
+            GREATER_THAN = 3;
+            SUFFIX = 4;
             PREFIX = 5;
             SUB_STRING = 6;
             ANY = 7;
             NOT_EQUAL = 8;
             REGULAR_EXP = 9;
     	}
-    	
+
     	message constraint_t {
-    		required string name = 1;
-    		required operator_t op = 2;  
-    		required value_t value = 3;
+            required string name = 1;
+            required operator_t op = 2;
+            required value_t value = 3;
     	}
-    
+
         repeated constraint_t constraints = 1;
     }
-    
+
     message notification_t {
-    	
+
     	message attribute_t {
     		required string name = 1;
     		required value_t value = 2;
     	}
-    	
+
         repeated attribute_t attribute = 1;
     }
-    
+
     // mandatory message fields
     required message_type_t type = 1;
-   	required string sender = 2; // this is the sender's 
-        // id that is assigned to it by the connection acceptor
+    required string sender = 2; // this is the sender's
+    // id that is assigned to it by the connection acceptor
 
-    // pub/sub related messages 
-   	optional subscription_t subscription = 3;
+    // pub/sub related messages
+    optional subscription_t subscription = 3;
     optional notification_t notification = 4;
     optional string unsubscription = 5;
-    optional string payload = 6;
 
-    //control messages 
-    optional int32 assigned_id = 7; // this id is assigned by the broker
-        // and sent to the client. (client here means the initiator of 
-        // connection. Any further messages sent by a sender has to carry 
-        // its sender_id (field 2 defined above)
+    // payload
+    optional string payload = 6;
 }

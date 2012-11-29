@@ -1,6 +1,6 @@
 #include "MessageStream.h"
 
-namespace sienaplus {
+namespace mana {
 
 MessageStream::MessageStream() {
     unconsumed_data_size_ = 0;
@@ -32,7 +32,7 @@ void MessageStream::consume(const unsigned char* buff, int size) {
  * value is non-zero it means there was an error in the buffer and some bytes
  * were skipped (consumed).
  */
-bool MessageStream::do_produce(const unsigned char* data, int size, SienaPlusMessage& msg, int& consumed_size) const {
+bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage& msg, int& consumed_size) const {
     assert(size > 0);
     assert(data[0] == BUFF_SEPERATOR);// this should not happen unless 
     // received data is corrupted somehow. In debug build we must fail
@@ -96,7 +96,7 @@ bool MessageStream::do_produce(const unsigned char* data, int size, SienaPlusMes
     return true;
 }
 
-bool MessageStream::produce(SienaPlusMessage& msg) {
+bool MessageStream::produce(ManaMessage& msg) {
     // if we already have something in the unconsumed buffer we need to consume
     // that first along with the rest of the incomplete message which is in the
     // new buffer. So we copy one message worth of data into the unconsumed

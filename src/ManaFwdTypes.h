@@ -1,32 +1,33 @@
-// -*- C++ -*-
-//
-//  This file is part of Siena, a wide-area event notification system.
-//  See http://www.inf.usi.ch/carzaniga/siena/
-//
-//  Authors: Antonio Carzaniga
-//  See the file AUTHORS for full details.
-//
-//  Copyright (C) 2001-2003 University of Colorado
-//
-//  Siena is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
-//
-//  Siena is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with Siena.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+ * @file ManaFwdTypes.h
+ * @brief Concerete implementation of Siena types
+ *
+ * This implementation is based on simple_fwd_types by Antonio Carzaniga
+ *
+ * @author Amir Malekpour
+ * @version 0.1
+ *
+ * Copyright © 2012 Amir Malekpour
+ *
+ * Mana is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Mana is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. For more details see the GNU General Public License
+ * at <http: *www.gnu.org/licenses/>
+ */
+
 #ifndef MANA_FWD_TYPES_H
 #define MANA_FWD_TYPES_H
 
 #include <list>
 #include <map>
 #include <vector>
+#include <string.h>
+#include <assert.h>
 
 #include <siena/types.h>
 
@@ -34,7 +35,7 @@ const int DEFAULT_MEM_ITEM_NUMBER = 10;
 
 class MemoryManager {
     public:
-    MemoryManager() //: data_(DEFAULT_MEM_ITEM_NUMBER) //default number of entries
+    MemoryManager() : data_(DEFAULT_MEM_ITEM_NUMBER) //default number of entries
     // in the memory manager.
     {}
 
@@ -45,8 +46,6 @@ class MemoryManager {
 
     siena::string_t get_managed_copy(siena::string_t str) {
         char* t = new char[str.length() + 1];
-        // FIXME remote this
-        assert(str.length() < 10);
         strcpy(t, str.begin);
         assert(t[str.length()] == '\0');
         data_.push_back(t);

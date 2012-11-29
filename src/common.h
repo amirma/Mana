@@ -9,7 +9,7 @@
 #define COMMON_H_
 
 #include <siena/types.h>
-#include "SienaPlusMessage.pb.h"
+#include "ManaMessage.pb.h"
 #include "ManaFwdTypes.h"
 #include <string>
 #include <mutex>
@@ -68,7 +68,7 @@
 #define BUFF_SEPERATOR_LEN_BYTE 1
 #define MAX_MSG_SIZE 9000 //Bytes
 
-namespace sienaplus {
+namespace mana {
 
 	enum enum_connection_type {
 		ka,
@@ -82,11 +82,11 @@ namespace sienaplus {
  * siena types. Note that when filling in a protobuf the field
  * 'sender' is not set in these function.
  */
-    void to_mana_message(const SienaPlusMessage& buff, mana_message& msg);
-    void to_mana_filter(const SienaPlusMessage& buff, mana_filter& pred);
+    void to_mana_message(const ManaMessage& buff, mana_message& msg);
+    void to_mana_filter(const ManaMessage& buff, mana_filter& pred);
     //
-    void to_protobuf(const mana_message& msg, SienaPlusMessage& buff);
-    void to_protobuf(const mana_filter& predg, SienaPlusMessage& buff);
+    void to_protobuf(const mana_message& msg, ManaMessage& buff);
+    void to_protobuf(const mana_filter& predg, ManaMessage& buff);
 
 const int MSG_HEADER_SIZE = sizeof(int) + BUFF_SEPERATOR_LEN_BYTE;
 };

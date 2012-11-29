@@ -13,16 +13,15 @@
 
 using namespace std;
 
-namespace sienaplus {
+namespace mana {
 
 TCPMessageReceiver::TCPMessageReceiver(boost::asio::io_service& srv,
-		const int port, const string& addr, const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr, 
+		const int port, const string& addr, const std::function<void(NetworkConnector*, ManaMessage&)>& hndlr, 
         const std::function<void(shared_ptr<NetworkConnector>)>& c_hndlr):
 		MessageReceiver(srv, hndlr), connect_handler_(c_hndlr) {
-	connection_type_ = sienaplus::tcp;
+	connection_type_ = mana::tcp;
 	port_ = port;
 	address_ = addr;
-	flag_runing_ = false;
 }
 
 TCPMessageReceiver::~TCPMessageReceiver() {
@@ -31,14 +30,19 @@ TCPMessageReceiver::~TCPMessageReceiver() {
 void TCPMessageReceiver::start() {
 	if(flag_runing_)
 		return;
-	acceptor_ptr_ = make_shared<boost::asio::ip::tcp::acceptor>(io_service_);
-	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port_);
-	acceptor_ptr_->open(endpoint.protocol());
-	acceptor_ptr_->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-	acceptor_ptr_->bind(endpoint);
-	acceptor_ptr_->listen();
-	flag_runing_ = true;
-	begin_accept();
+	try {
+		acceptor_ptr_ = make_shared<boost::asio::ip::tcp::acceptor>(io_service_);
+		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port_);
+		acceptor_ptr_->open(endpoint.protocol());
+		acceptor_ptr_->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+		acceptor_ptr_->bind(endpoint);
+		acceptor_ptr_->listen();
+		flag_runing_ = true;
+		begin_accept();
+	} catch(exception& e) {
+		log_warn("\nTCPMessageReceiver::start: error listening to socket on tcp://" <<
+				address_ << ":"  << port_ << " ");
+	}
 }
 
 void TCPMessageReceiver::stop() {
@@ -46,9 +50,14 @@ void TCPMessageReceiver::stop() {
 }
 
 void TCPMessageReceiver::begin_accept() {
-	next_connection_socket_ = make_shared<boost::asio::ip::tcp::socket>(io_service_);
-	acceptor_ptr_->async_accept(*next_connection_socket_, boost::bind(&TCPMessageReceiver::accept_handler,
-	this, boost::asio::placeholders::error));
+	try {
+		next_connection_socket_ = make_shared<boost::asio::ip::tcp::socket>(io_service_);
+		acceptor_ptr_->async_accept(*next_connection_socket_, boost::bind(&TCPMessageReceiver::accept_handler,
+				this, boost::asio::placeholders::error));
+	} catch(exception& e) {
+		log_warn("\nTCPMessageReceiver::begin_accept: an error occured while accepting a new connection: " <<
+				e.what());
+	}
 }
 
 void TCPMessageReceiver::accept_handler(const boost::system::error_code& ec) {
@@ -68,4 +77,4 @@ void TCPMessageReceiver::accept_handler(const boost::system::error_code& ec) {
 
 }
 
-} /* namespace sienaplus */
+} /* namespace mana */

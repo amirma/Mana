@@ -1,5 +1,5 @@
 /*
- * SienaPlusContext.h
+ * ManaContext.h
  *
  *  Created on: Sep 9, 2012
  *      Author: amir
@@ -14,18 +14,18 @@
 #include <boost/asio.hpp>
 #include "common.h"
 #include <thread>
-#include "SienaPlusMessage.pb.h"
+#include "ManaMessage.pb.h"
 #include "ManaFwdTypes.h"
 
 using namespace std;
 
-namespace sienaplus {
+namespace mana {
 
-class SienaPlusContext {
+class ManaContext {
 public:
-	SienaPlusContext(const string&, const string& url, std::function<void(const mana_message&)>);
-    SienaPlusContext(const SienaPlusContext& other) = delete; //disable copy constructor
-	virtual ~SienaPlusContext();
+	ManaContext(const string&, const string& url, std::function<void(const mana_message&)>);
+    ManaContext(const ManaContext& other) = delete; //disable copy constructor
+	virtual ~ManaContext();
 	void publish(const string&);
 	void publish(const mana_message&);
 	void subscribe(const string& sub);
@@ -45,18 +45,18 @@ private:
     // id of the remote node
     //unsigned int remote_id;
 	bool connect();
-	sienaplus::connection_type connection_type;
+	mana::connection_type connection_type;
 	std::function<void(const mana_message&)> app_notification_handler_;
 	int port_;
 	string address_;
 	shared_ptr<boost::asio::io_service::work> work_;
 	shared_ptr<thread> thread_;
-	void receive_handler(NetworkConnector*, SienaPlusMessage&);
-    void send_message(SienaPlusMessage&);
+	void receive_handler(NetworkConnector*, ManaMessage&);
+    void send_message(ManaMessage&);
 	bool is_connected();
 	bool flag_has_subscription;
     bool flag_session_established_;
 };
 
-} /* namespace sienaplus */
+} /* namespace mana */
 #endif /* SIENAPLUSCONTEXT_H_ */

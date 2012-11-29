@@ -1,11 +1,22 @@
 /*
- ============================================================================
- Name        : SienaPlus.cpp
- Author      : Amir Malekpour
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C++,
- ============================================================================
+ * @file StartBroker.cc
+ *
+ * @brief Parse command line parameters and start a broker
+ *
+ * @author Amir Malekpour
+ * @version 0.1
+ *
+ * Copyright © 2012 Amir Malekpour
+ *
+ *  Mana is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Mana is distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *  FOR A PARTICULAR PURPOSE. For more details see the GNU General Public License
+ *  at <http: *www.gnu.org/licenses/>
  */
 
 #include <iostream>
@@ -16,8 +27,8 @@
 using namespace std;
 
 
-// golbal variable 
-sienaplus::Broker broker("broker1");
+// golbal variable
+mana::Broker broker("broker1");
 
 
 void termination_handler(int signum) {
@@ -25,10 +36,9 @@ void termination_handler(int signum) {
 }
 
 void start_broker() {
-	log_info("Starting broker...");
-	string url = "tcp:localhost:2350";
-	broker.add_transport(url);
-	broker.start();
+    string url = "tcp:localhost:2350";
+    broker.add_transport(url);
+    broker.start();
 }
 
 int main(void) {
@@ -42,6 +52,6 @@ int main(void) {
    if (signal (SIGTERM, termination_handler) == SIG_IGN)
      signal (SIGTERM, SIG_IGN);
     // now start a broker
-	start_broker();
-	return 0;
+    start_broker();
+    return 0;
 }

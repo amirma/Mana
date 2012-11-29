@@ -2,10 +2,10 @@
 #define MESSAGESTREAM_H_
 
 #include "common.h"
-#include "SienaPlusMessage.pb.h"
+#include "ManaMessage.pb.h"
 #include <iostream>
 
-namespace sienaplus {
+namespace mana {
 
 using namespace std;
 
@@ -16,10 +16,10 @@ class MessageStream {
         virtual ~MessageStream();
         MessageStream(const MessageStream&) = delete; // delete copy constructor
         void consume(const unsigned char* buff, int size);
-        bool produce(SienaPlusMessage& msg);
+        bool produce(ManaMessage& msg);
 private:
 
-    bool do_produce(const unsigned char*, int size, SienaPlusMessage& msg, int& consumed) const;
+    bool do_produce(const unsigned char*, int size, ManaMessage& msg, int& consumed) const;
     bool check_has_message_header();
     unsigned char unconsumed_data_[MAX_MSG_SIZE];
     int unconsumed_data_size_;

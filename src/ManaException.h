@@ -1,5 +1,5 @@
 /*
- * SienaPlusException.h
+ * ManaException.h
  *
  *  Created on: Sep 9, 2012
  *      Author: amir
@@ -13,17 +13,17 @@
 
 using namespace std;
 
-namespace sienaplus {
+namespace mana {
 
 // virtual inheritence for exceptions is a good practice...
-class SienaPlusException: virtual public std::exception {
+class ManaException: virtual public std::exception {
 public:
-	SienaPlusException(const string& str = "");
+	ManaException(const string& str = "");
     virtual const char* what();
-	virtual ~SienaPlusException() throw();
+	virtual ~ManaException() throw();
 private:
     string message_;
 };
 
-} /* namespace sienaplus */
+} /* namespace mana */
 #endif /* SIENAPLUSEXCEPTION_H_ */

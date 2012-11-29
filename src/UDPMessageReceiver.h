@@ -14,15 +14,15 @@
 
 using namespace std;
 
-namespace sienaplus {
+namespace mana {
 
-class UDPMessageReceiver: public sienaplus::MessageReceiver {
+class UDPMessageReceiver: public mana::MessageReceiver {
 public:
-	UDPMessageReceiver(boost::asio::io_service&, const int, const string&, const std::function<void(NetworkConnector*, SienaPlusMessage&)>&);
+	UDPMessageReceiver(boost::asio::io_service&, const int, const string&, const std::function<void(NetworkConnector*, ManaMessage&)>&);
 	virtual ~UDPMessageReceiver();
 	void start();
 	void stop();
 };
 
-} /* namespace sienaplus */
+} /* namespace mana */
 #endif /* UDPMESSAGERECEIVER_H_ */

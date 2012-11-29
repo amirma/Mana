@@ -8,18 +8,18 @@
 #include <boost/algorithm/string.hpp>
 #include <thread>
 #include "exception"
-#include "SienaPlusException.h"
+#include "ManaException.h"
 #include "TCPNetworkConnector.h"
 #include "boost/bind.hpp"
 
-namespace sienaplus {
+namespace mana {
 
 /*
  * Construct an instance of this class with the given io_service.
  * This constructor is used when we need to manually create a connection.
  */
 TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
-		const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr) :
+		const std::function<void(NetworkConnector*, ManaMessage&)>& hndlr) :
     NetworkConnector(srv, hndlr) {
 	socket_ = make_shared<boost::asio::ip::tcp::socket>(io_service_);
 }
@@ -31,7 +31,7 @@ TCPNetworkConnector::TCPNetworkConnector(boost::asio::io_service& srv,
  * has to outlive the instance of this class.
  */
 TCPNetworkConnector::TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>& skt,
-	const std::function<void(NetworkConnector*, SienaPlusMessage&)>& hndlr) :
+	const std::function<void(NetworkConnector*, ManaMessage&)>& hndlr) :
 	NetworkConnector(skt->get_io_service(), hndlr), socket_(skt){
 	if(socket_->is_open()) {
 		flag_is_connected = true;
@@ -61,7 +61,7 @@ void TCPNetworkConnector::async_connect(const string& url) {
 	try {
 		port = stoi(tokens[2]);
 	} catch(exception& e) {
-		throw SienaPlusException("Could not connect: invalid port number: " + tokens[2]);
+		throw ManaException("Could not connect: invalid port number: " + tokens[2]);
 	}
 	async_connect(tokens[1], port);
 }
@@ -130,7 +130,7 @@ void TCPNetworkConnector::read_handler(const boost::system::error_code& ec, std:
     log_debug("\nTCPNetworkConnector::read_handler(): read " << bytes_num << " bytes.");
 	assert(receive_handler != nullptr);
 
-    SienaPlusMessage msg;
+    ManaMessage msg;
     // Note: message_stream MUST be acessed by only one thread at a time - it's
     // not thread safe. Here the assumption is that read_handler is run only
     // by one thread at a time. This is guaranteed by using strand_ for async
@@ -148,7 +148,7 @@ void TCPNetworkConnector::start_sync_read() {
         for(;;) {
             try {
             size_t bytes_num = socket_->read_some(boost::asio::buffer(read_buffer_, MAX_MSG_SIZE));
-            SienaPlusMessage msg;
+            ManaMessage msg;
             message_stream_.consume(read_buffer_.data(), bytes_num);
             while(message_stream_.produce(msg))
         	    receive_handler(this, msg);
@@ -212,7 +212,7 @@ void TCPNetworkConnector::prepare_buffer(const unsigned char* data, size_t lengt
  * is taken care of by the network connector. This means that after this method
  * returns the caller can safely reuse msg.
  */
-void TCPNetworkConnector::send(const SienaPlusMessage& msg) {
+void TCPNetworkConnector::send(const ManaMessage& msg) {
     // add buffer separators and header and then serialize
     // the message into a protobuf
     int data_size = msg.ByteSize();
@@ -238,7 +238,7 @@ bool TCPNetworkConnector::connect(const string& url) {
 	try {
 		port = stoi(tokens[2]);
 	} catch(exception& e) {
-		throw SienaPlusException("Could not connect: invalid port number: " + tokens[2]);
+		throw ManaException("Could not connect: invalid port number: " + tokens[2]);
 	}
 	return connect(tokens[1], port);
 }
@@ -251,9 +251,9 @@ bool TCPNetworkConnector::connect(const string& addr, int prt) {
 		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(addr), prt);
 		socket_->connect(endpoint);
 	} catch(boost::system::system_error& e) {
-		throw SienaPlusException("Error connecting to endpoint.");
+		throw ManaException("Error connecting to endpoint.");
 	} catch(exception& e) {
-		throw SienaPlusException("Error connecting to endpoint.");
+		throw ManaException("Error connecting to endpoint.");
 	}
 	//
 	flag_is_connected = true;
@@ -285,4 +285,4 @@ void  TCPNetworkConnector::asio_handler_deallocate(void * pointer, std::size_t s
 
 }
 
-} /* namespace sienaplus */
+} /* namespace mana */
