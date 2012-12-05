@@ -10,10 +10,11 @@
 
 #include <functional>
 #include <memory>
-#include "NetworkConnector.h"
-#include <boost/asio.hpp>
-#include "common.h"
 #include <thread>
+#include <boost/asio.hpp>
+#include "NetworkConnector.h"
+#include "TCPNetworkConnector.h"
+#include "common.h"
 #include "ManaMessage.pb.h"
 #include "ManaFwdTypes.h"
 
@@ -35,8 +36,9 @@ public:
 	void stop();
 	void join();
     bool session_established() const;
+    void handle_message(NetworkConnector<ManaContext>& nc, ManaMessage& buff);
 private:
-	shared_ptr<NetworkConnector> net_connection_;
+	shared_ptr<NetworkConnector<ManaContext> > net_connection_;
 	boost::asio::io_service io_service_;
     // id of this connector
     string local_id_;
@@ -51,7 +53,6 @@ private:
 	string address_;
 	shared_ptr<boost::asio::io_service::work> work_;
 	shared_ptr<thread> thread_;
-	void receive_handler(NetworkConnector*, ManaMessage&);
     void send_message(ManaMessage&);
 	bool is_connected();
 	bool flag_has_subscription;

@@ -9,14 +9,17 @@
 
 namespace mana {
 
-MessageReceiver::MessageReceiver(boost::asio::io_service& srv, const std::function<void(NetworkConnector*, 
-        ManaMessage&)>& hndlr) :
-	io_service_(srv), receive_handler_(hndlr), flag_runing_(false) {}
+template <class T>
+MessageReceiver<T>::MessageReceiver(boost::asio::io_service& srv, T& c,
+		const int port, const string& add) : io_service_(srv), client_(c) ,
+		port_(port), address_(add) {}
 
-MessageReceiver::~MessageReceiver() {
+template <class T>
+MessageReceiver<T>::~MessageReceiver() {
 }
 
-bool MessageReceiver::is_runing() const {
+template <class T>
+bool MessageReceiver<T>::is_runing() const {
 	return flag_runing_;
 }
 } /* namespace mana */

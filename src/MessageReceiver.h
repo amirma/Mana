@@ -10,29 +10,48 @@
 #ifndef MESSAGERECEIVER_H_
 #define MESSAGERECEIVER_H_
 
-#include <boost/asio.hpp>
 #include <string>
+#include <boost/asio.hpp>
 #include "common.h"
 
 namespace mana {
 
-class NetworkConnector;
+using namespace std;
 
+template <class T>
 class MessageReceiver {
-public:
-	MessageReceiver(boost::asio::io_service&, const std::function<void(NetworkConnector*, ManaMessage&)>&);
-	virtual ~MessageReceiver();
-	virtual void start() = 0;
-	virtual void stop() = 0;
-	virtual bool is_runing() const;
-protected:
-	boost::asio::io_service& io_service_;
-	std::function<void(NetworkConnector*, ManaMessage&)> receive_handler_;
-	connection_type connection_type_;
-	bool flag_runing_;
-	int port_;
-	std::string address_;
 
+public:
+
+/** @brief Constructor
+ * @param srv An instance of boost::asio::io_service;
+ * @param client An object the implements a handle_message method to receive messages
+ * @param port Server's port (TCP or UDP)
+ * @param addr The local address of the server
+ */
+MessageReceiver(boost::asio::io_service& srv, T& c,
+		const int port, const string& add) : io_service_(srv), client_(c) ,
+		port_(port), address_(add) {}
+
+~MessageReceiver() {
+}
+
+bool is_runing() const {
+	return flag_runing_;
+}
+
+virtual void start() = 0;
+virtual void stop() = 0;
+
+protected:
+    // methods
+    // properties
+    boost::asio::io_service& io_service_;
+    T& client_;
+    int port_;
+    std::string address_;
+    connection_type connection_type_;
+    bool flag_runing_;
 };
 
 } /* namespace mana */

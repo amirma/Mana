@@ -20,17 +20,18 @@
  *  at <http: *www.gnu.org/licenses/>
  */
 
-#include "Broker.h"
-#include "common.h"
 #include <memory>
 #include <assert.h>
 #include <thread>
-#include "ManaException.h"
 #include <boost/algorithm/string.hpp>
+#include "ManaException.h"
 #include "MessageReceiver.h"
 #include "TCPMessageReceiver.h"
 #include "UDPMessageReceiver.h"
 #include "ManaFwdTypes.h"
+#include "Session.h"
+#include "Broker.h"
+#include "common.h"
 
 using namespace std;
 
@@ -58,11 +59,10 @@ void Broker::add_transport(string url) {
     // convert to lowercase e.g., TCP -> tcp
     std::transform(tokens[0].begin(), tokens[0].end(), tokens[0].begin(), ::tolower);
     if(tokens[0] == "tcp") {
-        auto h = std::bind(&Broker::receive_handler, this, std::placeholders::_1, std::placeholders::_2);
-        function<void(shared_ptr<NetworkConnector>)> h_c = std::bind(&Broker::connect_handler, this, std::placeholders::_1);
-        auto mr = make_shared<TCPMessageReceiver>(io_service_ ,port, addr, h, h_c);
+        //auto h = std::bind(&Broker::receive_handler, this, std::placeholders::_1, std::placeholders::_2);
+        //function<void(shared_ptr<NetworkConnector>)> h_c = std::bind(&Broker::connect_handler, this, std::placeholders::_1);
+        auto mr = make_shared<TCPMessageReceiver<Broker> >(io_service_, *this, port, addr);
         message_receivers.push_back(mr);
-
     } else {
         log_err("Malformed URL or method not supported:" << url);
         exit(-1);
@@ -80,14 +80,14 @@ void Broker::start() {
         if(tr->is_runing()) {
         	flag = true;
         	break;
-        }
+    }
     if(!flag) {
-    	log_err("\nBroker::start: No active transport. Terminating.\n");
+    	log_err("Broker::start: No active transport. Terminating.\n");
     	exit(-1);
     }
     // Start the periodical neighbor control and heartbeat task
     auto t = std::bind(&Broker::check_neighbors_and_send_hb, this);
-    task_scheduler_.schedule_at_periods(std::move(t), DEFAULT_HEARTBEAT_INTERVAL_SECONDS, TaskScheduler::second);
+    task_scheduler_.schedule_at_periods(t, DEFAULT_HEARTBEAT_INTERVAL_SECONDS, TimeUnit::second);
     try {
         // all threads except one get detached
         for (unsigned int i = 0; i < num_of_threads_ - 1; i++)
@@ -111,10 +111,10 @@ boost::asio::io_service& Broker::io_service() {
 }
 
 void Broker::handle_message(ManaMessage& msg) {
-   log_debug("\nbroker received message from sender " << msg.sender());
+   log_debug("broker received message from sender " << msg.sender());
 }
 
-void Broker::handle_sub(NetworkConnector* nc, ManaMessage& buff) {
+void Broker::handle_sub(NetworkConnector<Broker>& nc, ManaMessage& buff) {
     mana_filter* fltr = new mana_filter();
     to_mana_filter(buff, *fltr);
     //TODO: one predicate per filter is not the right way...
@@ -126,11 +126,11 @@ void Broker::handle_sub(NetworkConnector* nc, ManaMessage& buff) {
     // a new entry for this subscriber.
     siena::if_t  if_ = 0;
     if(is_in_container(neighbors_by_id_, buff.sender())) {
-        if_ =  neighbors_by_id_[buff.sender()]->iface_;
+        if_ =  neighbors_by_id_[buff.sender()]->iface();
     } else {
         if_ = iface_no_generator_.borrow_number();
-        auto tmp = make_shared<NeighborNode>(nc, buff.sender(), if_);
-        tmp->last_hb_reception_ts_ = std::chrono::system_clock::now();
+        auto tmp = make_shared<Session<Broker>>(*this, &nc, buff.sender(), if_);
+        tmp->update_hb_reception_ts();
         neighbors_by_id_[buff.sender()] = tmp;
         neighbors_by_iface_[if_] = std::move(tmp);
     }
@@ -149,9 +149,9 @@ void Broker::handle_not(ManaMessage& buff) {
 }
 
 void Broker::handle_heartbeat(ManaMessage& buff) {
-	if(is_in_container(neighbors_by_id_, buff.sender())) {
-		neighbors_by_id_[buff.sender()]->last_hb_reception_ts_ = std::chrono::system_clock::now();
-	}
+    if(is_in_container(neighbors_by_id_, buff.sender())) {
+            neighbors_by_id_[buff.sender()]->update_hb_reception_ts();
+    }
 }
 
 /**
@@ -160,11 +160,11 @@ void Broker::handle_heartbeat(ManaMessage& buff) {
  * With TCP/KA transport this callback is called by the main acceptor. This
  * enables the Broker to memorize the connection for later use.
  */
-void Broker::connect_handler(shared_ptr<NetworkConnector> connector) {
-
+void Broker::handle_connect(shared_ptr<NetworkConnector<Broker>>& c) {
+    //TODO save a pointer to c in a new session ....
 }
 
-void Broker::receive_handler(NetworkConnector* nc, ManaMessage& msg) {
+void Broker::handle_message(NetworkConnector<Broker>& nc, ManaMessage& msg) {
         switch(msg.type()) {
         case ManaMessage_message_type_t_SUB:
             handle_sub(nc, msg);
@@ -182,32 +182,31 @@ void Broker::receive_handler(NetworkConnector* nc, ManaMessage& msg) {
 }
 
 bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
-        log_debug("\nBroker::handle_match(): match for client " << neighbors_by_iface_[iface]->id_);
-        ManaMessage buff;
-        // set the sender id
-        buff.set_sender(id_);
-        // fill in the rest of the message parts
-        to_protobuf(dynamic_cast<const mana_message&>(msg), buff);
-        assert(is_in_container(neighbors_by_iface_, iface));
-        neighbors_by_iface_[iface]->net_connector_->send(buff);
-        //
-        unsigned char data[MAX_MSG_SIZE];
-        assert(buff.SerializeToArray(data, MAX_MSG_SIZE));
-        return true;
+    log_debug("Broker::handle_match(): match for client " << neighbors_by_iface_[iface]->id());
+    ManaMessage buff;
+    // set the sender id
+    buff.set_sender(id_);
+    // fill in the rest of the message parts
+    to_protobuf(dynamic_cast<const mana_message&>(msg), buff);
+    assert(is_in_container(neighbors_by_iface_, iface));
+    neighbors_by_iface_[iface]->net_connector()->send(buff);
+    //
+    unsigned char data[MAX_MSG_SIZE];
+    assert(buff.SerializeToArray(data, MAX_MSG_SIZE));
+    return true;
 }
 
 void Broker::check_neighbors_and_send_hb() {
     // FIXME: we need R/W locking here ...
-    log_info("\nBroker::check_neighbors_and_send_hb: checking neighbors...");
-    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    log_info("Broker::check_neighbors_and_send_hb: checking neighbors...");
     // go through the list of neighbors and remove all those from which no heartbeat
     // was received during the last DEFAULT_HEARTBEAT_INTERVAL_SECONDS
-    map<string, shared_ptr<NeighborNode>>::iterator it = neighbors_by_id_.begin();
+    auto it = neighbors_by_id_.begin();
     for(; it != neighbors_by_id_.end(); ++it) {
-        if(now - it->second->last_hb_reception_ts_ > std::chrono::seconds(DEFAULT_HEARTBEAT_INTERVAL_SECONDS))  {
-        	log_info("\nBroker::check_neighbor_and_send_hb: removing neighbor " << it->second->id_);
-            it->second->net_connector_->disconnect();
-            neighbors_by_iface_.erase(it->second->iface_);
+        if(!it->second->is_active()) {
+        	log_info("Broker::check_neighbor_and_send_hb: removing neighbor " << it->second->id());
+            it->second->net_connector()->disconnect();
+            neighbors_by_iface_.erase(it->second->iface());
             neighbors_by_id_.erase(it);
             // TODO: erase the guy from the fwd table.
         }

@@ -9,17 +9,20 @@
 
 namespace mana {
 
-UDPMessageReceiver::UDPMessageReceiver(boost::asio::io_service& srv,
-		const int port, const string& addr, const std::function<void(NetworkConnector*, ManaMessage&)>& hndlr):
-		MessageReceiver(srv, hndlr) {
-	connection_type_ = mana::udp;
+template <class T>
+UDPMessageReceiver<T>::UDPMessageReceiver(boost::asio::io_service& srv, T& client,
+		const int port, const string& add) : MessageReceiver<T>(srv, client, port, add) {
+	this->connection_type_ = mana::udp;
 }
 
-UDPMessageReceiver::~UDPMessageReceiver() {
+template <class T>
+UDPMessageReceiver<T>::~UDPMessageReceiver() {
 }
 
-void UDPMessageReceiver::start() {}
+template <class T>
+void UDPMessageReceiver<T>::start() {}
 
-void UDPMessageReceiver::stop() {}
+template <class T>
+void UDPMessageReceiver<T>::stop() {}
 
 } /* namespace mana */

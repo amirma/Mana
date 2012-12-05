@@ -16,9 +16,11 @@ using namespace std;
 
 namespace mana {
 
-class UDPMessageReceiver: public mana::MessageReceiver {
+template <class MessageReceiverClient>
+class UDPMessageReceiver: public MessageReceiver<MessageReceiverClient> {
 public:
-	UDPMessageReceiver(boost::asio::io_service&, const int, const string&, const std::function<void(NetworkConnector*, ManaMessage&)>&);
+	UDPMessageReceiver(boost::asio::io_service& srv, MessageReceiverClient& client_,
+				const int port, const string& addr);
 	virtual ~UDPMessageReceiver();
 	void start();
 	void stop();

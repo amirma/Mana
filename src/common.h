@@ -8,11 +8,13 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#include <string>
+#include <mutex>
+#include <iomanip>
+#include <ctime>
 #include <siena/types.h>
 #include "ManaMessage.pb.h"
 #include "ManaFwdTypes.h"
-#include <string>
-#include <mutex>
 
 
 // utility macros
@@ -25,25 +27,37 @@
 
 
 #define log_err(txt) do { \
-                    cout << txt;\
+                    std::time_t t = std::time(nullptr); \
+                    char str[100];\
+                    std::strftime(str, 100, "%F %T", std::localtime(&t));\
+                    cout << endl << str << " " <<  txt;\
                     cout.flush();\
                     } while(false);
 
 
 #define log_warn(txt) while(FLG_PR_WARN) { \
-                    cout << txt;\
+                    std::time_t t = std::time(nullptr); \
+                    char str[100];\
+                    std::strftime(str, 100, "%F %T", std::localtime(&t));\
+                    cout << endl << str << " " <<  txt;\
                     cout.flush();\
                     break; \
                     };
 
 #define log_debug(txt) while(FLG_PR_DEBUG) { \
-                    cout << txt;\
+                    std::time_t t = std::time(nullptr); \
+                    char str[100];\
+                    std::strftime(str, 100, "%F %T", std::localtime(&t));\
+                    cout << endl << str << " " <<  txt;\
                     cout.flush();\
                     break; \
                     };
 
 #define log_info(txt) do { \
-                    cout << txt;\
+                    std::time_t t = std::time(nullptr); \
+                    char str[100];\
+                    std::strftime(str, 100, "%F %T", std::localtime(&t));\
+                    cout << endl << str << " " <<  txt;\
                     cout.flush();\
                     } while(false);
 

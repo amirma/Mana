@@ -23,7 +23,7 @@ class TestClient : public SimpleClient {
     TestClient(const string& str) : SimpleClient(str) {}
 
     void handle_notification(const mana_message& m) {
-        log_info("\nApplication received notification: ");
+        log_info("Application received notification: ");
         for(auto attr : m)
             log_info(attr.name().begin << " ");
     }
@@ -43,11 +43,11 @@ class TestClient : public SimpleClient {
             size_t second = line.find_first_of("\"", first+1);
             string str = line.substr(first + 1, second - first - 1);
             if(tokens[3] == "pub") {
-                log_info("\nPublishing: " << line);
+                log_info("Publishing: " << line);
                 //sleep(1);
                 context_->publish(str);
             } else if(tokens[3] == "sub") {
-                log_info("\nSubscribing: " << line);
+                log_info("Subscribing: " << line);
                 context_->subscribe(str);
             }
         }
@@ -64,7 +64,7 @@ class TestClient : public SimpleClient {
 shared_ptr<TestClient> client = nullptr;
 
 void termination_handler(int signum) {
-    log_info("\nTestClient: Received signal " << signum << ". Client is terminating.");
+    log_info("TestClient: Received signal " << signum << ". Client is terminating.");
     client->stop();
     exit(0);
 }

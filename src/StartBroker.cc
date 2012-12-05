@@ -30,7 +30,6 @@ using namespace std;
 // golbal variable
 mana::Broker broker("broker1");
 
-
 void termination_handler(int signum) {
     broker.shutdown();
 }

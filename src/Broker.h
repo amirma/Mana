@@ -23,20 +23,21 @@
 #ifndef BROKER_H_
 #define BROKER_H_
 
-#include <boost/asio.hpp>
-#include "MessageReceiver.h"
-#include "ManaMessage.pb.h"
-#include "NetworkConnector.h"
-#include <array>
 #include <queue>
 #include <mutex>
 #include <chrono>
 #include <memory>
+#include <array>
+#include <boost/asio.hpp>
 #include <siena/fwdtable.h>
+#include "MessageReceiver.h"
+#include "ManaMessage.pb.h"
+#include "NetworkConnector.h"
+#include "TCPNetworkConnector.h"
 #include "TaskScheduler.h"
+#include "Session.h"
 
-#define DEFAULT_NUM_OF_THREADS 5
-#define DEFAULT_HEARTBEAT_INTERVAL_SECONDS 5
+#define DEFAULT_NUM_OF_THREADS 1
 
 using namespace std;
 
@@ -84,21 +85,6 @@ class Broker {
         PROTECTED_WITH(std::mutex);
         PROTECTED_MEMBER(siena::FwdTable, fwd_table);
     };
-    /** @brief Represents a neighboring node (client, broker) with which a broker has
-     * a session.
-    */
-    struct NeighborNode {
-        NeighborNode(NetworkConnector* nc,const string& id, siena::if_t ifc) :
-            net_connector_(nc), id_(id), iface_(ifc) {}
-        NeighborNode(const NeighborNode&) = delete;
-        NeighborNode& operator=(const NeighborNode&) = delete;
-
-        NetworkConnector* net_connector_;
-        string id_;
-        siena::if_t iface_;
-        /** The time at which we last received a heartbeat from this neighbor */
-        std::chrono::time_point<std::chrono::system_clock> last_hb_reception_ts_;
-    };
 
 public:
     Broker(const string& id);
@@ -111,35 +97,32 @@ public:
     // Use this method to add more transport protocols to the broker
     void add_transport(string);
     void handle_message(ManaMessage&);
-    void handle_sub(NetworkConnector*, ManaMessage&);
+    void handle_sub(NetworkConnector<Broker>&, ManaMessage&);
     void handle_not(ManaMessage&);
     void handle_heartbeat(ManaMessage&);
+    void handle_message(NetworkConnector<Broker>& nc, ManaMessage& msg);
+    void handle_connect(shared_ptr<NetworkConnector<Broker>>& c);
     // we want BrokerMatchMessageHandler to be able to call
     // the private method 'handle_match'
     friend class BrokerMatchMessageHandler;
 private:
+
     // private methods.
     void check_neighbors_and_send_hb();
+    bool handle_match(siena::if_t, const siena::message&);
     // class properties
     boost::asio::io_service io_service_;
-    vector<shared_ptr<MessageReceiver> > message_receivers;
-    //data, size
-    void receive_handler(NetworkConnector*, ManaMessage&);
-    void connect_handler(shared_ptr<NetworkConnector>);
-    // the main forwarding table
-    //
-    FwdTableWrapper fwd_table_wrapper_;
-    // a number generator for generating unique numbers to represnt
-    // clients/neighbors
-    IFaceNoGenerator iface_no_generator_;
-    // map interface/client/neighbors to the connections
-    map<string, shared_ptr<NeighborNode>> neighbors_by_id_;
-    map<siena::if_t, shared_ptr<NeighborNode>> neighbors_by_iface_;
+    vector<shared_ptr<MessageReceiver<Broker>>> message_receivers;
+    FwdTableWrapper fwd_table_wrapper_; // the main forwarding table
+    IFaceNoGenerator iface_no_generator_; /* a number generator for generating unique numbers to represent
+     clients/neighbors */
+    map<string, shared_ptr<Session<Broker> >> neighbors_by_id_; /* map interface/client/neighbors
+    to the connections */
+    map<siena::if_t, shared_ptr<Session<Broker> >> neighbors_by_iface_;
     BrokerMatchMessageHandler* message_match_handler_;
-    bool handle_match(siena::if_t, const siena::message&);
     string id_;
     size_t num_of_threads_;
-    TaskScheduler task_scheduler_;
+    TaskScheduler<std::function<void()>> task_scheduler_;
 };
 
 /**

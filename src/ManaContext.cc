@@ -21,9 +21,9 @@
  * at <http: *www.gnu.org/licenses/>
  */
 
+#include <thread>
 #include <boost/algorithm/string.hpp>
 #include <boost/pointer_cast.hpp>
-#include <thread>
 #include "ManaContext.h"
 #include "ManaException.h"
 #include "TCPNetworkConnector.h"
@@ -45,14 +45,10 @@ ManaContext::ManaContext(const string& id, const string& url, std::function<void
 	}
 
 	if(tokens[0] == "tcp") {
-		net_connection_ = make_shared<TCPNetworkConnector>(io_service_,
-				std::bind(&ManaContext::receive_handler, this,
-				std::placeholders::_1, std::placeholders::_2));
+		net_connection_ = make_shared<TCPNetworkConnector<ManaContext>>(io_service_, *this);
 		connection_type = mana::connection_type::tcp;
 	} else if(tokens[0] == "ka") {
-		net_connection_ = make_shared<TCPNetworkConnector>(io_service_,
-				std::bind(&ManaContext::receive_handler, this,
-				std::placeholders::_1, std::placeholders::_2));
+		net_connection_ = make_shared<TCPNetworkConnector<ManaContext>>(io_service_, *this);
         if(!connect())
 		    throw ManaException("Could not connect to broker.");
 		connection_type = mana::connection_type::ka;
@@ -145,7 +141,7 @@ bool ManaContext::session_established() const {
     return flag_session_established_;
 }
 
-void ManaContext::receive_handler(NetworkConnector* nc, ManaMessage& buff) {
+void ManaContext::handle_message(NetworkConnector<ManaContext>& nc, ManaMessage& buff) {
     log_debug("\nManaContext::receive_handler: received message from " << buff.sender());
     switch(buff.type()) {
     case ManaMessage_message_type_t_NOT: {
