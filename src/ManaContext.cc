@@ -34,28 +34,29 @@
 namespace mana {
 
 ManaContext::ManaContext(const string& id, const string& url, std::function<void(const mana_message&)> h) :
-    local_id_(id), url_(url), app_notification_handler_(h), flag_has_subscription(false), flag_session_established_(false) {
+    local_id_(id), remote_node_url_(url), app_notification_handler_(h), flag_has_subscription(false), flag_session_established_(false),
+    task_scheduler_(io_service_) {
     vector<string> tokens;
-	boost::split(tokens, url_, boost::is_any_of(":"));
-	address_ = tokens[1];
-	try {
-		port_ = stoi(tokens[2]);
-	} catch(exception& e) {
-		throw ManaException("Invalid port number: " + tokens[2]);
-	}
+    boost::split(tokens, remote_node_url_, boost::is_any_of(":"));
+    address_ = tokens[1];
+    try {
+        port_ = stoi(tokens[2]);
+    } catch(exception& e) {
+        throw ManaException("Invalid port number: " + tokens[2]);
+    }
 
-	if(tokens[0] == "tcp") {
-		net_connection_ = make_shared<TCPNetworkConnector<ManaContext>>(io_service_, *this);
-		connection_type = mana::connection_type::tcp;
-	} else if(tokens[0] == "ka") {
-		net_connection_ = make_shared<TCPNetworkConnector<ManaContext>>(io_service_, *this);
+    if(tokens[0] == "tcp") {
+        net_connection_ = make_shared<TCPNetworkConnector<ManaContext>>(io_service_, *this);
+        connection_type = mana::connection_type::tcp;
+    } else if(tokens[0] == "ka") {
+        net_connection_ = make_shared<TCPNetworkConnector<ManaContext>>(io_service_, *this);
         if(!connect())
-		    throw ManaException("Could not connect to broker.");
-		connection_type = mana::connection_type::ka;
-	} else {
-		log_err("Malformed URL or method not supported:" << url_);
-		exit(-1);
-	}
+            throw ManaException("Could not connect to broker.");
+        connection_type = mana::connection_type::ka;
+    } else {
+        log_err("Malformed URL or method not supported:" << remote_node_url_);
+        exit(-1);
+    }
 }
 
 ManaContext::~ManaContext() {
@@ -114,18 +115,20 @@ void ManaContext::subscribe(const mana_filter& filtr) {
 }
 
 void ManaContext::unsubscribe() {
-	if(!flag_has_subscription) {
-		return;
-	}
+    if(!flag_has_subscription) {
+            return;
+    }
 }
 
 void ManaContext::start() {
-	thread_ = make_shared<thread>([&]() {
-		work_ = make_shared<boost::asio::io_service::work>(io_service_);
-		io_service_.run();
-	});
-    // TODO: we should use heartbeat messages
-    flag_session_established_  = true;
+    thread_ = make_shared<thread>([&]() {
+    work_ = make_shared<boost::asio::io_service::work>(io_service_);
+    io_service_.run();
+    });
+    session_ = make_shared<Session<ManaContext>>(*this, net_connection_.get(), remote_node_url_, 0);
+}
+
+void ManaContext::handle_session_termination(Session<ManaContext>& s) {
 }
 
 void ManaContext::stop() {
@@ -151,9 +154,13 @@ void ManaContext::handle_message(NetworkConnector<ManaContext>& nc, ManaMessage&
         app_notification_handler_(msg);
         break;
     }
-    //TODO : other types ...
+    case ManaMessage_message_type_t_HEARTBEAT: {
+    	session_->update_hb_reception_ts();
+    	break;
+    }
     default:
         log_err("ManaContext::receive_handler(): unrecognized message type: " << buff.type());
+        break;
     }
 }
 
@@ -175,6 +182,10 @@ bool ManaContext::is_connected() {
 
 void ManaContext::join() {
 	thread_->join();
+}
+
+boost::asio::io_service& ManaContext::io_service() {
+    return io_service_;
 }
 
 } /* namespace mana */

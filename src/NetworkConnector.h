@@ -39,7 +39,7 @@ NetworkConnector(boost::asio::io_service& srv, T& c) :
 		io_service_(srv), client_(c), port_(0), address_(""), read_hndlr_strand_(srv), write_hndlr_strand_(srv),
                 flag_is_connected(false), flag_write_op_in_prog_(false) {}
 
-~NetworkConnector() {}
+virtual ~NetworkConnector() {}
 
 NetworkConnector(const NetworkConnector&) = delete; // delete copy ctor
 NetworkConnector& operator=(const NetworkConnector&) = delete; // delete assig. operator

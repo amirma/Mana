@@ -37,14 +37,13 @@
 #include "TaskScheduler.h"
 #include "Session.h"
 
-#define DEFAULT_NUM_OF_THREADS 1
-
 using namespace std;
 
 namespace mana {
 
-/**  \brief This class generates interface numbers and maintains
-*   a list of interface numbers that are freed.
+/**  @brief This class generates interface numbers and maintains
+*   a list of interface numbers that are freed. FIXME: this description
+*   is really lousy.
 */
 class IFaceNoGenerator {
     public:
@@ -54,6 +53,9 @@ class IFaceNoGenerator {
 
         ~IFaceNoGenerator(){}
 
+        /**
+         * @brief Borrow a number from the pool. This method is thread safe.
+         */
         siena::if_t borrow_number() {
             lock_guard<std::mutex> lock_(mutex_);
             if(queue_.size() == 0)
@@ -63,6 +65,9 @@ class IFaceNoGenerator {
             return r;
         }
 
+        /**
+         * @brief Return the number to the pool. This method is thread safe.
+         */
         void free_number(siena::if_t n) {
             lock_guard<std::mutex> lock_(mutex_);
             queue_.push(n);
@@ -96,19 +101,18 @@ public:
 
     // Use this method to add more transport protocols to the broker
     void add_transport(string);
-    void handle_message(ManaMessage&);
     void handle_sub(NetworkConnector<Broker>&, ManaMessage&);
     void handle_not(ManaMessage&);
     void handle_heartbeat(ManaMessage&);
     void handle_message(NetworkConnector<Broker>& nc, ManaMessage& msg);
+    void handle_session_termination(Session<Broker>& s);
     void handle_connect(shared_ptr<NetworkConnector<Broker>>& c);
     // we want BrokerMatchMessageHandler to be able to call
     // the private method 'handle_match'
     friend class BrokerMatchMessageHandler;
-private:
 
+private:
     // private methods.
-    void check_neighbors_and_send_hb();
     bool handle_match(siena::if_t, const siena::message&);
     // class properties
     boost::asio::io_service io_service_;
@@ -116,7 +120,7 @@ private:
     FwdTableWrapper fwd_table_wrapper_; // the main forwarding table
     IFaceNoGenerator iface_no_generator_; /* a number generator for generating unique numbers to represent
      clients/neighbors */
-    map<string, shared_ptr<Session<Broker> >> neighbors_by_id_; /* map interface/client/neighbors
+    map<string, shared_ptr<Session<Broker>>> neighbors_by_id_; /* map interface/client/neighbors
     to the connections */
     map<siena::if_t, shared_ptr<Session<Broker> >> neighbors_by_iface_;
     BrokerMatchMessageHandler* message_match_handler_;
@@ -126,7 +130,7 @@ private:
 };
 
 /**
- * \brief Helper class to pass to the forwarding table.
+ * @brief Helper class to pass to the forwarding table.
  **/
 class BrokerMatchMessageHandler : public siena::MatchMessageHandler {
     public:

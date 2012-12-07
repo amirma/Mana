@@ -18,15 +18,9 @@
 using namespace std;
 
 class TestClient : public SimpleClient {
-    public:
+public:
 
     TestClient(const string& str) : SimpleClient(str) {}
-
-    void handle_notification(const mana_message& m) {
-        log_info("Application received notification: ");
-        for(auto attr : m)
-            log_info(attr.name().begin << " ");
-    }
 
     void run() {
     	ifstream ifs(workload_file.c_str());

@@ -1,9 +1,21 @@
-/*
+/**
  * @file Session.cc
  * Session implementation
  *
  * @brief An instance of Session represents a client or a broker
  * with which there is an active session.
+ *
+ * The template T is the user of the class Session. An instance of of T
+ * must implement the following methods:
+ *
+ *   void handle_session_termination(Session<T>& s);
+ *   Which is called when the session timesout (i.e., no heartbeat messages
+ *   were received from the endpoint).
+ *
+ *   boost::asio::io_service& io_service();
+ *   This is called by the constructor of the Session. The io_service is used
+ *   to provide a thread poll for the TaskScheduler instance that Session uses.
+ *
  *
  * @author Amir Malekpour
  * @version 0.1
@@ -24,8 +36,8 @@
 #ifndef NEIGHBORNODE_H_
 #define NEIGHBORNODE_H_
 
-#include <array>
 #include <queue>
+#include <array>
 #include <mutex>
 #include <chrono>
 #include <memory>
@@ -35,6 +47,7 @@
 #include "ManaMessage.pb.h"
 #include "NetworkConnector.h"
 #include "TaskScheduler.h"
+#include "common.h"
 
 using namespace std;
 
@@ -42,13 +55,21 @@ namespace mana {
 
 template <class T>
 class Session {
+
 public:
 
 Session(const Session&) = delete;
 Session& operator=(const Session&) = delete;
 
-Session(T& h, NetworkConnector<T>* nc, const string& id, siena::if_t ifc):
-	host_(h), net_connector_(nc), id_(id), iface_(ifc), flag_is_active_(false) {}
+Session(T& h, NetworkConnector<T>* nc, const string& id, siena::if_t ifc) :
+    host_(h), net_connector_(nc), id_(id), iface_(ifc), flag_is_active_(false),
+    task_scheduler_(h.io_service())  {
+    try {
+        task_scheduler_.schedule_at_periods(std::bind(&Session<T>::check_session_liveness, this),
+                DEFAULT_HEARTBEAT_INTERVAL_SECONDS, TimeUnit::second);
+        update_hb_reception_ts();
+    } catch(exception& e) {}
+}
 
 virtual ~Session() {}
 
@@ -82,22 +103,26 @@ void update_hb_reception_ts() {
 private:
 
 void check_session_liveness() {
-    log_info("\nBroker::check_neighbors_and_send_hb: checking neighbors...");
+    log_info("Session::check_neighbors_and_send_hb: checking neighbors...");
+    // first send heart beat message
+
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
     if(now - this->last_hb_reception_ts_ > std::chrono::seconds(DEFAULT_HEARTBEAT_INTERVAL_SECONDS)) {
-        log_info("\nBroker::check_neighbor_and_send_hb: removing neighbor " << id_);
+        flag_is_active_ = false;
+        host_.handle_session_termination(*this);
         net_connector_->disconnect();
     }
 }
 
-    // class properties
-    T& host_;
-    NetworkConnector<T>* net_connector_;
-    string id_;
-    siena::if_t iface_;
-    bool flag_is_active_;
-    /* The time at which we last received a heartbeat from this neighbor */
-    std::chrono::time_point<std::chrono::system_clock> last_hb_reception_ts_;
+// class properties
+T& host_;
+NetworkConnector<T>* net_connector_;
+string id_;
+siena::if_t iface_;
+bool flag_is_active_;
+/* The time at which we last received a heartbeat from this neighbor */
+std::chrono::time_point<std::chrono::system_clock> last_hb_reception_ts_;
+TaskScheduler<std::function<void()>> task_scheduler_;
 };
 
 

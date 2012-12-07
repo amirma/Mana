@@ -30,14 +30,14 @@ SimpleClient::SimpleClient(const string& str) : client_id_(str),
 SimpleClient::~SimpleClient() {}
 
 void SimpleClient::handle_notification(const mana_message& m) {
-    log_info("\nApplication received notification: ");
+    log_info("Application received notification: ");
     for(auto attr : m)
         log_info(attr.name().begin << " ");
 }
 
 void SimpleClient::start() {
     try {
-        log_info("\nStarting client...");
+        log_info("Starting client...");
         const string& url =  broker_url_;
         auto hndlr = std::bind(&SimpleClient::handle_notification, this, std::placeholders::_1);
         context_ = make_shared<mana::ManaContext>(client_id_, url, hndlr);
@@ -80,7 +80,7 @@ void SimpleClient::run() {}
 
 bool SimpleClient::set_broker(const string& str) {
     if(flag_session_established_) {
-        log_err("\nCan not change broker after session is established");
+        log_err("Can not change broker after session is established");
         return false;
     }
     broker_url_ = str;

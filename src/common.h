@@ -5,8 +5,8 @@
  *      Author: amir
  */
 
-#ifndef COMMON_H_
-#define COMMON_H_
+#ifndef COMMON_MANA_H_
+#define COMMON_MANA_H_
 
 #include <string>
 #include <mutex>
@@ -18,7 +18,7 @@
 
 
 // utility macros
-#define is_in_container(container, key) container.find(key)!=container.end()
+#define is_in_container(container, key) (container.find(key)!=container.end())
 
 
 // logging macros
@@ -82,27 +82,36 @@
 #define BUFF_SEPERATOR_LEN_BYTE 1
 #define MAX_MSG_SIZE 9000 //Bytes
 
+using namespace mana;
+
 namespace mana {
 
-	enum enum_connection_type {
-		ka,
-		tcp,
-		udp
-	};
-	typedef enum_connection_type connection_type;
+enum enum_connection_type {
+    ka,
+    tcp,
+    udp
+};
+typedef enum_connection_type connection_type;
 
 /*
- * These function conver from/to  a SienaMessagePlus to different
+ * These function convert from/to  a SienaMessagePlus to different
  * siena types. Note that when filling in a protobuf the field
  * 'sender' is not set in these function.
  */
-    void to_mana_message(const ManaMessage& buff, mana_message& msg);
-    void to_mana_filter(const ManaMessage& buff, mana_filter& pred);
-    //
-    void to_protobuf(const mana_message& msg, ManaMessage& buff);
-    void to_protobuf(const mana_filter& predg, ManaMessage& buff);
+void to_mana_message(const ManaMessage& buff, mana_message& msg);
+void to_mana_filter(const ManaMessage& buff, mana_filter& pred);
+//
+void to_protobuf(const mana_message& msg, ManaMessage& buff);
+void to_protobuf(const mana_filter& predg, ManaMessage& buff);
 
 const int MSG_HEADER_SIZE = sizeof(int) + BUFF_SEPERATOR_LEN_BYTE;
-};
+
+const unsigned int DEFAULT_NUM_OF_BROKER_THREADS  = 1;
+const unsigned int DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 5; // session liveness
+// is checked every DEFAULT_HEARTBEAT_INTERVAL_SECONDS time units
+const float DEFAULT_HEARTBEAT_SEND_INTERVAL_ADJ = 0.25f; // heart beat messages
+// are sent every DEFAULT_HEARTBEAT_INTERVAL_SECONDS * (1-DEFAULT_HEARTBEAT_INTERVAL_ADJ)
+// time units
+}
 
 #endif /* COMMON_H_ */

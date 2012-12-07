@@ -44,7 +44,6 @@
 
 using namespace std;
 
-#define DEFAULT_HEARTBEAT_INTERVAL_SECONDS 5
 namespace mana {
 
 enum TimeUnit {
@@ -66,7 +65,7 @@ TaskScheduler(boost::asio::io_service& srv) : io_service_(srv), timer_(srv),
 
 virtual ~TaskScheduler() {
     try{
-        timer_.cancel();
+        cancell_all();
     } catch(exception& e){
         // ignore
     }
@@ -110,6 +109,14 @@ void schedule_at_periods(T&& f, unsigned int period, TimeUnit tu) {
     auto task = make_shared<TaskWrapper>(std::forward<T>(f), t_milisec);
     task->flag_is_recurrent_ = true;
     insert_task(std::move(task));
+}
+
+void cancell_all() {
+    timer_.cancel();
+    // std::priority_queue does not have a clear() method.
+    // Go figure why.
+    while(!task_queue_.empty())
+        task_queue_.pop();
 }
 
 // delete copy const. and assignment

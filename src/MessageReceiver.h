@@ -33,7 +33,7 @@ MessageReceiver(boost::asio::io_service& srv, T& c,
 		const int port, const string& add) : io_service_(srv), client_(c) ,
 		port_(port), address_(add) {}
 
-~MessageReceiver() {
+virtual ~MessageReceiver() {
 }
 
 bool is_runing() const {

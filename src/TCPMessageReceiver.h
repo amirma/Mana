@@ -55,11 +55,12 @@ void start() {
 		this->flag_runing_ = true;
 		begin_accept();
 	} catch(exception& e) {
-		log_warn("\nTCPMessageReceiver<T>::start: error listening to socket on tcp://" <<
+		log_warn("TCPMessageReceiver<T>::start: error listening to socket on tcp://" <<
 				this->address_ << ":"  << this->port_ << " ");
 	}
 }
 
+// TODO: this should not be enough ....
 void stop() {
 	this->flag_runing_ = false;
 }
@@ -70,7 +71,7 @@ void begin_accept() {
 		acceptor_ptr_->async_accept(*next_connection_socket_, boost::bind(&TCPMessageReceiver<T>::accept_handler,
 				this, boost::asio::placeholders::error));
 	} catch(exception& e) {
-		log_warn("\nTCPMessageReceiver::begin_accept: an error occurred while accepting a new connection: " <<
+		log_warn("TCPMessageReceiver::begin_accept: an error occurred while accepting a new connection: " <<
 				e.what());
 	}
 }
@@ -79,7 +80,7 @@ void accept_handler(const boost::system::error_code& ec) {
 	if(!ec && ec.value() != 0) {
 		log_err("error: " << ec.message());
 	}
-	log_debug("\nAccepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string());
+	log_debug("Accepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string());
 	//once the connection is created we move the pointer
 	shared_ptr<NetworkConnector<T>> c = make_shared<TCPNetworkConnector<T>>(std::move(next_connection_socket_), this->client_);
         this->connections_.push_back(c);

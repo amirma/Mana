@@ -22,10 +22,9 @@
 #include <iostream>
 #include "Broker.h"
 #include <signal.h>
-#include "common.h"
+//#include "common.h"
 
 using namespace std;
-
 
 // golbal variable
 mana::Broker broker("broker1");
