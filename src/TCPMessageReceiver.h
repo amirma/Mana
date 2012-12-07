@@ -40,7 +40,11 @@ TCPMessageReceiver(boost::asio::io_service& srv, T& client,
 	this->connection_type_ = mana::tcp;
 }
 
-~TCPMessageReceiver() {}
+virtual ~TCPMessageReceiver() {
+	try {
+		stop();
+	} catch(exception& e) {/* ignore errors */}
+}
 
 void start() {
 	if(this->flag_runing_)
@@ -60,9 +64,12 @@ void start() {
 	}
 }
 
-// TODO: this should not be enough ....
 void stop() {
 	this->flag_runing_ = false;
+	// cancel all ongoing i/o operations
+	acceptor_ptr_->cancel();
+	// stop listening on the socket
+	acceptor_ptr_->close();
 }
 
 void begin_accept() {

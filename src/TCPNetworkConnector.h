@@ -78,7 +78,7 @@ void send(const ManaMessage& msg) {
     *((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) = data_size;
     assert(*((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) == data_size);
     if(!msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE)) {
-        log_err("\nsend(): Could not serialize message to buffer.");
+        log_err("TCPNetworkConnector::Send(): Could not serialize message to buffer.");
         return;
     }
     prepare_buffer(arr_buf, total_size);
@@ -94,7 +94,7 @@ bool connect(const string& url) {
 	try {
 		port = stoi(tokens[2]);
 	} catch(exception& e) {
-		throw ManaException("Could not connect: invalid port number: " + tokens[2]);
+		throw ManaException("TCPNetworkConnector::connect(): Could not connect: invalid port number: " + tokens[2]);
 	}
 	return connect(tokens[1], port);
 }
@@ -107,13 +107,13 @@ bool connect(const string& addr, int prt) {
 		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(addr), prt);
 		socket_->connect(endpoint);
 	} catch(boost::system::system_error& e) {
-		throw ManaException("Error connecting to endpoint.");
+		throw ManaException("Error connecting to the endpoint.");
 	} catch(exception& e) {
-		throw ManaException("Error connecting to endpoint.");
+		throw ManaException("Error connecting to the endpoint.");
 	}
 	//
 	this->flag_is_connected = true;
-	log_debug("\nTCPConnector is connected.");
+	log_debug("TCPConnector is connected.");
 	start_read();
     return true;
 }
@@ -192,7 +192,7 @@ void write_handler(const boost::system::error_code& error, std::size_t bytes_tra
 
 void connect_handler(const boost::system::error_code& ec) {
 	if(!ec && ec.value() != 0) {
-	    log_info("\ncconnect_handler: could not connect.");
+	    log_info("TCPNetworkConnector::connect_handler(): could not connect.");
         return;
 	}
     set_socket_options();
