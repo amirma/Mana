@@ -16,6 +16,9 @@
  *   This is called by the constructor of the Session. The io_service is used
  *   to provide a thread poll for the TaskScheduler instance that Session uses.
  *
+ *   string& id()
+ *   Returns the identifier of the host.
+ *
  *
  * @author Amir Malekpour
  * @version 0.1
@@ -62,11 +65,13 @@ Session(const Session&) = delete;
 Session& operator=(const Session&) = delete;
 
 Session(T& h, NetworkConnector<T>* nc, const string& id, siena::if_t ifc) :
-    host_(h), net_connector_(nc), id_(id), iface_(ifc), flag_is_active_(false),
+    host_(h), net_connector_(nc), remote_id_(id), iface_(ifc), flag_is_active_(false),
     task_scheduler_(h.io_service())  {
     try {
         task_scheduler_.schedule_at_periods(std::bind(&Session<T>::check_session_liveness, this),
                 DEFAULT_HEARTBEAT_INTERVAL_SECONDS, TimeUnit::second);
+        unsigned int t = static_cast<unsigned int>((1 - DEFAULT_HEARTBEAT_SEND_INTERVAL_ADJ) * DEFAULT_HEARTBEAT_INTERVAL_SECONDS);
+        task_scheduler_.schedule_at_periods(std::bind(&Session<T>::send_heartbeat, this), t, TimeUnit::second);
         update_hb_reception_ts();
     } catch(exception& e) {}
 }
@@ -83,8 +88,8 @@ const siena::if_t& iface() const {
 }
 
 /** @brief Get the identifier of the host at the other end of this session */
-const string& id() const {
-    return id_;
+const string& remote_id() const {
+    return remote_id_;
 }
 
 /** @brief If the session is active returns true */
@@ -98,14 +103,25 @@ const std::chrono::time_point<std::chrono::system_clock>& last_hb_reception_ts()
 
 void update_hb_reception_ts() {
     this->last_hb_reception_ts_ = std::chrono::system_clock::now();
+    flag_is_active_ = false;
 }
 
 private:
 
+void send_heartbeat() {
+    ManaMessage msg;
+    // set sender id and type
+    msg.set_sender(host_.id());
+    msg.set_type(ManaMessage_message_type_t_HEARTBEAT);
+    // fill in the constraints : type, name, operator, value
+    //make sure all required fields are filled
+    assert(msg.IsInitialized());
+    assert(msg.has_type());
+    send_message(msg);
+}
+
 void check_session_liveness() {
     log_info("Session::check_neighbors_and_send_hb: checking neighbors...");
-    // first send heart beat message
-
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
     if(now - this->last_hb_reception_ts_ > std::chrono::seconds(DEFAULT_HEARTBEAT_INTERVAL_SECONDS)) {
         flag_is_active_ = false;
@@ -114,10 +130,15 @@ void check_session_liveness() {
     }
 }
 
+
+void send_message(ManaMessage& msg) {
+	net_connector_->send(msg);
+}
+
 // class properties
 T& host_;
 NetworkConnector<T>* net_connector_;
-string id_;
+string remote_id_;
 siena::if_t iface_;
 bool flag_is_active_;
 /* The time at which we last received a heartbeat from this neighbor */

@@ -146,6 +146,7 @@ void Broker::handle_not(ManaMessage& buff) {
 
 void Broker::handle_heartbeat(ManaMessage& buff) {
     if(is_in_container(neighbors_by_id_, buff.sender())) {
+    	log_info("Received hearbeat from " << buff.sender());
     	neighbors_by_id_[buff.sender()]->update_hb_reception_ts();
     }
 }
@@ -179,7 +180,7 @@ void Broker::handle_message(NetworkConnector<Broker>& nc, ManaMessage& msg) {
 }
 
 bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
-    log_debug("Broker::handle_match(): match for client " << neighbors_by_iface_[iface]->id());
+    log_debug("Broker::handle_match(): match for client " << neighbors_by_iface_[iface]->remote_id());
     ManaMessage buff;
     // set the sender id
     buff.set_sender(id_);
@@ -206,12 +207,16 @@ bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
     return true;
 }
 
+const string& Broker::id() const {
+	return id_;
+}
+
 void Broker::handle_session_termination(Session<Broker>& s) {
-    log_info("Broker::handle_session_termination: Session " << s.id() << " terminated.");
+    log_info("Broker::handle_session_termination: Session " << s.remote_id() << " terminated.");
     // FIXME: Locking needed
     //iface_no_generator_.return_number(s.iface());
     neighbors_by_iface_.erase(s.iface());
-    neighbors_by_id_.erase(s.id());
+    neighbors_by_id_.erase(s.remote_id());
     // and of course we need to find a way to remnove the predicate from the
     // table and then return the interface number back to the pool. (disabled for now)
 }

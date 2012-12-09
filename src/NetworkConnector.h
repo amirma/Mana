@@ -26,7 +26,7 @@ struct WriteBufferItem {
     };
 
 // we put a shared data with its associated
-// mutex in one place, for easy management and less bugs.
+// mutex in one place, for easy management.
 struct WriteBufferItemQueueWrapper {
 	PROTECTED_WITH(std::mutex);
 	PROTECTED_MEMBER(queue<WriteBufferItem>, qu);

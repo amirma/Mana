@@ -116,19 +116,20 @@ void ManaContext::subscribe(const mana_filter& filtr) {
 
 void ManaContext::unsubscribe() {
     if(!flag_has_subscription) {
-            return;
+    	return;
     }
 }
 
 void ManaContext::start() {
     thread_ = make_shared<thread>([&]() {
-    work_ = make_shared<boost::asio::io_service::work>(io_service_);
-    io_service_.run();
+    	work_ = make_shared<boost::asio::io_service::work>(io_service_);
+    	io_service_.run();
     });
     session_ = make_shared<Session<ManaContext>>(*this, net_connection_.get(), remote_node_url_, 0);
 }
 
 void ManaContext::handle_session_termination(Session<ManaContext>& s) {
+	log_info("Session to " << s.remote_id() << " terminated.");
 }
 
 void ManaContext::stop() {
@@ -155,6 +156,7 @@ void ManaContext::handle_message(NetworkConnector<ManaContext>& nc, ManaMessage&
         break;
     }
     case ManaMessage_message_type_t_HEARTBEAT: {
+    	log_info("Received hearbeat from " << buff.sender());
     	session_->update_hb_reception_ts();
     	break;
     }
@@ -162,6 +164,10 @@ void ManaContext::handle_message(NetworkConnector<ManaContext>& nc, ManaMessage&
         log_err("ManaContext::receive_handler(): unrecognized message type: " << buff.type());
         break;
     }
+}
+
+const string& ManaContext::id() const {
+	return local_id_;
 }
 
 bool ManaContext::connect() {

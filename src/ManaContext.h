@@ -41,6 +41,7 @@ public:
     void handle_message(NetworkConnector<ManaContext>& nc, ManaMessage& buff);
     void handle_session_termination(Session<ManaContext>& s);
     boost::asio::io_service& io_service();
+    const string& id() const;
 private:
     boost::asio::io_service io_service_;
     shared_ptr<NetworkConnector<ManaContext> > net_connection_;

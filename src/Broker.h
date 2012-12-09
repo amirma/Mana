@@ -107,6 +107,7 @@ public:
     void handle_message(NetworkConnector<Broker>& nc, ManaMessage& msg);
     void handle_session_termination(Session<Broker>& s);
     void handle_connect(shared_ptr<NetworkConnector<Broker>>& c);
+    const string& id() const;
     // we want BrokerMatchMessageHandler to be able to call
     // the private method 'handle_match'
     friend class BrokerMatchMessageHandler;

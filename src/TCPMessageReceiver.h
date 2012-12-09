@@ -29,7 +29,8 @@ template <class T>
 class TCPMessageReceiver: public MessageReceiver<T> {
 public:
 
-/** @brief Constructor
+/**
+* @brief Constructor
 * @param srv An instance of boost::asio::io_service;
 * @param client An object the implements a handlemessage method to receive messages
 * @param port Server's TCP port

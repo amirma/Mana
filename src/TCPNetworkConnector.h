@@ -232,7 +232,7 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
 void start_read() {
     socket_->async_read_some(boost::asio::buffer(this->read_buffer_, MAX_MSG_SIZE),
             this->read_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector<T>::read_handler, this,
-    	boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
+    boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
 }
 
 void start_sync_read() {

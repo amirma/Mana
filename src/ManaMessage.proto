@@ -5,12 +5,21 @@ message ManaMessage {
  	// constants and type definitions
 
     enum message_type_t {
-        SUB = 1;
-        NOT = 2;
-        UNSUB = 3;
-        HEARTBEAT = 4;
-        TERMINATE_SESSION = 5; // In a graceful session termination this should
-        // be sent from one of the two endpoints
+  		// --------- control messages ------------ // 
+        START_SESSION = 1; // session initiator sends this message as the first message in a session
+        START_SESSION_ACK = 2; // receiver of a START_SESSION sends an ack.  
+        START_SESSION_ACK_ACK = 3; // The session initiator acknowledges the ack. and the session begins.
+     	   
+        TERMINATE_SESSION = 4; // In a graceful session termination this should
+        TERMINATE_SESSION_ACK = 5; // Termination might ba acked.
+     
+        ACK = 6;
+        HEARTBEAT = 7;
+        
+        // ----------- pub/sub messages ------------ //
+        SUB = 8;
+        NOT = 9;
+        UNSUB = 10;
     }
 
     /*
@@ -19,7 +28,6 @@ message ManaMessage {
     	directly convert from Siena tags type to Protobuf tag type (i.e.
     	both integers of the same value).
     */
-
     enum tag_type_t {
         STRING = 1;
         INT = 2;
@@ -73,17 +81,19 @@ message ManaMessage {
 
         repeated attribute_t attribute = 1;
     }
-
-    // mandatory message fields
+    
+    // ------------- mandatory message fields ----------------- //
     required message_type_t type = 1;
-    required string sender = 2; // this is the sender's
-    // id that is assigned to it by the connection acceptor
+    required string sender = 2; // this is the sender's id
+    
+    // ------------------- control -------------------------- //
+    optional int32 seq_no = 3;
 
-    // pub/sub related messages
-    optional subscription_t subscription = 3;
-    optional notification_t notification = 4;
-    optional string unsubscription = 5;
-
-    // payload
-    optional string payload = 6;
+    // ------------- pub/sub related messages --------------- //
+    optional subscription_t subscription = 4;
+    optional notification_t notification = 5;
+    optional string unsubscription = 6;
+    
+    // ------------------- payload -------------------------- //
+    optional string payload = 7;
 }
