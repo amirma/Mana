@@ -11,7 +11,7 @@ namespace mana {
 
 template <class T>
 UDPMessageReceiver<T>::UDPMessageReceiver(boost::asio::io_service& srv, T& client,
-		const int port, const string& add) : MessageReceiver<T>(srv, client, port, add) {
+		const URL& url) : MessageReceiver<T>(srv, client, url) {
 	this->connection_type_ = mana::udp;
 }
 

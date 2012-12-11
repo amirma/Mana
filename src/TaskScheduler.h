@@ -1,12 +1,6 @@
 /**
 * @file TaskScheduler.h
-* TaskScheduler implementation
 *
-* @brief This class implements a Scheduler for executing one-time
-* or recurrent (periodical) tasks.
-*
-* The scheduler uses boost::asio::io_servie to run tasks. This way we use the same
-* thread pool that the io_service provides to us.
 *
 * @author Amir Malekpour
 * @version 0.1
@@ -51,6 +45,14 @@ enum TimeUnit {
     millisecond
 };
 
+
+/**
+* @brief This class implements a Scheduler for executing one-time
+* or recurrent (periodical) tasks.
+*
+* The scheduler uses boost::asio::io_servie to run tasks. This way we use the same
+* thread pool that the io_service provides to us.
+*/
 template <class T>
 class TaskScheduler {
 

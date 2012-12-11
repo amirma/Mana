@@ -20,7 +20,7 @@ template <class MessageReceiverClient>
 class UDPMessageReceiver: public MessageReceiver<MessageReceiverClient> {
 public:
 	UDPMessageReceiver(boost::asio::io_service& srv, MessageReceiverClient& client_,
-				const int port, const string& addr);
+				const URL& url);
 	virtual ~UDPMessageReceiver();
 	void start();
 	void stop();

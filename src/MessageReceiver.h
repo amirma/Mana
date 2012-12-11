@@ -13,6 +13,7 @@
 #include <string>
 #include <boost/asio.hpp>
 #include "common.h"
+#include "URL.h"
 
 namespace mana {
 
@@ -29,9 +30,8 @@ public:
  * @param port Server's port (TCP or UDP)
  * @param addr The local address of the server
  */
-MessageReceiver(boost::asio::io_service& srv, T& c,
-		const int port, const string& add) : io_service_(srv), client_(c) ,
-		port_(port), address_(add) {}
+MessageReceiver(boost::asio::io_service& srv, T& c, const URL& url) :
+    io_service_(srv), client_(c), url_(url) {}
 
 virtual ~MessageReceiver() {
 }
@@ -48,8 +48,7 @@ protected:
     // properties
     boost::asio::io_service& io_service_;
     T& client_;
-    int port_;
-    std::string address_;
+    const URL url_;
     connection_type connection_type_;
     bool flag_runing_;
 };

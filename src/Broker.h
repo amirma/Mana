@@ -115,6 +115,8 @@ public:
 private:
     // private methods.
     bool handle_match(siena::if_t, const siena::message&);
+    void handle_session_initiation(NetworkConnector<Broker>& nc, ManaMessage& buff);
+    void send_error();
     // class properties
     boost::asio::io_service io_service_;
     vector<shared_ptr<MessageReceiver<Broker>>> message_receivers;

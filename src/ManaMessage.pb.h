@@ -38,6 +38,7 @@ class ManaMessage_subscription_t;
 class ManaMessage_subscription_t_constraint_t;
 class ManaMessage_notification_t;
 class ManaMessage_notification_t_attribute_t;
+class ManaMessage_key_value_pair;
 
 enum ManaMessage_subscription_t_operator_t {
   ManaMessage_subscription_t_operator_t_EQUAL = 1,
@@ -66,15 +67,21 @@ inline bool ManaMessage_subscription_t_operator_t_Parse(
     ManaMessage_subscription_t_operator_t_descriptor(), name, value);
 }
 enum ManaMessage_message_type_t {
-  ManaMessage_message_type_t_SUB = 1,
-  ManaMessage_message_type_t_NOT = 2,
-  ManaMessage_message_type_t_UNSUB = 3,
-  ManaMessage_message_type_t_HEARTBEAT = 4,
-  ManaMessage_message_type_t_TERMINATE_SESSION = 5
+  ManaMessage_message_type_t_START_SESSION = 1,
+  ManaMessage_message_type_t_START_SESSION_ACK = 2,
+  ManaMessage_message_type_t_START_SESSION_ACK_ACK = 3,
+  ManaMessage_message_type_t_TERMINATE_SESSION = 4,
+  ManaMessage_message_type_t_TERMINATE_SESSION_ACK = 5,
+  ManaMessage_message_type_t_ACK = 6,
+  ManaMessage_message_type_t_HEARTBEAT = 7,
+  ManaMessage_message_type_t_SUB = 101,
+  ManaMessage_message_type_t_NOT = 102,
+  ManaMessage_message_type_t_UNSUB = 130,
+  ManaMessage_message_type_t_ERR_NOT_SUPPORTED = 200
 };
 bool ManaMessage_message_type_t_IsValid(int value);
-const ManaMessage_message_type_t ManaMessage_message_type_t_message_type_t_MIN = ManaMessage_message_type_t_SUB;
-const ManaMessage_message_type_t ManaMessage_message_type_t_message_type_t_MAX = ManaMessage_message_type_t_TERMINATE_SESSION;
+const ManaMessage_message_type_t ManaMessage_message_type_t_message_type_t_MIN = ManaMessage_message_type_t_START_SESSION;
+const ManaMessage_message_type_t ManaMessage_message_type_t_message_type_t_MAX = ManaMessage_message_type_t_ERR_NOT_SUPPORTED;
 const int ManaMessage_message_type_t_message_type_t_ARRAYSIZE = ManaMessage_message_type_t_message_type_t_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ManaMessage_message_type_t_descriptor();
@@ -646,6 +653,106 @@ class ManaMessage_notification_t : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class ManaMessage_key_value_pair : public ::google::protobuf::Message {
+ public:
+  ManaMessage_key_value_pair();
+  virtual ~ManaMessage_key_value_pair();
+  
+  ManaMessage_key_value_pair(const ManaMessage_key_value_pair& from);
+  
+  inline ManaMessage_key_value_pair& operator=(const ManaMessage_key_value_pair& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ManaMessage_key_value_pair& default_instance();
+  
+  void Swap(ManaMessage_key_value_pair* other);
+  
+  // implements Message ----------------------------------------------
+  
+  ManaMessage_key_value_pair* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ManaMessage_key_value_pair& from);
+  void MergeFrom(const ManaMessage_key_value_pair& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // required string key = 1;
+  inline bool has_key() const;
+  inline void clear_key();
+  static const int kKeyFieldNumber = 1;
+  inline const ::std::string& key() const;
+  inline void set_key(const ::std::string& value);
+  inline void set_key(const char* value);
+  inline void set_key(const char* value, size_t size);
+  inline ::std::string* mutable_key();
+  inline ::std::string* release_key();
+  
+  // required string value = 2;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 2;
+  inline const ::std::string& value() const;
+  inline void set_value(const ::std::string& value);
+  inline void set_value(const char* value);
+  inline void set_value(const char* value, size_t size);
+  inline ::std::string* mutable_value();
+  inline ::std::string* release_value();
+  
+  // @@protoc_insertion_point(class_scope:mana.ManaMessage.key_value_pair)
+ private:
+  inline void set_has_key();
+  inline void clear_has_key();
+  inline void set_has_value();
+  inline void clear_has_value();
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  ::std::string* key_;
+  ::std::string* value_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  
+  friend void  protobuf_AddDesc_ManaMessage_2eproto();
+  friend void protobuf_AssignDesc_ManaMessage_2eproto();
+  friend void protobuf_ShutdownFile_ManaMessage_2eproto();
+  
+  void InitAsDefaultInstance();
+  static ManaMessage_key_value_pair* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class ManaMessage : public ::google::protobuf::Message {
  public:
   ManaMessage();
@@ -701,13 +808,20 @@ class ManaMessage : public ::google::protobuf::Message {
   typedef ManaMessage_value_t value_t;
   typedef ManaMessage_subscription_t subscription_t;
   typedef ManaMessage_notification_t notification_t;
+  typedef ManaMessage_key_value_pair key_value_pair;
   
   typedef ManaMessage_message_type_t message_type_t;
+  static const message_type_t START_SESSION = ManaMessage_message_type_t_START_SESSION;
+  static const message_type_t START_SESSION_ACK = ManaMessage_message_type_t_START_SESSION_ACK;
+  static const message_type_t START_SESSION_ACK_ACK = ManaMessage_message_type_t_START_SESSION_ACK_ACK;
+  static const message_type_t TERMINATE_SESSION = ManaMessage_message_type_t_TERMINATE_SESSION;
+  static const message_type_t TERMINATE_SESSION_ACK = ManaMessage_message_type_t_TERMINATE_SESSION_ACK;
+  static const message_type_t ACK = ManaMessage_message_type_t_ACK;
+  static const message_type_t HEARTBEAT = ManaMessage_message_type_t_HEARTBEAT;
   static const message_type_t SUB = ManaMessage_message_type_t_SUB;
   static const message_type_t NOT = ManaMessage_message_type_t_NOT;
   static const message_type_t UNSUB = ManaMessage_message_type_t_UNSUB;
-  static const message_type_t HEARTBEAT = ManaMessage_message_type_t_HEARTBEAT;
-  static const message_type_t TERMINATE_SESSION = ManaMessage_message_type_t_TERMINATE_SESSION;
+  static const message_type_t ERR_NOT_SUPPORTED = ManaMessage_message_type_t_ERR_NOT_SUPPORTED;
   static inline bool message_type_t_IsValid(int value) {
     return ManaMessage_message_type_t_IsValid(value);
   }
@@ -776,26 +890,33 @@ class ManaMessage : public ::google::protobuf::Message {
   inline ::std::string* mutable_sender();
   inline ::std::string* release_sender();
   
-  // optional .mana.ManaMessage.subscription_t subscription = 3;
+  // optional int32 seq_no = 3;
+  inline bool has_seq_no() const;
+  inline void clear_seq_no();
+  static const int kSeqNoFieldNumber = 3;
+  inline ::google::protobuf::int32 seq_no() const;
+  inline void set_seq_no(::google::protobuf::int32 value);
+  
+  // optional .mana.ManaMessage.subscription_t subscription = 4;
   inline bool has_subscription() const;
   inline void clear_subscription();
-  static const int kSubscriptionFieldNumber = 3;
+  static const int kSubscriptionFieldNumber = 4;
   inline const ::mana::ManaMessage_subscription_t& subscription() const;
   inline ::mana::ManaMessage_subscription_t* mutable_subscription();
   inline ::mana::ManaMessage_subscription_t* release_subscription();
   
-  // optional .mana.ManaMessage.notification_t notification = 4;
+  // optional .mana.ManaMessage.notification_t notification = 5;
   inline bool has_notification() const;
   inline void clear_notification();
-  static const int kNotificationFieldNumber = 4;
+  static const int kNotificationFieldNumber = 5;
   inline const ::mana::ManaMessage_notification_t& notification() const;
   inline ::mana::ManaMessage_notification_t* mutable_notification();
   inline ::mana::ManaMessage_notification_t* release_notification();
   
-  // optional string unsubscription = 5;
+  // optional string unsubscription = 6;
   inline bool has_unsubscription() const;
   inline void clear_unsubscription();
-  static const int kUnsubscriptionFieldNumber = 5;
+  static const int kUnsubscriptionFieldNumber = 6;
   inline const ::std::string& unsubscription() const;
   inline void set_unsubscription(const ::std::string& value);
   inline void set_unsubscription(const char* value);
@@ -803,10 +924,10 @@ class ManaMessage : public ::google::protobuf::Message {
   inline ::std::string* mutable_unsubscription();
   inline ::std::string* release_unsubscription();
   
-  // optional string payload = 6;
+  // optional string payload = 7;
   inline bool has_payload() const;
   inline void clear_payload();
-  static const int kPayloadFieldNumber = 6;
+  static const int kPayloadFieldNumber = 7;
   inline const ::std::string& payload() const;
   inline void set_payload(const ::std::string& value);
   inline void set_payload(const char* value);
@@ -814,12 +935,26 @@ class ManaMessage : public ::google::protobuf::Message {
   inline ::std::string* mutable_payload();
   inline ::std::string* release_payload();
   
+  // repeated .mana.ManaMessage.key_value_pair key_value_map = 8;
+  inline int key_value_map_size() const;
+  inline void clear_key_value_map();
+  static const int kKeyValueMapFieldNumber = 8;
+  inline const ::mana::ManaMessage_key_value_pair& key_value_map(int index) const;
+  inline ::mana::ManaMessage_key_value_pair* mutable_key_value_map(int index);
+  inline ::mana::ManaMessage_key_value_pair* add_key_value_map();
+  inline const ::google::protobuf::RepeatedPtrField< ::mana::ManaMessage_key_value_pair >&
+      key_value_map() const;
+  inline ::google::protobuf::RepeatedPtrField< ::mana::ManaMessage_key_value_pair >*
+      mutable_key_value_map();
+  
   // @@protoc_insertion_point(class_scope:mana.ManaMessage)
  private:
   inline void set_has_type();
   inline void clear_has_type();
   inline void set_has_sender();
   inline void clear_has_sender();
+  inline void set_has_seq_no();
+  inline void clear_has_seq_no();
   inline void set_has_subscription();
   inline void clear_has_subscription();
   inline void set_has_notification();
@@ -832,14 +967,16 @@ class ManaMessage : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
   ::std::string* sender_;
+  int type_;
+  ::google::protobuf::int32 seq_no_;
   ::mana::ManaMessage_subscription_t* subscription_;
   ::mana::ManaMessage_notification_t* notification_;
   ::std::string* unsubscription_;
   ::std::string* payload_;
-  int type_;
+  ::google::protobuf::RepeatedPtrField< ::mana::ManaMessage_key_value_pair > key_value_map_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
   
   friend void  protobuf_AddDesc_ManaMessage_2eproto();
   friend void protobuf_AssignDesc_ManaMessage_2eproto();
@@ -1267,6 +1404,126 @@ ManaMessage_notification_t::mutable_attribute() {
 
 // -------------------------------------------------------------------
 
+// ManaMessage_key_value_pair
+
+// required string key = 1;
+inline bool ManaMessage_key_value_pair::has_key() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ManaMessage_key_value_pair::set_has_key() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ManaMessage_key_value_pair::clear_has_key() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ManaMessage_key_value_pair::clear_key() {
+  if (key_ != &::google::protobuf::internal::kEmptyString) {
+    key_->clear();
+  }
+  clear_has_key();
+}
+inline const ::std::string& ManaMessage_key_value_pair::key() const {
+  return *key_;
+}
+inline void ManaMessage_key_value_pair::set_key(const ::std::string& value) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    key_ = new ::std::string;
+  }
+  key_->assign(value);
+}
+inline void ManaMessage_key_value_pair::set_key(const char* value) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    key_ = new ::std::string;
+  }
+  key_->assign(value);
+}
+inline void ManaMessage_key_value_pair::set_key(const char* value, size_t size) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    key_ = new ::std::string;
+  }
+  key_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ManaMessage_key_value_pair::mutable_key() {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    key_ = new ::std::string;
+  }
+  return key_;
+}
+inline ::std::string* ManaMessage_key_value_pair::release_key() {
+  clear_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = key_;
+    key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// required string value = 2;
+inline bool ManaMessage_key_value_pair::has_value() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ManaMessage_key_value_pair::set_has_value() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ManaMessage_key_value_pair::clear_has_value() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ManaMessage_key_value_pair::clear_value() {
+  if (value_ != &::google::protobuf::internal::kEmptyString) {
+    value_->clear();
+  }
+  clear_has_value();
+}
+inline const ::std::string& ManaMessage_key_value_pair::value() const {
+  return *value_;
+}
+inline void ManaMessage_key_value_pair::set_value(const ::std::string& value) {
+  set_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    value_ = new ::std::string;
+  }
+  value_->assign(value);
+}
+inline void ManaMessage_key_value_pair::set_value(const char* value) {
+  set_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    value_ = new ::std::string;
+  }
+  value_->assign(value);
+}
+inline void ManaMessage_key_value_pair::set_value(const char* value, size_t size) {
+  set_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    value_ = new ::std::string;
+  }
+  value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ManaMessage_key_value_pair::mutable_value() {
+  set_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    value_ = new ::std::string;
+  }
+  return value_;
+}
+inline ::std::string* ManaMessage_key_value_pair::release_value() {
+  clear_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = value_;
+    value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// -------------------------------------------------------------------
+
 // ManaMessage
 
 // required .mana.ManaMessage.message_type_t type = 1;
@@ -1350,15 +1607,37 @@ inline ::std::string* ManaMessage::release_sender() {
   }
 }
 
-// optional .mana.ManaMessage.subscription_t subscription = 3;
-inline bool ManaMessage::has_subscription() const {
+// optional int32 seq_no = 3;
+inline bool ManaMessage::has_seq_no() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void ManaMessage::set_has_subscription() {
+inline void ManaMessage::set_has_seq_no() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void ManaMessage::clear_has_subscription() {
+inline void ManaMessage::clear_has_seq_no() {
   _has_bits_[0] &= ~0x00000004u;
+}
+inline void ManaMessage::clear_seq_no() {
+  seq_no_ = 0;
+  clear_has_seq_no();
+}
+inline ::google::protobuf::int32 ManaMessage::seq_no() const {
+  return seq_no_;
+}
+inline void ManaMessage::set_seq_no(::google::protobuf::int32 value) {
+  set_has_seq_no();
+  seq_no_ = value;
+}
+
+// optional .mana.ManaMessage.subscription_t subscription = 4;
+inline bool ManaMessage::has_subscription() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ManaMessage::set_has_subscription() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ManaMessage::clear_has_subscription() {
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ManaMessage::clear_subscription() {
   if (subscription_ != NULL) subscription_->::mana::ManaMessage_subscription_t::Clear();
@@ -1379,15 +1658,15 @@ inline ::mana::ManaMessage_subscription_t* ManaMessage::release_subscription() {
   return temp;
 }
 
-// optional .mana.ManaMessage.notification_t notification = 4;
+// optional .mana.ManaMessage.notification_t notification = 5;
 inline bool ManaMessage::has_notification() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ManaMessage::set_has_notification() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ManaMessage::clear_has_notification() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ManaMessage::clear_notification() {
   if (notification_ != NULL) notification_->::mana::ManaMessage_notification_t::Clear();
@@ -1408,15 +1687,15 @@ inline ::mana::ManaMessage_notification_t* ManaMessage::release_notification() {
   return temp;
 }
 
-// optional string unsubscription = 5;
+// optional string unsubscription = 6;
 inline bool ManaMessage::has_unsubscription() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ManaMessage::set_has_unsubscription() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ManaMessage::clear_has_unsubscription() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ManaMessage::clear_unsubscription() {
   if (unsubscription_ != &::google::protobuf::internal::kEmptyString) {
@@ -1466,15 +1745,15 @@ inline ::std::string* ManaMessage::release_unsubscription() {
   }
 }
 
-// optional string payload = 6;
+// optional string payload = 7;
 inline bool ManaMessage::has_payload() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void ManaMessage::set_has_payload() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void ManaMessage::clear_has_payload() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void ManaMessage::clear_payload() {
   if (payload_ != &::google::protobuf::internal::kEmptyString) {
@@ -1522,6 +1801,31 @@ inline ::std::string* ManaMessage::release_payload() {
     payload_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
+}
+
+// repeated .mana.ManaMessage.key_value_pair key_value_map = 8;
+inline int ManaMessage::key_value_map_size() const {
+  return key_value_map_.size();
+}
+inline void ManaMessage::clear_key_value_map() {
+  key_value_map_.Clear();
+}
+inline const ::mana::ManaMessage_key_value_pair& ManaMessage::key_value_map(int index) const {
+  return key_value_map_.Get(index);
+}
+inline ::mana::ManaMessage_key_value_pair* ManaMessage::mutable_key_value_map(int index) {
+  return key_value_map_.Mutable(index);
+}
+inline ::mana::ManaMessage_key_value_pair* ManaMessage::add_key_value_map() {
+  return key_value_map_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::mana::ManaMessage_key_value_pair >&
+ManaMessage::key_value_map() const {
+  return key_value_map_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::mana::ManaMessage_key_value_pair >*
+ManaMessage::mutable_key_value_map() {
+  return &key_value_map_;
 }
 
 

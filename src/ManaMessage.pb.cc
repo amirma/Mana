@@ -36,6 +36,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* ManaMessage_notification_t_attribute_t_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ManaMessage_notification_t_attribute_t_reflection_ = NULL;
+const ::google::protobuf::Descriptor* ManaMessage_key_value_pair_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ManaMessage_key_value_pair_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* ManaMessage_message_type_t_descriptor_ = NULL;
 const ::google::protobuf::EnumDescriptor* ManaMessage_tag_type_t_descriptor_ = NULL;
 
@@ -49,13 +52,15 @@ void protobuf_AssignDesc_ManaMessage_2eproto() {
       "ManaMessage.proto");
   GOOGLE_CHECK(file != NULL);
   ManaMessage_descriptor_ = file->message_type(0);
-  static const int ManaMessage_offsets_[6] = {
+  static const int ManaMessage_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage, sender_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage, seq_no_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage, subscription_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage, notification_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage, unsubscription_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage, payload_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage, key_value_map_),
   };
   ManaMessage_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -151,6 +156,22 @@ void protobuf_AssignDesc_ManaMessage_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ManaMessage_notification_t_attribute_t));
+  ManaMessage_key_value_pair_descriptor_ = ManaMessage_descriptor_->nested_type(3);
+  static const int ManaMessage_key_value_pair_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage_key_value_pair, key_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage_key_value_pair, value_),
+  };
+  ManaMessage_key_value_pair_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ManaMessage_key_value_pair_descriptor_,
+      ManaMessage_key_value_pair::default_instance_,
+      ManaMessage_key_value_pair_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage_key_value_pair, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ManaMessage_key_value_pair, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(ManaMessage_key_value_pair));
   ManaMessage_message_type_t_descriptor_ = ManaMessage_descriptor_->enum_type(0);
   ManaMessage_tag_type_t_descriptor_ = ManaMessage_descriptor_->enum_type(1);
 }
@@ -177,6 +198,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     ManaMessage_notification_t_descriptor_, &ManaMessage_notification_t::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ManaMessage_notification_t_attribute_t_descriptor_, &ManaMessage_notification_t_attribute_t::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ManaMessage_key_value_pair_descriptor_, &ManaMessage_key_value_pair::default_instance());
 }
 
 }  // namespace
@@ -194,6 +217,8 @@ void protobuf_ShutdownFile_ManaMessage_2eproto() {
   delete ManaMessage_notification_t_reflection_;
   delete ManaMessage_notification_t_attribute_t::default_instance_;
   delete ManaMessage_notification_t_attribute_t_reflection_;
+  delete ManaMessage_key_value_pair::default_instance_;
+  delete ManaMessage_key_value_pair_reflection_;
 }
 
 void protobuf_AddDesc_ManaMessage_2eproto() {
@@ -203,33 +228,39 @@ void protobuf_AddDesc_ManaMessage_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\021ManaMessage.proto\022\004mana\"\214\010\n\013ManaMessag"
+    "\n\021ManaMessage.proto\022\004mana\"\206\n\n\013ManaMessag"
     "e\022.\n\004type\030\001 \002(\0162 .mana.ManaMessage.messa"
-    "ge_type_t\022\016\n\006sender\030\002 \002(\t\0226\n\014subscriptio"
-    "n\030\003 \001(\0132 .mana.ManaMessage.subscription_"
-    "t\0226\n\014notification\030\004 \001(\0132 .mana.ManaMessa"
-    "ge.notification_t\022\026\n\016unsubscription\030\005 \001("
-    "\t\022\017\n\007payload\030\006 \001(\t\032\210\001\n\007value_t\022*\n\004type\030\001"
-    " \002(\0162\034.mana.ManaMessage.tag_type_t\022\024\n\014st"
-    "ring_value\030\002 \001(\t\022\021\n\tint_value\030\003 \001(\005\022\024\n\014d"
-    "ouble_value\030\004 \001(\001\022\022\n\nbool_value\030\005 \001(\010\032\341\002"
-    "\n\016subscription_t\022B\n\013constraints\030\001 \003(\0132-."
-    "mana.ManaMessage.subscription_t.constrai"
-    "nt_t\032\177\n\014constraint_t\022\014\n\004name\030\001 \002(\t\0227\n\002op"
-    "\030\002 \002(\0162+.mana.ManaMessage.subscription_t"
-    ".operator_t\022(\n\005value\030\003 \002(\0132\031.mana.ManaMe"
-    "ssage.value_t\"\211\001\n\noperator_t\022\t\n\005EQUAL\020\001\022"
-    "\r\n\tLESS_THAN\020\002\022\020\n\014GREATER_THAN\020\003\022\n\n\006SUFF"
-    "IX\020\004\022\n\n\006PREFIX\020\005\022\016\n\nSUB_STRING\020\006\022\007\n\003ANY\020"
-    "\007\022\r\n\tNOT_EQUAL\020\010\022\017\n\013REGULAR_EXP\020\t\032\230\001\n\016no"
-    "tification_t\022\?\n\tattribute\030\001 \003(\0132,.mana.M"
-    "anaMessage.notification_t.attribute_t\032E\n"
-    "\013attribute_t\022\014\n\004name\030\001 \002(\t\022(\n\005value\030\002 \002("
-    "\0132\031.mana.ManaMessage.value_t\"S\n\016message_"
-    "type_t\022\007\n\003SUB\020\001\022\007\n\003NOT\020\002\022\t\n\005UNSUB\020\003\022\r\n\tH"
-    "EARTBEAT\020\004\022\025\n\021TERMINATE_SESSION\020\005\"E\n\ntag"
-    "_type_t\022\n\n\006STRING\020\001\022\007\n\003INT\020\002\022\n\n\006DOUBLE\020\003"
-    "\022\010\n\004BOOL\020\004\022\014\n\010ANY_TYPE\020\005", 1064);
+    "ge_type_t\022\016\n\006sender\030\002 \002(\t\022\016\n\006seq_no\030\003 \001("
+    "\005\0226\n\014subscription\030\004 \001(\0132 .mana.ManaMessa"
+    "ge.subscription_t\0226\n\014notification\030\005 \001(\0132"
+    " .mana.ManaMessage.notification_t\022\026\n\016uns"
+    "ubscription\030\006 \001(\t\022\017\n\007payload\030\007 \001(\t\0227\n\rke"
+    "y_value_map\030\010 \003(\0132 .mana.ManaMessage.key"
+    "_value_pair\032\210\001\n\007value_t\022*\n\004type\030\001 \002(\0162\034."
+    "mana.ManaMessage.tag_type_t\022\024\n\014string_va"
+    "lue\030\002 \001(\t\022\021\n\tint_value\030\003 \001(\005\022\024\n\014double_v"
+    "alue\030\004 \001(\001\022\022\n\nbool_value\030\005 \001(\010\032\341\002\n\016subsc"
+    "ription_t\022B\n\013constraints\030\001 \003(\0132-.mana.Ma"
+    "naMessage.subscription_t.constraint_t\032\177\n"
+    "\014constraint_t\022\014\n\004name\030\001 \002(\t\0227\n\002op\030\002 \002(\0162"
+    "+.mana.ManaMessage.subscription_t.operat"
+    "or_t\022(\n\005value\030\003 \002(\0132\031.mana.ManaMessage.v"
+    "alue_t\"\211\001\n\noperator_t\022\t\n\005EQUAL\020\001\022\r\n\tLESS"
+    "_THAN\020\002\022\020\n\014GREATER_THAN\020\003\022\n\n\006SUFFIX\020\004\022\n\n"
+    "\006PREFIX\020\005\022\016\n\nSUB_STRING\020\006\022\007\n\003ANY\020\007\022\r\n\tNO"
+    "T_EQUAL\020\010\022\017\n\013REGULAR_EXP\020\t\032\230\001\n\016notificat"
+    "ion_t\022\?\n\tattribute\030\001 \003(\0132,.mana.ManaMess"
+    "age.notification_t.attribute_t\032E\n\013attrib"
+    "ute_t\022\014\n\004name\030\001 \002(\t\022(\n\005value\030\002 \002(\0132\031.man"
+    "a.ManaMessage.value_t\032,\n\016key_value_pair\022"
+    "\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"\325\001\n\016message_"
+    "type_t\022\021\n\rSTART_SESSION\020\001\022\025\n\021START_SESSI"
+    "ON_ACK\020\002\022\031\n\025START_SESSION_ACK_ACK\020\003\022\025\n\021T"
+    "ERMINATE_SESSION\020\004\022\031\n\025TERMINATE_SESSION_"
+    "ACK\020\005\022\007\n\003ACK\020\006\022\r\n\tHEARTBEAT\020\007\022\007\n\003SUB\020e\022\007"
+    "\n\003NOT\020f\022\n\n\005UNSUB\020\202\001\022\026\n\021ERR_NOT_SUPPORTED"
+    "\020\310\001\"E\n\ntag_type_t\022\n\n\006STRING\020\001\022\007\n\003INT\020\002\022\n"
+    "\n\006DOUBLE\020\003\022\010\n\004BOOL\020\004\022\014\n\010ANY_TYPE\020\005", 1314);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "ManaMessage.proto", &protobuf_RegisterTypes);
   ManaMessage::default_instance_ = new ManaMessage();
@@ -238,12 +269,14 @@ void protobuf_AddDesc_ManaMessage_2eproto() {
   ManaMessage_subscription_t_constraint_t::default_instance_ = new ManaMessage_subscription_t_constraint_t();
   ManaMessage_notification_t::default_instance_ = new ManaMessage_notification_t();
   ManaMessage_notification_t_attribute_t::default_instance_ = new ManaMessage_notification_t_attribute_t();
+  ManaMessage_key_value_pair::default_instance_ = new ManaMessage_key_value_pair();
   ManaMessage::default_instance_->InitAsDefaultInstance();
   ManaMessage_value_t::default_instance_->InitAsDefaultInstance();
   ManaMessage_subscription_t::default_instance_->InitAsDefaultInstance();
   ManaMessage_subscription_t_constraint_t::default_instance_->InitAsDefaultInstance();
   ManaMessage_notification_t::default_instance_->InitAsDefaultInstance();
   ManaMessage_notification_t_attribute_t::default_instance_->InitAsDefaultInstance();
+  ManaMessage_key_value_pair::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_ManaMessage_2eproto);
 }
 
@@ -268,6 +301,12 @@ bool ManaMessage_message_type_t_IsValid(int value) {
     case 3:
     case 4:
     case 5:
+    case 6:
+    case 7:
+    case 101:
+    case 102:
+    case 130:
+    case 200:
       return true;
     default:
       return false;
@@ -275,11 +314,17 @@ bool ManaMessage_message_type_t_IsValid(int value) {
 }
 
 #ifndef _MSC_VER
+const ManaMessage_message_type_t ManaMessage::START_SESSION;
+const ManaMessage_message_type_t ManaMessage::START_SESSION_ACK;
+const ManaMessage_message_type_t ManaMessage::START_SESSION_ACK_ACK;
+const ManaMessage_message_type_t ManaMessage::TERMINATE_SESSION;
+const ManaMessage_message_type_t ManaMessage::TERMINATE_SESSION_ACK;
+const ManaMessage_message_type_t ManaMessage::ACK;
+const ManaMessage_message_type_t ManaMessage::HEARTBEAT;
 const ManaMessage_message_type_t ManaMessage::SUB;
 const ManaMessage_message_type_t ManaMessage::NOT;
 const ManaMessage_message_type_t ManaMessage::UNSUB;
-const ManaMessage_message_type_t ManaMessage::HEARTBEAT;
-const ManaMessage_message_type_t ManaMessage::TERMINATE_SESSION;
+const ManaMessage_message_type_t ManaMessage::ERR_NOT_SUPPORTED;
 const ManaMessage_message_type_t ManaMessage::message_type_t_MIN;
 const ManaMessage_message_type_t ManaMessage::message_type_t_MAX;
 const int ManaMessage::message_type_t_ARRAYSIZE;
@@ -1736,12 +1781,296 @@ void ManaMessage_notification_t::Swap(ManaMessage_notification_t* other) {
 // -------------------------------------------------------------------
 
 #ifndef _MSC_VER
+const int ManaMessage_key_value_pair::kKeyFieldNumber;
+const int ManaMessage_key_value_pair::kValueFieldNumber;
+#endif  // !_MSC_VER
+
+ManaMessage_key_value_pair::ManaMessage_key_value_pair()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void ManaMessage_key_value_pair::InitAsDefaultInstance() {
+}
+
+ManaMessage_key_value_pair::ManaMessage_key_value_pair(const ManaMessage_key_value_pair& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void ManaMessage_key_value_pair::SharedCtor() {
+  _cached_size_ = 0;
+  key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ManaMessage_key_value_pair::~ManaMessage_key_value_pair() {
+  SharedDtor();
+}
+
+void ManaMessage_key_value_pair::SharedDtor() {
+  if (key_ != &::google::protobuf::internal::kEmptyString) {
+    delete key_;
+  }
+  if (value_ != &::google::protobuf::internal::kEmptyString) {
+    delete value_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void ManaMessage_key_value_pair::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ManaMessage_key_value_pair::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ManaMessage_key_value_pair_descriptor_;
+}
+
+const ManaMessage_key_value_pair& ManaMessage_key_value_pair::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_ManaMessage_2eproto();  return *default_instance_;
+}
+
+ManaMessage_key_value_pair* ManaMessage_key_value_pair::default_instance_ = NULL;
+
+ManaMessage_key_value_pair* ManaMessage_key_value_pair::New() const {
+  return new ManaMessage_key_value_pair;
+}
+
+void ManaMessage_key_value_pair::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_key()) {
+      if (key_ != &::google::protobuf::internal::kEmptyString) {
+        key_->clear();
+      }
+    }
+    if (has_value()) {
+      if (value_ != &::google::protobuf::internal::kEmptyString) {
+        value_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool ManaMessage_key_value_pair::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // required string key = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_key()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->key().data(), this->key().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_value;
+        break;
+      }
+      
+      // required string value = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_value:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_value()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->value().data(), this->value().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void ManaMessage_key_value_pair::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // required string key = 1;
+  if (has_key()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->key().data(), this->key().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->key(), output);
+  }
+  
+  // required string value = 2;
+  if (has_value()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->value().data(), this->value().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->value(), output);
+  }
+  
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* ManaMessage_key_value_pair::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // required string key = 1;
+  if (has_key()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->key().data(), this->key().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->key(), target);
+  }
+  
+  // required string value = 2;
+  if (has_value()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->value().data(), this->value().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->value(), target);
+  }
+  
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int ManaMessage_key_value_pair::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required string key = 1;
+    if (has_key()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->key());
+    }
+    
+    // required string value = 2;
+    if (has_value()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->value());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ManaMessage_key_value_pair::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const ManaMessage_key_value_pair* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ManaMessage_key_value_pair*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void ManaMessage_key_value_pair::MergeFrom(const ManaMessage_key_value_pair& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_key()) {
+      set_key(from.key());
+    }
+    if (from.has_value()) {
+      set_value(from.value());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void ManaMessage_key_value_pair::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ManaMessage_key_value_pair::CopyFrom(const ManaMessage_key_value_pair& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ManaMessage_key_value_pair::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+  
+  return true;
+}
+
+void ManaMessage_key_value_pair::Swap(ManaMessage_key_value_pair* other) {
+  if (other != this) {
+    std::swap(key_, other->key_);
+    std::swap(value_, other->value_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata ManaMessage_key_value_pair::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ManaMessage_key_value_pair_descriptor_;
+  metadata.reflection = ManaMessage_key_value_pair_reflection_;
+  return metadata;
+}
+
+
+// -------------------------------------------------------------------
+
+#ifndef _MSC_VER
 const int ManaMessage::kTypeFieldNumber;
 const int ManaMessage::kSenderFieldNumber;
+const int ManaMessage::kSeqNoFieldNumber;
 const int ManaMessage::kSubscriptionFieldNumber;
 const int ManaMessage::kNotificationFieldNumber;
 const int ManaMessage::kUnsubscriptionFieldNumber;
 const int ManaMessage::kPayloadFieldNumber;
+const int ManaMessage::kKeyValueMapFieldNumber;
 #endif  // !_MSC_VER
 
 ManaMessage::ManaMessage()
@@ -1764,6 +2093,7 @@ void ManaMessage::SharedCtor() {
   _cached_size_ = 0;
   type_ = 1;
   sender_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  seq_no_ = 0;
   subscription_ = NULL;
   notification_ = NULL;
   unsubscription_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
@@ -1819,6 +2149,7 @@ void ManaMessage::Clear() {
         sender_->clear();
       }
     }
+    seq_no_ = 0;
     if (has_subscription()) {
       if (subscription_ != NULL) subscription_->::mana::ManaMessage_subscription_t::Clear();
     }
@@ -1836,6 +2167,7 @@ void ManaMessage::Clear() {
       }
     }
   }
+  key_value_map_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -1879,12 +2211,28 @@ bool ManaMessage::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_subscription;
+        if (input->ExpectTag(24)) goto parse_seq_no;
         break;
       }
       
-      // optional .mana.ManaMessage.subscription_t subscription = 3;
+      // optional int32 seq_no = 3;
       case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_seq_no:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &seq_no_)));
+          set_has_seq_no();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_subscription;
+        break;
+      }
+      
+      // optional .mana.ManaMessage.subscription_t subscription = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_subscription:
@@ -1893,12 +2241,12 @@ bool ManaMessage::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_notification;
+        if (input->ExpectTag(42)) goto parse_notification;
         break;
       }
       
-      // optional .mana.ManaMessage.notification_t notification = 4;
-      case 4: {
+      // optional .mana.ManaMessage.notification_t notification = 5;
+      case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_notification:
@@ -1907,12 +2255,12 @@ bool ManaMessage::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(42)) goto parse_unsubscription;
+        if (input->ExpectTag(50)) goto parse_unsubscription;
         break;
       }
       
-      // optional string unsubscription = 5;
-      case 5: {
+      // optional string unsubscription = 6;
+      case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_unsubscription:
@@ -1924,12 +2272,12 @@ bool ManaMessage::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_payload;
+        if (input->ExpectTag(58)) goto parse_payload;
         break;
       }
       
-      // optional string payload = 6;
-      case 6: {
+      // optional string payload = 7;
+      case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_payload:
@@ -1941,6 +2289,21 @@ bool ManaMessage::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(66)) goto parse_key_value_map;
+        break;
+      }
+      
+      // repeated .mana.ManaMessage.key_value_pair key_value_map = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_key_value_map:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+                input, add_key_value_map()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(66)) goto parse_key_value_map;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1978,34 +2341,45 @@ void ManaMessage::SerializeWithCachedSizes(
       2, this->sender(), output);
   }
   
-  // optional .mana.ManaMessage.subscription_t subscription = 3;
+  // optional int32 seq_no = 3;
+  if (has_seq_no()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->seq_no(), output);
+  }
+  
+  // optional .mana.ManaMessage.subscription_t subscription = 4;
   if (has_subscription()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->subscription(), output);
+      4, this->subscription(), output);
   }
   
-  // optional .mana.ManaMessage.notification_t notification = 4;
+  // optional .mana.ManaMessage.notification_t notification = 5;
   if (has_notification()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4, this->notification(), output);
+      5, this->notification(), output);
   }
   
-  // optional string unsubscription = 5;
+  // optional string unsubscription = 6;
   if (has_unsubscription()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->unsubscription().data(), this->unsubscription().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      5, this->unsubscription(), output);
+      6, this->unsubscription(), output);
   }
   
-  // optional string payload = 6;
+  // optional string payload = 7;
   if (has_payload()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->payload().data(), this->payload().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      6, this->payload(), output);
+      7, this->payload(), output);
+  }
+  
+  // repeated .mana.ManaMessage.key_value_pair key_value_map = 8;
+  for (int i = 0; i < this->key_value_map_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      8, this->key_value_map(i), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -2032,38 +2406,50 @@ void ManaMessage::SerializeWithCachedSizes(
         2, this->sender(), target);
   }
   
-  // optional .mana.ManaMessage.subscription_t subscription = 3;
+  // optional int32 seq_no = 3;
+  if (has_seq_no()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->seq_no(), target);
+  }
+  
+  // optional .mana.ManaMessage.subscription_t subscription = 4;
   if (has_subscription()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        3, this->subscription(), target);
+        4, this->subscription(), target);
   }
   
-  // optional .mana.ManaMessage.notification_t notification = 4;
+  // optional .mana.ManaMessage.notification_t notification = 5;
   if (has_notification()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        4, this->notification(), target);
+        5, this->notification(), target);
   }
   
-  // optional string unsubscription = 5;
+  // optional string unsubscription = 6;
   if (has_unsubscription()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->unsubscription().data(), this->unsubscription().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        5, this->unsubscription(), target);
+        6, this->unsubscription(), target);
   }
   
-  // optional string payload = 6;
+  // optional string payload = 7;
   if (has_payload()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->payload().data(), this->payload().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        6, this->payload(), target);
+        7, this->payload(), target);
+  }
+  
+  // repeated .mana.ManaMessage.key_value_pair key_value_map = 8;
+  for (int i = 0; i < this->key_value_map_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        8, this->key_value_map(i), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -2090,28 +2476,35 @@ int ManaMessage::ByteSize() const {
           this->sender());
     }
     
-    // optional .mana.ManaMessage.subscription_t subscription = 3;
+    // optional int32 seq_no = 3;
+    if (has_seq_no()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->seq_no());
+    }
+    
+    // optional .mana.ManaMessage.subscription_t subscription = 4;
     if (has_subscription()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->subscription());
     }
     
-    // optional .mana.ManaMessage.notification_t notification = 4;
+    // optional .mana.ManaMessage.notification_t notification = 5;
     if (has_notification()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->notification());
     }
     
-    // optional string unsubscription = 5;
+    // optional string unsubscription = 6;
     if (has_unsubscription()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->unsubscription());
     }
     
-    // optional string payload = 6;
+    // optional string payload = 7;
     if (has_payload()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -2119,6 +2512,14 @@ int ManaMessage::ByteSize() const {
     }
     
   }
+  // repeated .mana.ManaMessage.key_value_pair key_value_map = 8;
+  total_size += 1 * this->key_value_map_size();
+  for (int i = 0; i < this->key_value_map_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->key_value_map(i));
+  }
+  
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -2144,12 +2545,16 @@ void ManaMessage::MergeFrom(const ::google::protobuf::Message& from) {
 
 void ManaMessage::MergeFrom(const ManaMessage& from) {
   GOOGLE_CHECK_NE(&from, this);
+  key_value_map_.MergeFrom(from.key_value_map_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_type()) {
       set_type(from.type());
     }
     if (from.has_sender()) {
       set_sender(from.sender());
+    }
+    if (from.has_seq_no()) {
+      set_seq_no(from.seq_no());
     }
     if (from.has_subscription()) {
       mutable_subscription()->::mana::ManaMessage_subscription_t::MergeFrom(from.subscription());
@@ -2188,6 +2593,9 @@ bool ManaMessage::IsInitialized() const {
   if (has_notification()) {
     if (!this->notification().IsInitialized()) return false;
   }
+  for (int i = 0; i < key_value_map_size(); i++) {
+    if (!this->key_value_map(i).IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -2195,10 +2603,12 @@ void ManaMessage::Swap(ManaMessage* other) {
   if (other != this) {
     std::swap(type_, other->type_);
     std::swap(sender_, other->sender_);
+    std::swap(seq_no_, other->seq_no_);
     std::swap(subscription_, other->subscription_);
     std::swap(notification_, other->notification_);
     std::swap(unsubscription_, other->unsubscription_);
     std::swap(payload_, other->payload_);
+    key_value_map_.Swap(&other->key_value_map_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

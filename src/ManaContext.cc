@@ -33,30 +33,13 @@
 
 namespace mana {
 
-ManaContext::ManaContext(const string& id, const string& url, std::function<void(const mana_message&)> h) :
-    local_id_(id), remote_node_url_(url), app_notification_handler_(h), flag_has_subscription(false), flag_session_established_(false),
-    task_scheduler_(io_service_) {
-    vector<string> tokens;
-    boost::split(tokens, remote_node_url_, boost::is_any_of(":"));
-    address_ = tokens[1];
-    try {
-        port_ = stoi(tokens[2]);
-    } catch(exception& e) {
-        throw ManaException("Invalid port number: " + tokens[2]);
-    }
+ManaContext::ManaContext(const string& id, const string& loc_url, const string& rem_url,
+		std::function<void(const mana_message&)> h) :
+    local_id_(id), local_url_(loc_url), remote_url_(rem_url), app_notification_handler_(h),
+    flag_has_subscription(false), flag_session_established_(false), task_scheduler_(io_service_) {
 
-    if(tokens[0] == "tcp") {
-        net_connection_ = make_shared<TCPNetworkConnector<ManaContext>>(io_service_, *this);
-        connection_type = mana::connection_type::tcp;
-    } else if(tokens[0] == "ka") {
-        net_connection_ = make_shared<TCPNetworkConnector<ManaContext>>(io_service_, *this);
-        if(!connect())
-            throw ManaException("Could not connect to broker.");
-        connection_type = mana::connection_type::ka;
-    } else {
-        log_err("Malformed URL or method not supported:" << remote_node_url_);
-        exit(-1);
-    }
+	session_ = make_shared<Session<ManaContext>>(*this, local_url_, remote_url_,
+	    	nullptr, nullptr, remote_url_.url(), 0);
 }
 
 ManaContext::~ManaContext() {
@@ -81,7 +64,7 @@ void ManaContext::publish(const mana_message& msg) {
 }
 
 void ManaContext::send_message(ManaMessage& msg) {
-    net_connection_->send(msg);
+    session_->send(msg);
 }
 
 /*
@@ -125,11 +108,10 @@ void ManaContext::start() {
     	work_ = make_shared<boost::asio::io_service::work>(io_service_);
     	io_service_.run();
     });
-    session_ = make_shared<Session<ManaContext>>(*this, net_connection_.get(), remote_node_url_, 0);
 }
 
 void ManaContext::handle_session_termination(Session<ManaContext>& s) {
-	log_info("Session to " << s.remote_id() << " terminated.");
+    log_info("Session to " << s.remote_id() << " terminated.");
 }
 
 void ManaContext::stop() {
@@ -170,20 +152,8 @@ const string& ManaContext::id() const {
 	return local_id_;
 }
 
-bool ManaContext::connect() {
-	if(is_connected())
-		return true;
-	if(!(net_connection_->connect(address_, port_))) {
-		return false;
-	}
-	log_debug("\nContext connected to " << address_);
-	return true;
-}
-
 bool ManaContext::is_connected() {
-	if(net_connection_ == nullptr || net_connection_->is_connected() == false)
-		return false;
-	return true;
+	return session_->is_active();
 }
 
 void ManaContext::join() {

@@ -1,9 +1,22 @@
-/*
- * NetworkConnector.h
- *
- *  Created on: Sep 9, 2012
- *      Author: amir
- */
+/**
+* @file NetworkConnector.h
+* Interface for NetworkConnector
+*
+* @author Amir Malekpour
+* @version 0.1
+*
+* Copyright © 2012 Amir Malekpour
+*
+*  Mana is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  Mana is distributed in the hope that it will be useful, but WITHOUT ANY
+*  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+*  FOR A PARTICULAR PURPOSE. For more details see the GNU General Public License
+*  at <http: *www.gnu.org/licenses/>
+**/
 
 #ifndef NETWORKCONNECTOR_H_
 #define NETWORKCONNECTOR_H_
@@ -15,6 +28,7 @@
 #include "common.h"
 #include "ManaMessage.pb.h"
 #include "MessageStream.h"
+#include "URL.h"
 
 using namespace std;
 
@@ -35,8 +49,8 @@ struct WriteBufferItemQueueWrapper {
 template <class T>
 class NetworkConnector {
 public:
-NetworkConnector(boost::asio::io_service& srv, T& c) :
-		io_service_(srv), client_(c), port_(0), address_(""), read_hndlr_strand_(srv), write_hndlr_strand_(srv),
+NetworkConnector(boost::asio::io_service& srv, T& c, const URL& url) :
+		io_service_(srv), client_(c), url_(url), read_hndlr_strand_(srv), write_hndlr_strand_(srv),
                 flag_is_connected(false), flag_write_op_in_prog_(false) {}
 
 virtual ~NetworkConnector() {}
@@ -46,17 +60,13 @@ NetworkConnector& operator=(const NetworkConnector&) = delete; // delete assig. 
 virtual void send(const ManaMessage&) = 0;
 virtual void async_connect(const string&, int) = 0;
 virtual void async_connect(const string&) = 0;
-virtual bool connect(const string&, int) = 0; //sync
-virtual bool connect(const string&) = 0; // sync
+virtual bool connect(const URL&) = 0; //sync
 virtual void disconnect() = 0;
 virtual bool is_connected() = 0;
 
-int port() const {
-    return port_;
-}
 
-string& address() const {
-    return address_;
+const URL& url() const {
+    return this->url_;
 }
 
 protected:
@@ -65,8 +75,7 @@ protected:
     // class properties
     boost::asio::io_service& io_service_;
     T& client_;
-    int port_;
-    string address_;
+    const URL url_;
     boost::asio::strand read_hndlr_strand_;
     boost::asio::strand write_hndlr_strand_;
     bool flag_is_connected;

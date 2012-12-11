@@ -28,8 +28,8 @@ public:
  * Construct an instance of this class with the given io_service.
  * This constructor is used when we need to manually create a connection.
  */
-TCPNetworkConnector(boost::asio::io_service& srv, T& c) :
-		NetworkConnector<T>(srv, c) {
+TCPNetworkConnector(boost::asio::io_service& srv, T& c, const URL& url) :
+		NetworkConnector<T>(srv, c, url) {
 	socket_ = make_shared<boost::asio::ip::tcp::socket>(this->io_service_);
 }
 
@@ -40,7 +40,7 @@ TCPNetworkConnector(boost::asio::io_service& srv, T& c) :
  * has to outlive the instance of this class.
  */
 TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&& skt,
-	T& c) : NetworkConnector<T>(skt->get_io_service(), c), socket_(skt) {
+	T& c, const URL& url) : NetworkConnector<T>(skt->get_io_service(), c, url), socket_(skt) {
 	if(socket_->is_open()) {
 		this->flag_is_connected = true;
         set_socket_options();
@@ -84,27 +84,12 @@ void send(const ManaMessage& msg) {
     prepare_buffer(arr_buf, total_size);
 }
 
-bool connect(const string& url) {
-	if(is_connected()) {
-		return true;
-	}
-	vector<string> tokens;
-	boost::split(tokens, url, boost::is_any_of(":"));
-	int port = 0;
-	try {
-		port = stoi(tokens[2]);
-	} catch(exception& e) {
-		throw ManaException("TCPNetworkConnector::connect(): Could not connect: invalid port number: " + tokens[2]);
-	}
-	return connect(tokens[1], port);
-}
-
-bool connect(const string& addr, int prt) {
+bool connect(const URL& url) {
 	if(is_connected()) {
 		return true;
 	}
 	try {
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(addr), prt);
+		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(url.address()), url.port());
 		socket_->connect(endpoint);
 	} catch(boost::system::system_error& e) {
 		throw ManaException("Error connecting to the endpoint.");
@@ -113,7 +98,7 @@ bool connect(const string& addr, int prt) {
 	}
 	//
 	this->flag_is_connected = true;
-	log_debug("TCPConnector is connected.");
+	log_debug("TCPConnector is connected to " << url.url());
 	start_read();
     return true;
 }

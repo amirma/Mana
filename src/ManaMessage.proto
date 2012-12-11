@@ -5,21 +5,32 @@ message ManaMessage {
  	// constants and type definitions
 
     enum message_type_t {
-  		// --------- control messages ------------ // 
-        START_SESSION = 1; // session initiator sends this message as the first message in a session
-        START_SESSION_ACK = 2; // receiver of a START_SESSION sends an ack.  
+  		// --------- control messages ------------ //
+  		// From 1 to 100
+
+        START_SESSION = 1; // session initiator sends this message as the
+        // first message in a session. In this case, the content of 'key_value_map' field,
+        // at index 0 is a url in the form of  <protocol>:<ip address>:<port>
+        // where <protocol> must be one of the following values: "ka", "tcp", or "udp"
+
+        START_SESSION_ACK = 2; // receiver of a START_SESSION sends an ack.
         START_SESSION_ACK_ACK = 3; // The session initiator acknowledges the ack. and the session begins.
-     	   
+
         TERMINATE_SESSION = 4; // In a graceful session termination this should
-        TERMINATE_SESSION_ACK = 5; // Termination might ba acked.
-     
+        TERMINATE_SESSION_ACK = 5; // Termination might be acked.
+
         ACK = 6;
         HEARTBEAT = 7;
-        
+
         // ----------- pub/sub messages ------------ //
-        SUB = 8;
-        NOT = 9;
-        UNSUB = 10;
+        // From 101 to 200
+        SUB = 101;
+        NOT = 102;
+        UNSUB = 130;
+
+        // ----------- error messages ------------ //
+        // From 201 to 300
+        ERR_NOT_SUPPORTED = 200;
     }
 
     /*
@@ -68,24 +79,28 @@ message ManaMessage {
             required operator_t op = 2;
             required value_t value = 3;
     	}
-
         repeated constraint_t constraints = 1;
     }
 
     message notification_t {
-
     	message attribute_t {
     		required string name = 1;
     		required value_t value = 2;
     	}
-
         repeated attribute_t attribute = 1;
     }
-    
+
+    // -------------- Generic <key,value> object --------------- //
+    // A pair of <string, string> to store control information as a map
+    message key_value_pair {
+		required string key = 1;
+		required string value = 2;
+    }
+
     // ------------- mandatory message fields ----------------- //
     required message_type_t type = 1;
     required string sender = 2; // this is the sender's id
-    
+
     // ------------------- control -------------------------- //
     optional int32 seq_no = 3;
 
@@ -93,7 +108,12 @@ message ManaMessage {
     optional subscription_t subscription = 4;
     optional notification_t notification = 5;
     optional string unsubscription = 6;
-    
+
     // ------------------- payload -------------------------- //
     optional string payload = 7;
+
+    // -------------------- map ---------------------------- //
+    // this object is used to store control information. Depending
+    // on the types of the message the content of the map varies.
+    repeated key_value_pair key_value_map = 8;
 }

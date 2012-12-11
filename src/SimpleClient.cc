@@ -1,6 +1,5 @@
 /*
  * @file SimpleClient.cc
- * @brief A simple base class based on which a publsher/subscriber class can be built.
  *
  * @author Amir Malekpour
  * @version 0.1
@@ -25,7 +24,9 @@
 using namespace std;
 
 SimpleClient::SimpleClient(const string& str) : client_id_(str),
-    broker_url_("ka:127.0.0.1:2350"), flag_session_established_(false) {}
+    local_url_("ka:127.0.0.1:3351"),
+    remote_url_("ka:127.0.0.1:2350"),
+    flag_session_established_(false) {}
 
 SimpleClient::~SimpleClient() {}
 
@@ -38,9 +39,8 @@ void SimpleClient::handle_notification(const mana_message& m) {
 void SimpleClient::start() {
     try {
         log_info("Starting client...");
-        const string& url =  broker_url_;
         auto hndlr = std::bind(&SimpleClient::handle_notification, this, std::placeholders::_1);
-        context_ = make_shared<mana::ManaContext>(client_id_, url, hndlr);
+        context_ = make_shared<mana::ManaContext>(client_id_, local_url_, remote_url_, hndlr);
         context_->start();
         run();
         context_->join();
@@ -83,6 +83,6 @@ bool SimpleClient::set_broker(const string& str) {
         log_err("Can not change broker after session is established");
         return false;
     }
-    broker_url_ = str;
+    remote_url_ = str;
     return true;
 }

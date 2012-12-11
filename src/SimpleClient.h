@@ -1,6 +1,5 @@
 /*
  * @file SimpleClient.h
- * @brief A simple base class based on which a publsher/subscriber class can be built.
  *
  * @author Amir Malekpour
  * @version 0.1
@@ -31,6 +30,9 @@
 
 using namespace std;
 
+/**
+* @brief A simple base class based on which a publsher/subscriber class can be built.
+*/
 class SimpleClient {
 
 public:
@@ -47,8 +49,8 @@ public:
 protected:
     shared_ptr<mana::ManaContext> context_;
     string client_id_;
-    string broker_url_;
     string local_url_; // url
+    string remote_url_;
     bool flag_session_established_;
     int listening_port_;
 

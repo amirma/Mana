@@ -22,7 +22,7 @@
 
 
 // logging macros
-#define FLG_PR_DEBUG false
+#define FLG_PR_DEBUG true
 #define FLG_PR_WARN  true
 
 
