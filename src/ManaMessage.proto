@@ -30,7 +30,7 @@ message ManaMessage {
 
         // ----------- error messages ------------ //
         // From 201 to 300
-        ERR_NOT_SUPPORTED = 200;
+        ERR_NOT_SUPPORTED = 201;
     }
 
     /*

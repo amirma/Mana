@@ -1,5 +1,5 @@
 /**
- * @file Session.cc
+ * @file Session.h
  *
  * @author Amir Malekpour
  * @version 0.1
@@ -33,6 +33,7 @@
 #include "TaskScheduler.h"
 #include "common.h"
 #include "URL.h"
+#include "Log.h"
 
 using namespace std;
 
@@ -76,33 +77,35 @@ Session& operator=(const Session&) = delete;
  * description of this class
  * @param in_nc  Pointer to the ingress network connector (i.e., the connector from which packets are received).
  * If this is null then a listener will be created listening on the parameter lo_url.
- * @param out_nc Pointer to the outgress network connector (i.e., the connector from which packets are received)
- * If this is null, then a network socket will be created based on the connecting to re_url
  * @param remote_id The identifier of the remote node
  * @param ifc The interface number in the forwarding table associated with this session
  * @param lo_url of the local node
  * @param rem_url of the remote node
  */
-Session(T& h, const URL& lo_url, const URL& re_url, NetworkConnector<T>* in_nc, NetworkConnector<T>* out_nc,
+Session(T& h, const URL& lo_url, const URL& re_url, NetworkConnector<T>* in_nc,
 	const string& id, siena::if_t ifc):
-    host_(h), ingress_net_connector_(in_nc), outgress_net_connector_(out_nc),
+    host_(h), ingress_net_connector_(in_nc), outgress_net_connector_(nullptr),
     remote_id_(id), local_url_(lo_url),
     remote_url_(re_url), iface_(ifc), flag_session_live_(false),
     task_scheduler_(h.io_service())  {
 
-	if(outgress_net_connector_ == nullptr) {
-		if(remote_url_.protocol() == mana::connection_type::tcp) {
-	        outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, local_url_);
-	    } else if(remote_url_.protocol() == mana::connection_type::ka) {
-	    	outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, local_url_);
-	    	if(!connect())
-	    		throw ManaException("Could not connect to " + remote_url_.url());
-	    } else {
-	    	assert(remote_url_.protocol() == mana::connection_type::udp);
-	        log_err("Malformed URL or method not supported:" << remote_url_.url());
-	        exit(-1);
-	    }
+	if(remote_url_.protocol() == mana::connection_type::tcp) {
+		outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, local_url_);
+	} else if(remote_url_.protocol() == mana::connection_type::ka) {
+		if(ingress_net_connector_ == nullptr) {
+			outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, local_url_);
+			if(!connect())
+				throw ManaException("Could not connect to " + remote_url_.url());
+		}
+		else
+			outgress_net_connector_ = ingress_net_connector_;
+	} else {
+		assert(remote_url_.protocol() == mana::connection_type::udp);
+		FILE_LOG(logERROR) << "Malformed URL or method not supported:" << remote_url_.url();
+		exit(-1);
 	}
+
+	establish();
 
     try {
         task_scheduler_.schedule_at_periods(std::bind(&Session<T>::check_session_liveness, this),
@@ -111,6 +114,7 @@ Session(T& h, const URL& lo_url, const URL& re_url, NetworkConnector<T>* in_nc, 
         task_scheduler_.schedule_at_periods(std::bind(&Session<T>::send_heartbeat, this), t, TimeUnit::second);
         update_hb_reception_ts();
     } catch(exception& e) {}
+
 }
 
 virtual ~Session() {
@@ -120,7 +124,7 @@ virtual ~Session() {
 	}
 }
 
-/** @brief Get the interface assciated with this session */
+/** @brief Get the interface associated with this session */
 const siena::if_t& iface() const {
     return iface_;
 }
@@ -145,7 +149,23 @@ void update_hb_reception_ts() {
 }
 
 void send(ManaMessage const & msg) {
+	//make sure all required fields are filled
+	assert(msg.IsInitialized());
+	assert(msg.has_type());
 	outgress_net_connector_->send(msg);
+}
+
+void establish() {
+	if(this->flag_session_live_)
+		return;
+	ManaMessage msg;
+	// set sender id and type
+	msg.set_sender(host_.id());
+	auto p = msg.mutable_key_value_map()->Add();
+	p->set_key("url");
+	p->set_value(local_url_.url());
+	msg.set_type(ManaMessage_message_type_t_START_SESSION);
+	send(msg);
 }
 
 private:
@@ -155,15 +175,11 @@ void send_heartbeat() {
     // set sender id and type
     msg.set_sender(host_.id());
     msg.set_type(ManaMessage_message_type_t_HEARTBEAT);
-    // fill in the constraints : type, name, operator, value
-    //make sure all required fields are filled
-    assert(msg.IsInitialized());
-    assert(msg.has_type());
     send(msg);
 }
 
 void check_session_liveness() {
-    log_info("Session::check_neighbors_and_send_hb: checking neighbors...");
+	FILE_LOG(logDEBUG2) << "Session::check_neighbors_and_send_hb: checking neighbors...";
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
     if(now - this->last_hb_reception_ts_ > std::chrono::seconds(DEFAULT_HEARTBEAT_INTERVAL_SECONDS)) {
         flag_session_live_ = false;
@@ -178,7 +194,7 @@ bool connect() {
 	if(!(outgress_net_connector_->connect(remote_url_))) {
 		return false;
 	}
-	log_debug("Session::connect(): Connected to " << remote_url_.url());
+	FILE_LOG(logDEBUG2) << "Session::connect(): Connected to " << remote_url_.url();
 	return true;
 }
 

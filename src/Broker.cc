@@ -1,8 +1,8 @@
-/*
+/**
  * @file Broker.cc
  * Broker implementation
  *
- * @brief This class implements a messagin broker.
+ * @brief This class implements a messaging broker.
  *
  * @author Amir Malekpour
  * @version 0.1
@@ -33,6 +33,7 @@
 #include "TaskScheduler.h"
 #include "common.h"
 #include "URL.h"
+#include "Log.h"
 
 using namespace std;
 
@@ -64,7 +65,7 @@ void Broker::add_transport(string str_url) {
 }
 
 void Broker::start() {
-    log_info("Starting broker...");
+    FILE_LOG(logINFO) << "Starting broker...";
     for(auto& tr : message_receivers)
     	tr->start();
     // make sure it least one of the transports started successfully. If not print an error
@@ -87,14 +88,14 @@ void Broker::start() {
         // is shutdown
         io_service_.run();
     } catch (exception& e) {
-        log_err("An error happened in the broker execution: " << e.what());
+        FILE_LOG(logERROR) << "An error happened in the broker execution: " << e.what();
     }
 }
 
 void Broker::shutdown() {
-    log_info("Broker is shutting down...");
+	FILE_LOG(logINFO) << "Broker is shutting down...";
 	io_service_.stop();
-    log_info("done." << endl);
+	FILE_LOG(logINFO) << "done.";
 }
 
 boost::asio::io_service& Broker::io_service() {
@@ -109,19 +110,25 @@ void Broker::handle_session_initiation(NetworkConnector<Broker>& nc, ManaMessage
         return;
     }
     // make sure we got a properly formed message
-    if(buff.key_value_map_size() > 0) {
+    if(buff.key_value_map_size() < 0) {
         send_error();
         return;
     }
-    URL remote_url(buff.key_value_map(0).value());
-    const URL& local_url = nc.url();
-    // assign a new interface id
-    siena::if_t  if_no = iface_no_generator_.borrow_number();
-    log_info("Broker::handle_session_initiation(): iface no: " << if_no);
-    // make sure we got a properly formed message
-    auto tmp = make_shared<Session<Broker>>(*this, local_url, remote_url, nullptr, &nc, buff.sender(), if_no);
-    neighbors_by_id_[buff.sender()] = tmp;
-    neighbors_by_iface_[if_no] = std::move(tmp);
+    try {
+    	URL remote_url(buff.key_value_map(0).value());
+    	assert(buff.key_value_map(0).key() == "url");
+		const URL& local_url = nc.url();
+		// assign a new interface id
+		siena::if_t  if_no = iface_no_generator_.borrow_number();
+		FILE_LOG(logDEBUG2) << "Broker::handle_session_initiation(): iface no: " << if_no;
+		// make sure we got a properly formed message
+		auto tmp = make_shared<Session<Broker>>(*this, local_url, remote_url, &nc, buff.sender(), if_no);
+		neighbors_by_id_[buff.sender()] = tmp;
+		neighbors_by_iface_[if_no] = std::move(tmp);
+    } catch(exception& e) {
+		send_error();
+		return;
+	}
 }
 
 void Broker::handle_sub(NetworkConnector<Broker>& nc, ManaMessage& buff) {
@@ -134,7 +141,7 @@ void Broker::handle_sub(NetworkConnector<Broker>& nc, ManaMessage& buff) {
     if(is_in_container(neighbors_by_id_, buff.sender())) {
         if_no =  neighbors_by_id_[buff.sender()]->iface();
     } else {
-        log_info("Broker::handle_sub: Subscription request received for unknown session. Sender id: " << buff.sender());
+    	FILE_LOG(logDEBUG2) << "Broker::handle_sub: Subscription request received for unknown session. Sender id: " << buff.sender();
         send_error();
         return;
         // TODO:
@@ -158,7 +165,7 @@ void Broker::handle_not(ManaMessage& buff) {
 
 void Broker::handle_heartbeat(ManaMessage& buff) {
     if(is_in_container(neighbors_by_id_, buff.sender())) {
-    	log_info("Received hearbeat from " << buff.sender());
+    	FILE_LOG(logDEBUG2)  << "Received hearbeat from " << buff.sender();
     	neighbors_by_id_[buff.sender()]->update_hb_reception_ts();
     }
 }
@@ -174,28 +181,28 @@ void Broker::handle_connect(shared_ptr<NetworkConnector<Broker>>& c) {
 }
 
 void Broker::handle_message(NetworkConnector<Broker>& nc, ManaMessage& msg) {
-        switch(msg.type()) {
-            case ManaMessage_message_type_t_START_SESSION:
-            handle_session_initiation(nc, msg);
-            break;
-        case ManaMessage_message_type_t_SUB:
-            handle_sub(nc, msg);
-            break;
-        case ManaMessage_message_type_t_NOT:
-            handle_not(msg);
-            break;
-        case ManaMessage_message_type_t_HEARTBEAT:
-        	handle_heartbeat(msg);
-        	break;
-        default: // other types ...
-        	log_warn("Broker::handle_message: message of invalid typed was received.")
-            break;
-        }
-        msg.Clear();
+	switch(msg.type()) {
+	case ManaMessage_message_type_t_START_SESSION:
+		handle_session_initiation(nc, msg);
+		break;
+	case ManaMessage_message_type_t_SUB:
+		handle_sub(nc, msg);
+		break;
+	case ManaMessage_message_type_t_NOT:
+		handle_not(msg);
+		break;
+	case ManaMessage_message_type_t_HEARTBEAT:
+		handle_heartbeat(msg);
+		break;
+	default: // other types ...
+		FILE_LOG(logWARNING) << "Broker::handle_message: message of invalid typed was received.";
+		break;
+	}
+	msg.Clear();
 }
 
 bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
-    log_debug("Broker::handle_match(): match for client " << neighbors_by_iface_[iface]->remote_id());
+	FILE_LOG(logDEBUG2) << "Broker::handle_match(): match for client " << neighbors_by_iface_[iface]->remote_id();
     ManaMessage buff;
     // set the sender id
     buff.set_sender(id_);
@@ -204,13 +211,13 @@ bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
     	to_protobuf(dynamic_cast<const mana_message&>(msg), buff);
     } catch(exception& e) {
     	// ignore the message
-    	log_warn("Broker::handle_match: static_cast from siena::message& to ManaMessage& failed.");
+    	FILE_LOG(logWARNING) << "Broker::handle_match: static_cast from siena::message& to ManaMessage& failed.";
     	return true;
     }
     // FIXME: i've not yet found a way to remove a subscription from
     // an interface. So it can happen that a session is removed but
     // the subscription still exists in the forwarding table, hence
-    // we need the ckeck. Assertion is disabled for now ...
+    // we need the check. Assertion is disabled for now ...
     //assert(is_in_container(neighbors_by_iface_, iface));
     // FIXME: we need read/write lock here
     if(is_in_container(neighbors_by_iface_, iface) == false)
@@ -227,8 +234,9 @@ const string& Broker::id() const {
 }
 
 void Broker::handle_session_termination(Session<Broker>& s) {
-    log_info("Broker::handle_session_termination: Session " << s.remote_id() << " terminated.");
+	FILE_LOG(logDEBUG2) << "Broker::handle_session_termination: Session " << s.remote_id() << " terminated.";
     // FIXME: Locking needed
+    // FIXME: iface number must be released, commented out for now ...
     //iface_no_generator_.return_number(s.iface());
     neighbors_by_iface_.erase(s.iface());
     neighbors_by_id_.erase(s.remote_id());

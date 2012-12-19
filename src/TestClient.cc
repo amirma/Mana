@@ -14,6 +14,7 @@
 #include "SimpleClient.h"
 #include "common.h"
 #include "Utility.h"
+#include "Log.h"
 
 using namespace std;
 
@@ -37,11 +38,11 @@ public:
             size_t second = line.find_first_of("\"", first+1);
             string str = line.substr(first + 1, second - first - 1);
             if(tokens[3] == "pub") {
-                log_info("Publishing: " << line);
+            	FILE_LOG(logINFO) << "Publishing: " << line;
                 //sleep(1);
                 context_->publish(str);
             } else if(tokens[3] == "sub") {
-                log_info("Subscribing: " << line);
+            	FILE_LOG(logINFO) << "Subscribing: " << line;
                 context_->subscribe(str);
             }
         }
@@ -58,7 +59,7 @@ public:
 shared_ptr<TestClient> client = nullptr;
 
 void termination_handler(int signum) {
-    log_info("TestClient: Received signal " << signum << ". Client is terminating.");
+	FILE_LOG(logINFO) << "TestClient: Received signal " << signum << ". Client is terminating.";
     client->stop();
     exit(0);
 }
@@ -89,6 +90,8 @@ int main(int argc, char* argv[]) {
 
     if(id == "" || fname == "")
         goto error;
+    // TODO: this has to be passed as a parameter
+	Log::ReportingLevel() = logDEBUG4;
     client = make_shared<TestClient>(id);
     client->set_workload(fname);
     client->start();

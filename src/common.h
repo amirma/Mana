@@ -22,7 +22,7 @@
 
 
 // logging macros
-#define FLG_PR_DEBUG true
+#define FLG_PR_DEBUG false
 #define FLG_PR_WARN  true
 
 
@@ -71,14 +71,24 @@
      public:    void     unlock()      {  mut_.unlock();  } \
      private:   MutType mut_;
 
-#define PROTECTED_MEMBER(Type,name)\
+/*
+template<typename T> struct argument_type;
+template<typename T, typename U> struct argument_type<T(U)> { typedef U type; };
+#define PROTECTED_MEMBER(Type,name) \
+     public:    argument_type<void(t)>::type&    name()     { assert(!mut_.try_lock()); return name##_; } \
+     public:    const argument_type<void(t)>::type&    const_##name()     { return name##_; } \
+     private:   argument_type<void(t)>::type    name##_;
+*/
+
+#define PROTECTED_MEMBER(Type,name) \
      public:    Type&    name()     { assert(!mut_.try_lock()); return name##_; } \
      public:    const Type&    const_##name()     { return name##_; } \
      private:   Type    name##_;
 
 
+
 // constants
-#define BUFF_SEPERATOR 23 //ETB
+#define BUFF_SEPERATOR 254 //ETB
 #define BUFF_SEPERATOR_LEN_BYTE 1
 #define MAX_MSG_SIZE 9000 //Bytes
 

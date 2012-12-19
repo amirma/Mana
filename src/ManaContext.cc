@@ -1,4 +1,4 @@
-/*
+/**
  * @file ManaContext.cc
  * @brief Client interface to the content-based network. A
  *
@@ -30,6 +30,7 @@
 #include "common.h"
 #include "ManaFwdTypes.h"
 #include "Utility.h"
+#include "Log.h"
 
 namespace mana {
 
@@ -38,8 +39,7 @@ ManaContext::ManaContext(const string& id, const string& loc_url, const string& 
     local_id_(id), local_url_(loc_url), remote_url_(rem_url), app_notification_handler_(h),
     flag_has_subscription(false), flag_session_established_(false), task_scheduler_(io_service_) {
 
-	session_ = make_shared<Session<ManaContext>>(*this, local_url_, remote_url_,
-	    	nullptr, nullptr, remote_url_.url(), 0);
+	session_ = make_shared<Session<ManaContext>>(*this, local_url_, remote_url_, nullptr, remote_url_.url(), 0);
 }
 
 ManaContext::~ManaContext() {
@@ -111,7 +111,7 @@ void ManaContext::start() {
 }
 
 void ManaContext::handle_session_termination(Session<ManaContext>& s) {
-    log_info("Session to " << s.remote_id() << " terminated.");
+	FILE_LOG(logINFO) << "Session to " << s.remote_id() << " terminated.";
 }
 
 void ManaContext::stop() {
@@ -128,22 +128,22 @@ bool ManaContext::session_established() const {
 }
 
 void ManaContext::handle_message(NetworkConnector<ManaContext>& nc, ManaMessage& buff) {
-    log_debug("\nManaContext::receive_handler: received message from " << buff.sender());
+	FILE_LOG(logDEBUG2) << "ManaContext::receive_handler: received message from " << buff.sender();
     switch(buff.type()) {
     case ManaMessage_message_type_t_NOT: {
         mana_message msg;
         to_mana_message(buff, msg);
-        log_debug("\nManaContext::receive_handler(): dispatching notification to the application.");
+        FILE_LOG(logDEBUG2) << "ManaContext::receive_handler(): dispatching notification to the application.";
         app_notification_handler_(msg);
         break;
     }
     case ManaMessage_message_type_t_HEARTBEAT: {
-    	log_info("Received hearbeat from " << buff.sender());
+    	FILE_LOG(logDEBUG2) << "Received hearbeat from " << buff.sender();
     	session_->update_hb_reception_ts();
     	break;
     }
     default:
-        log_err("ManaContext::receive_handler(): unrecognized message type: " << buff.type());
+    	FILE_LOG(logWARNING) << "ManaContext::receive_handler(): unrecognized message type: " << buff.type();
         break;
     }
 }

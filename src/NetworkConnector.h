@@ -66,7 +66,7 @@ virtual bool is_connected() = 0;
 
 
 const URL& url() const {
-    return this->url_;
+  return this->url_;
 }
 
 protected:
@@ -82,7 +82,21 @@ protected:
     bool flag_write_op_in_prog_;
     MessageStream message_stream_;
     array<unsigned char, MAX_MSG_SIZE> read_buffer_;
+    /*
+    struct bla {
+    	private:
+    		std::mutex mut_;
+    		array<unsigned char, MAX_MSG_SIZE> buffer_;
+		public:
+    		void    lock()         {  mut_.lock();  }
+    		bool    try_lock()    {  return mut_.try_lock();  }
+			void    unlock()      {  mut_.unlock();  }
+			array<unsigned char, MAX_MSG_SIZE>&   buffer()     { assert(!mut_.try_lock()); return buffer_; }
+			const 	array<unsigned char, MAX_MSG_SIZE>&    const_buffer()     { return buffer_; }
+    } read_buffer_;*/
+
     WriteBufferItemQueueWrapper write_buff_item_qu_;
+    mutex read_buff_mutex_;
 };
 
 } /* namespace mana */

@@ -73,7 +73,7 @@ private:
     shared_ptr<NetworkConnector<ManaContext> > net_connection_;
     // id of this connector
     string local_id_;
-    // url of the remote broker
+    // URL of the remote broker
     URL local_url_;
     URL remote_url_;
     std::function<void(const mana_message&)> app_notification_handler_;

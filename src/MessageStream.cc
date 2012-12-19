@@ -2,10 +2,9 @@
 
 namespace mana {
 
-MessageStream::MessageStream() {
-    unconsumed_data_size_ = 0;
-    new_data_size_ = 0;
-}
+MessageStream::MessageStream() :
+	unconsumed_data_size_(0), new_data_(nullptr),
+    new_data_size_(0) {}
 
 MessageStream::~MessageStream() {}
 
@@ -18,7 +17,7 @@ void MessageStream::consume(const unsigned char* buff, int size) {
     // access the same instance of MessageStream.
     new_data_ = buff;
     new_data_size_ = size;
-    log_debug("\nMessageStream:consume(): received new buffer. Buffer size: " << size);
+    log_debug("MessageStream:consume(): received new buffer. Buffer size: " << size);
 }
 
 /*
@@ -34,7 +33,7 @@ void MessageStream::consume(const unsigned char* buff, int size) {
  */
 bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage& msg, int& consumed_size) const {
     assert(size > 0);
-    assert(data[0] == BUFF_SEPERATOR);// this should not happen unless 
+    assert(data[0] == BUFF_SEPERATOR);// this should not fail unless
     // received data is corrupted somehow. In debug build we must fail
     // and try to debug. For fault tolerance purposes or when we are
     // using UDP and no checksumming is done we need to be prepared for
@@ -47,7 +46,7 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         while(i < size && data[i] != BUFF_SEPERATOR)
             i++;
         consumed_size = i;
-        log_warn("\nMessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i);
+        log_warn("MessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i);
         return false;
     }
     //if 'size' is less than the length of a header we return
@@ -56,7 +55,7 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         return false;
     }
     int data_size = *((int*)(data+ BUFF_SEPERATOR_LEN_BYTE)); // + 1 is to pass BUFF_SEPERATOR
-    assert(data_size > 0 && data_size <= MAX_MSG_SIZE); // this should not happen unless 
+    assert(data_size > 0 && data_size <= MAX_MSG_SIZE); // this should not happen unless
     // received data is corrupted somehow. In debug build we must fail
     // and try to debug. For fault tolerance purposes or when we are
     // using UDP and no checksumming is done we need to be prepared for
@@ -70,13 +69,13 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         while(i < size && data[i] != BUFF_SEPERATOR)
             i++;
         consumed_size = i;
-        log_warn("\nMessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i
+        log_warn("MessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i
                 << " data size: " << data_size);
         return false;
     }
-    log_debug("\nMessageStream::consume(): message size: " << data_size);
+    log_debug("MessageStream::consume(): message size: " << data_size);
     if(MSG_HEADER_SIZE + data_size > size) {
-        log_debug("\nMessageStream::do_consume(): message is incomplete");
+        log_debug("MessageStream::do_consume(): message is incomplete");
         consumed_size = 0;
         return false;
     }
@@ -89,7 +88,7 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         while(i < size && data[i] != BUFF_SEPERATOR)
             i++;
         consumed_size = i + MSG_HEADER_SIZE;
-        log_warn("\nMessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i);
+        log_warn("MessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i);
         return false;
     }
     consumed_size = data_size + MSG_HEADER_SIZE;
@@ -102,7 +101,7 @@ bool MessageStream::produce(ManaMessage& msg) {
     // new buffer. So we copy one message worth of data into the unconsumed
     // buffer and send that to do_consume.
     if(unconsumed_data_size_ != 0) {
-        log_debug("\nMessageStream:produce(): There's " << unconsumed_data_size_ << "bytes of remaining data");
+        log_debug("MessageStream:produce(): There's " << unconsumed_data_size_ << "bytes of remaining data");
         int i = 0;
         while(i < new_data_size_ && i < MAX_MSG_SIZE - unconsumed_data_size_ && new_data_[i] != BUFF_SEPERATOR) {
             unconsumed_data_[unconsumed_data_size_++] = new_data_[i++];

@@ -46,6 +46,10 @@ public:
     unsigned int port() const;
     const string& address() const;
     connection_type protocol() const;
+    /** static method. Returns true of the argument string
+     * represents a valid URL in the form of protocol:address:port.
+     */
+    static bool is_valid(const string& url);
 private:
     string url_;
     unsigned int port_;

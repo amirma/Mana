@@ -27,10 +27,10 @@
 namespace mana {
 
 URL::URL(const string& str_url) : url_(str_url) {
-	// convert to lowercase e.g., TCP -> tcp
-	std::transform(url_.begin(), url_.end(), url_.begin(), ::tolower);
 	vector<string> tokens;
 	boost::split(tokens, url_, boost::is_any_of(":"));
+	// convert to lowercase e.g., TCP -> tcp
+	std::transform(tokens[0].begin(), tokens[0].end(), tokens[0].begin(), ::tolower);
 	address_ = tokens[1];
 	try {
 		port_ = stoi(tokens[2]);
@@ -48,12 +48,14 @@ URL::URL(const string& str_url) : url_(str_url) {
 }
 
 URL::URL(const URL& url) {
+	url_ = url.url_;
     protocol_ = url.protocol();
     address_ = url.address();
     port_ = url.port();
 }
 
 URL& URL::operator=(const URL& url) {
+	url_ = url.url_;
     protocol_ = url.protocol();
     address_ = url.address();
     port_ = url.port();
@@ -76,6 +78,15 @@ connection_type URL::protocol() const {
 
 const string& URL::url() const {
 	return url_;
+}
+
+bool URL::is_valid(const string& str) {
+	try {
+		URL url(str);
+	} catch (exception& e){
+		return false;
+	}
+	return true;
 }
 
 } // namespace mana

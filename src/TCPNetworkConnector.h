@@ -29,7 +29,7 @@ public:
  * This constructor is used when we need to manually create a connection.
  */
 TCPNetworkConnector(boost::asio::io_service& srv, T& c, const URL& url) :
-		NetworkConnector<T>(srv, c, url) {
+		NetworkConnector<T>(srv, c, url), flag_try_reconnect_(false) {
 	socket_ = make_shared<boost::asio::ip::tcp::socket>(this->io_service_);
 }
 
@@ -48,7 +48,7 @@ TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&& skt,
 	}
 }
 
-~TCPNetworkConnector() {
+virtual ~TCPNetworkConnector() {
 }
 
 void set_socket_options() {
@@ -61,8 +61,11 @@ void set_socket_options() {
 }
 
 /**
- * @brief Send a SienPlusMessage out to the network. This is the only public
- * interface for message transmission.
+ * @brief Send a SienPlusMessage out to the network.
+ *
+ * This is the only public interface for message transmission.
+ * This method is thread-safe i.e., multiple threads can call
+ * this method on the same object.
  *
  * Send is asynchronous and the message is converted to a buffer and the memory
  * is taken care of by the network connector. This means that after this method
@@ -77,13 +80,17 @@ void send(const ManaMessage& msg) {
     arr_buf[0] = BUFF_SEPERATOR;
     *((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) = data_size;
     assert(*((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) == data_size);
+    assert(msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE));
     if(!msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE)) {
-        log_err("TCPNetworkConnector::Send(): Could not serialize message to buffer.");
+    	log_err("TCPNetworkConnector::Send(): Could not serialize message to buffer.");
         return;
     }
     prepare_buffer(arr_buf, total_size);
 }
 
+/**
+ * @brief Connect to the provided url
+ */
 bool connect(const URL& url) {
 	if(is_connected()) {
 		return true;
@@ -118,16 +125,8 @@ bool is_connected() {
 	return socket_->is_open();
 }
 
-void *  asio_handler_allocate(std::size_t size) {
-    return new unsigned char[size];
-}
-
-void asio_handler_deallocate(void * pointer, std::size_t size) {
-
-}
-
-private:
 // private methods
+private:
 
 void async_connect(const string& url) {
 	if(this->flag_is_connected)
@@ -138,7 +137,7 @@ void async_connect(const string& url) {
 	try {
 		port = stoi(tokens[2]);
 	} catch(exception& e) {
-		throw ManaException("Could not connect: invalid port number: " + tokens[2]);
+		throw ManaException("TCPNetworkConnector::async_connect(): Could not connect: invalid port number: " + tokens[2]);
 	}
 	async_connect(tokens[1], port);
 }
@@ -151,27 +150,28 @@ void async_connect(const string& addr, int prt) {
 		socket_->async_connect(endpnt, boost::bind(&TCPNetworkConnector<T>::connect_handler, this, boost::asio::placeholders::error));
 	} catch(exception& e) {
 		this->flag_is_connected = false;
-		log_info("count not connect");
+		log_info("TCPNetworkConnector::async_connect(): count not connect");
 	}
 }
 
 /*  this method mutates 'write_buff_item_qu_.qu()' and so must be run by
- *  one thread at a time. This is guaranteed by using 'write_strand_'
- *  */
+ *  one thread at a time. This is guaranteed by using 'write_strand_'. Though
+ *  this is not enough to serialize access to write_buff_item_qu_ because
+ *  the 'send' method also mutates this object. Hence we need lock the
+ *  object.
+ */
 void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
     lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
-    if(this->write_buff_item_qu_.qu().empty())
-        return;
-    log_debug("\nwrite_handler(): wrote " << bytes_transferred << " bytes.");
-    assert(!this->write_buff_item_qu_.qu().empty()); // at least the last
+    log_debug("TCPNetworkConnector::write_handler(): wrote " << bytes_transferred << " bytes: " << this->write_buff_item_qu_.qu().front().data_);
+    assert(this->write_buff_item_qu_.qu().empty() == false); // at least the last
     // buffer that was written must be in the queue
     assert(this->write_buff_item_qu_.qu().front().size_ != 0);
     // delete the memory and remove the item from the queue
     delete[] this->write_buff_item_qu_.qu().front().data_;
     this->write_buff_item_qu_.qu().pop();
     // if there's more items in the queue waiting to be written
-    // to the socket continute sending ...
-    if(!this->write_buff_item_qu_.qu().empty())
+    // to the socket continue sending ...
+    if(this->write_buff_item_qu_.qu().empty() == false)
         send_buffer(this->write_buff_item_qu_.qu().front().data_, this->write_buff_item_qu_.qu().front().size_);
 }
 
@@ -185,10 +185,9 @@ void connect_handler(const boost::system::error_code& ec) {
 	start_read();
 }
 
-
 void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
 	if(!ec && ec.value() != 0) {
-		log_err("error reading:" << ec.message());
+		log_err("TCPNetworkConnector::read_handler(): error reading:" << ec.message());
 		return;
 	}
 	// TODO: i'm using the number of bytes as a hint that the connection
@@ -196,19 +195,19 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
     // reason socket.is_open() does not do it's job...
 	if(bytes_num == 0) {
         this->flag_is_connected = false;
-        log_debug("\nread_handler(): connection seems to be closed.");
+        log_debug("TCPNetworkConnector::read_handler(): connection seems to be closed.");
         return;
 	}
-    log_debug("\nread_handler(): read " << bytes_num << " bytes.");
+    log_debug("TCPNetworkConnector::read_handler(): read " << bytes_num << " bytes.");
 
     ManaMessage msg;
-    // Note: message_stream MUST be acessed by only one thread at a time - it's
+    // Note: message_stream MUST be accessed by only one thread at a time - it's
     // not thread safe. Here the assumption is that read_handler is run only
     // by one thread at a time. This is guaranteed by using strand_ for async
     // read.
     this->message_stream_.consume(this->read_buffer_.data(), bytes_num);
     while(this->message_stream_.produce(msg))
-    this->client_.handle_message(*this, msg);
+    	this->client_.handle_message(*this, msg);
 
     if(is_connected())
         start_read();
@@ -220,30 +219,14 @@ void start_read() {
     boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
 }
 
-void start_sync_read() {
-    std::thread([&](){
-        for(;;) {
-            try {
-            size_t bytes_num = socket_->read_some(boost::asio::buffer(this->read_buffer_, MAX_MSG_SIZE));
-            ManaMessage msg;
-            this->message_stream_.consume(this->read_buffer_.data(), bytes_num);
-            while(this->message_stream_.produce(msg))
-        	    receive_handler(this, msg);
-            log_debug("\nstart_sync_read: read " << bytes_num << " bytes.");
-            } catch(exception& e) {
-                disconnect();
-            }
-        }
-    }).detach();
-}
-
 /**
- * @brief this method had only internal purposes and is used to send a buffer of given
-*  size to the socket
+ * This method has only internal purposes and is used to send a buffer of
+ * a given size using the socket.
 */
 void send_buffer(const unsigned char* data, size_t length) {
+	assert(this->write_buff_item_qu_.try_lock() == false);
 	if(!is_connected()) {
-		log_err("send_buffer(): socket is not connected. not sending.");
+		log_err("TCPNetworkConnector::send_buffer(): socket is not connected. not sending.");
 		return;
 	}
     assert(data[0] == BUFF_SEPERATOR);
@@ -252,13 +235,11 @@ void send_buffer(const unsigned char* data, size_t length) {
         this->write_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector<T>::write_handler,
         this, boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred)));
-    log_debug("\nsend_buffer(): sent " << length << " bytes.");
+    log_debug("TCPNetworkConnector::send_buffer(): sent " << length << " bytes.");
 }
 
-/**
- * @brief For internal purposes only. Prepares a buffer for transmission over
- * the network.
- *
+/*
+ * Prepares a buffer for transmission over the network.
  * If there is a transmission going on already, the buffer will be queued for
  * later transmission. Otherwise the buffer is sent out without being queued.
  *
@@ -285,7 +266,7 @@ void prepare_buffer(const unsigned char* data, size_t length) {
 shared_ptr<boost::asio::ip::tcp::socket> socket_;
 // this flag specifies the behavior in case of connection termination, whether
 // a re-connection should be tried or not
-bool flag_try_reconnect;
+bool flag_try_reconnect_;
 };
 
 } /* namespace mana */
