@@ -1,11 +1,11 @@
-SET (CMAKE_CXX_FLAGS "-std=c++0x -g -Wall -fstack-protector-all")
+SET (CMAKE_CXX_FLAGS "-std=c++0x -g -Wall")
 #SET (CMAKE_CXX_FLAGS "-std=c++0x -DNDEBUG -g -O2")
 #
 include_directories(/opt/include/)
 link_directories(/opt/lib)
 #
 add_executable (StartBroker StartBroker.cc Broker.cc 
-    UDPMessageReceiver.cc ManaMessage.pb.cc
+    ManaMessage.pb.cc
     ManaException.cc URL.cc
     ManaContext.cc ProtobufToFromMana.cc MessageStream.cc Utility.cc)
 target_link_libraries (StartBroker sff boost_system boost_thread-mt pthread protobuf profiler)

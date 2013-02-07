@@ -31,6 +31,7 @@
 #include "ManaMessage.pb.h"
 #include "TCPMessageReceiver.h"
 #include "common.h"
+#include "Log.h"
 
 
 using namespace std;
@@ -54,29 +55,34 @@ TCPMessageReceiver(boost::asio::io_service& srv, T& client,
 }
 
 virtual ~TCPMessageReceiver() {
-	try {
-		stop();
-	} catch(exception& e) {/* ignore errors */}
+	if(this->flag_runing_) {
+		try {
+			acceptor_ptr_->cancel();
+			// stop listening on the socket
+			acceptor_ptr_->close();
+			this->flag_runing_ = false;
+		} catch(exception& e) {/* ignore errors */}
+	}
 }
 
-void start() {
+virtual void start() {
     if(this->flag_runing_)
             return;
     try {
-        this->acceptor_ptr_ = make_shared<boost::asio::ip::tcp::acceptor>(this->io_service_);
+        acceptor_ptr_ = make_shared<boost::asio::ip::tcp::acceptor>(this->io_service_);
         boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), this->url_.port());
-        this->acceptor_ptr_->open(endpoint.protocol());
-        this->acceptor_ptr_->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-        this->acceptor_ptr_->bind(endpoint);
-        this->acceptor_ptr_->listen();
+        acceptor_ptr_->open(endpoint.protocol());
+        acceptor_ptr_->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+        acceptor_ptr_->bind(endpoint);
+        acceptor_ptr_->listen();
         this->flag_runing_ = true;
         begin_accept();
     } catch(exception& e) {
-        log_warn("TCPMessageReceiver<T>::start: error listening to socket on " << this->url_.url());
+        FILE_LOG(logWARNING) << "TCPMessageReceiver<T>::start: error listening to socket on " << this->url_.url();
     }
 }
 
-void stop() {
+virtual void stop() {
 	this->flag_runing_ = false;
 	// cancel all ongoing i/o operations
 	acceptor_ptr_->cancel();
@@ -86,12 +92,12 @@ void stop() {
 
 void begin_accept() {
     try {
-            next_connection_socket_ = make_shared<boost::asio::ip::tcp::socket>(this->io_service_);
-            acceptor_ptr_->async_accept(*next_connection_socket_, boost::bind(&TCPMessageReceiver<T>::accept_handler,
-                            this, boost::asio::placeholders::error));
+		next_connection_socket_ = make_shared<boost::asio::ip::tcp::socket>(this->io_service_);
+		acceptor_ptr_->async_accept(*next_connection_socket_, boost::bind(&TCPMessageReceiver<T>::accept_handler,
+						this, boost::asio::placeholders::error));
     } catch(exception& e) {
-            log_warn("TCPMessageReceiver::begin_accept: an error occurred while accepting a new connection: " <<
-                            e.what());
+    	FILE_LOG(logWARNING) << "TCPMessageReceiver::begin_accept: an error occurred while accepting a new connection: " <<
+                            e.what();
     }
 }
 
@@ -99,7 +105,7 @@ void accept_handler(const boost::system::error_code& ec) {
     if(!ec && ec.value() != 0) {
             log_err("error: " << ec.message());
     }
-    log_debug("Accepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string());
+    FILE_LOG(logDEBUG3) << "Accepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string();
     //once the connection is created we move the pointer
     shared_ptr<NetworkConnector<T>> c = make_shared<TCPNetworkConnector<T>>(std::move(next_connection_socket_),
     		this->client_, this->url_);

@@ -51,19 +51,47 @@ class NetworkConnector {
 public:
 NetworkConnector(boost::asio::io_service& srv, T& c, const URL& url) :
 		io_service_(srv), client_(c), url_(url), read_hndlr_strand_(srv), write_hndlr_strand_(srv),
-                flag_is_connected(false), flag_write_op_in_prog_(false) {}
+		flag_is_connected(false), flag_write_op_in_prog_(false) {}
 
 virtual ~NetworkConnector() {}
 
 NetworkConnector(const NetworkConnector&) = delete; // delete copy ctor
 NetworkConnector& operator=(const NetworkConnector&) = delete; // delete assig. operator
-virtual void send(const ManaMessage&) = 0;
+virtual void send_buffer(const unsigned char* data, size_t length) = 0;
 virtual void async_connect(const string&, int) = 0;
 virtual void async_connect(const string&) = 0;
 virtual bool connect(const URL&) = 0; //sync
 virtual void disconnect() = 0;
 virtual bool is_connected() = 0;
+//virtual void start() {}
 
+/**
+ * @brief Send a SienPlusMessage out to the network.
+ *
+ * This is the only public interface for message transmission.
+ * This method is thread-safe i.e., multiple threads can call
+ * this method on the same object.
+ *
+ * Send is asynchronous and the message is converted to a buffer and the memory
+ * is taken care of by the network connector. This means that after this method
+ * returns the caller can safely reuse msg.
+ */
+void send(const ManaMessage& msg) {
+    // add buffer separators and header and then serialize
+    // the message into a protobuf
+    int data_size = msg.ByteSize();
+    int total_size = MSG_HEADER_SIZE + data_size;
+    unsigned char* arr_buf = new unsigned char[total_size];
+    arr_buf[0] = BUFF_SEPERATOR;
+    *((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) = data_size;
+    assert(*((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) == data_size);
+    assert(msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE));
+    if(!msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE)) {
+    	log_err("NetworkConnector::Send(): Could not serialize message to buffer.");
+        return;
+    }
+    prepare_buffer(arr_buf, total_size);
+}
 
 const URL& url() const {
   return this->url_;
@@ -97,6 +125,81 @@ protected:
 
     WriteBufferItemQueueWrapper write_buff_item_qu_;
     mutex read_buff_mutex_;
+
+/*  this method mutates 'write_buff_item_qu_.qu()' and so must be run by
+ *  one thread at a time. This is guaranteed by using 'write_strand_'. Though
+ *  this is not enough to serialize access to write_buff_item_qu_ because
+ *  the 'send' method also mutates this object. Hence we need lock the
+ *  object.
+ */
+void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
+    lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
+    log_debug("NetworkConnector::write_handler(): wrote " << bytes_transferred << " bytes: " << this->write_buff_item_qu_.qu().front().data_);
+    assert(this->write_buff_item_qu_.qu().empty() == false); // at least the last
+    // buffer that was written must be in the queue
+    assert(this->write_buff_item_qu_.qu().front().size_ != 0);
+    // delete the memory and remove the item from the queue
+    delete[] this->write_buff_item_qu_.qu().front().data_;
+    this->write_buff_item_qu_.qu().pop();
+    // if there's more items in the queue waiting to be written
+    // to the socket continue sending ...
+    if(this->write_buff_item_qu_.qu().empty() == false)
+        send_buffer(this->write_buff_item_qu_.qu().front().data_, this->write_buff_item_qu_.qu().front().size_);
+}
+
+void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
+	if(!ec && ec.value() != 0) {
+		log_err("TCPNetworkConnector::read_handler(): error reading:" << ec.message());
+		return;
+	}
+	// TODO: i'm using the number of bytes as a hint that the connection
+    // terminated. I'm not sure this is a good way though. For some
+    // reason socket.is_open() does not do it's job...
+	if(bytes_num == 0) {
+        this->flag_is_connected = false;
+        log_debug("TCPNetworkConnector::read_handler(): connection seems to be closed.");
+        return;
+	}
+    log_debug("TCPNetworkConnector::read_handler(): read " << bytes_num << " bytes.");
+
+    ManaMessage msg;
+    // Note: message_stream MUST be accessed by only one thread at a time - it's
+    // not thread safe. Here the assumption is that read_handler is run only
+    // by one thread at a time. This is guaranteed by using strand_ for async
+    // read.
+    this->message_stream_.consume(this->read_buffer_.data(), bytes_num);
+    while(this->message_stream_.produce(msg))
+    	this->client_.handle_message(*this, msg);
+
+    if(is_connected())
+        start_read();
+}
+
+private:
+/*
+ * Prepares a buffer for transmission over the network.
+ * If there is a transmission going on already, the buffer will be queued for
+ * later transmission. Otherwise the buffer is sent out without being queued.
+ *
+ * Note that this method mutates the 'write_buff_item_qu_.qu()' and so must be
+ * called by one thread only. This is guaranteed by using strand
+ * @param data data A pointer to the buffer
+ * @param length length of the buffer
+ */
+void prepare_buffer(const unsigned char* data, size_t length) {
+    lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
+    assert(length != 0);
+    WriteBufferItem item;
+    item.data_ = data;
+    item.size_ = length;
+    bool flg_send_not_in_progress = this->write_buff_item_qu_.qu().empty();
+    this->write_buff_item_qu_.qu().push(item);
+    if(flg_send_not_in_progress)
+        send_buffer(item.data_, item.size_);
+    assert(!this->write_buff_item_qu_.qu().empty());
+    assert(this->write_buff_item_qu_.qu().front().size_ != 0);
+}
+
 };
 
 } /* namespace mana */

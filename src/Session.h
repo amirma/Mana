@@ -85,8 +85,9 @@ Session& operator=(const Session&) = delete;
 Session(T& h, const URL& lo_url, const URL& re_url, NetworkConnector<T>* in_nc,
 	const string& id, siena::if_t ifc):
     host_(h), ingress_net_connector_(in_nc), outgress_net_connector_(nullptr),
-    remote_id_(id), local_url_(lo_url),
-    remote_url_(re_url), iface_(ifc), flag_session_live_(false),
+    remote_id_(id), local_url_(lo_url), remote_url_(re_url),
+    remote_endpoint_(boost::asio::ip::address::from_string(remote_url_.address()), remote_url_.port()),
+    iface_(ifc), flag_session_live_(false),
     task_scheduler_(h.io_service())  {
 
 	if(remote_url_.protocol() == mana::connection_type::tcp) {
@@ -152,7 +153,8 @@ void send(ManaMessage const & msg) {
 	//make sure all required fields are filled
 	assert(msg.IsInitialized());
 	assert(msg.has_type());
-	outgress_net_connector_->send(msg);
+	if(outgress_net_connector_)
+		outgress_net_connector_->send(msg);
 }
 
 void establish() {
@@ -206,6 +208,7 @@ const string remote_id_;
 const string local_id_;
 const URL local_url_;
 const URL remote_url_;
+const boost::asio::ip::udp::endpoint remote_endpoint_;
 const siena::if_t iface_; // interface id in the forwarding table
 bool flag_session_live_; // true, if the session is active (based on HB messages)
 std::chrono::time_point<std::chrono::system_clock> last_hb_reception_ts_; /* The
