@@ -18,8 +18,9 @@
 *  at <http: *www.gnu.org/licenses/>
 */
 
-#include <boost/algorithm/string.hpp>
+#include <iostream>
 #include <vector>
+#include <boost/algorithm/string.hpp>
 #include "common.h"
 #include "Utility.h"
 #include "ManaException.h"

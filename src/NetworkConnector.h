@@ -29,6 +29,7 @@
 #include "ManaMessage.pb.h"
 #include "MessageStream.h"
 #include "URL.h"
+#include "Log.h"
 
 using namespace std;
 
@@ -57,13 +58,14 @@ virtual ~NetworkConnector() {}
 
 NetworkConnector(const NetworkConnector&) = delete; // delete copy ctor
 NetworkConnector& operator=(const NetworkConnector&) = delete; // delete assig. operator
+
 virtual void send_buffer(const unsigned char* data, size_t length) = 0;
-virtual void async_connect(const string&, int) = 0;
-virtual void async_connect(const string&) = 0;
-virtual bool connect(const URL&) = 0; //sync
-virtual void disconnect() = 0;
-virtual bool is_connected() = 0;
-//virtual void start() {}
+
+virtual void async_connect(const string&, int) {}
+virtual void async_connect(const string&) {}
+virtual bool connect(const URL&) {return true;}
+virtual void disconnect() {}
+virtual bool is_connected() {return true;}
 
 /**
  * @brief Send a SienPlusMessage out to the network.
@@ -87,7 +89,7 @@ void send(const ManaMessage& msg) {
     assert(*((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) == data_size);
     assert(msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE));
     if(!msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE)) {
-    	log_err("NetworkConnector::Send(): Could not serialize message to buffer.");
+    	FILE_LOG(logERROR) << "NetworkConnector::Send(): Could not serialize message to buffer.";
         return;
     }
     prepare_buffer(arr_buf, total_size);
@@ -110,19 +112,6 @@ protected:
     bool flag_write_op_in_prog_;
     MessageStream message_stream_;
     array<unsigned char, MAX_MSG_SIZE> read_buffer_;
-    /*
-    struct bla {
-    	private:
-    		std::mutex mut_;
-    		array<unsigned char, MAX_MSG_SIZE> buffer_;
-		public:
-    		void    lock()         {  mut_.lock();  }
-    		bool    try_lock()    {  return mut_.try_lock();  }
-			void    unlock()      {  mut_.unlock();  }
-			array<unsigned char, MAX_MSG_SIZE>&   buffer()     { assert(!mut_.try_lock()); return buffer_; }
-			const 	array<unsigned char, MAX_MSG_SIZE>&    const_buffer()     { return buffer_; }
-    } read_buffer_;*/
-
     WriteBufferItemQueueWrapper write_buff_item_qu_;
     mutex read_buff_mutex_;
 
@@ -134,7 +123,12 @@ protected:
  */
 void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
     lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
-    log_debug("NetworkConnector::write_handler(): wrote " << bytes_transferred << " bytes: " << this->write_buff_item_qu_.qu().front().data_);
+    if(error) {
+    	FILE_LOG(logERROR) << "NetworkConnector::write_handler(): Error sending data: " << error.message();
+    } else {
+    	FILE_LOG(logDEBUG3) << "NetworkConnector::write_handler(): wrote " << bytes_transferred << " bytes.";
+    	FILE_LOG(logDEBUG4) << "NetworkConnector::write_handler(): wrote " << this->write_buff_item_qu_.qu().front().data_;
+    }
     assert(this->write_buff_item_qu_.qu().empty() == false); // at least the last
     // buffer that was written must be in the queue
     assert(this->write_buff_item_qu_.qu().front().size_ != 0);
@@ -149,7 +143,7 @@ void write_handler(const boost::system::error_code& error, std::size_t bytes_tra
 
 void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
 	if(!ec && ec.value() != 0) {
-		log_err("TCPNetworkConnector::read_handler(): error reading:" << ec.message());
+		FILE_LOG(logDEBUG2) << "NetworkConnector::read_handler(): error reading:" << ec.message();
 		return;
 	}
 	// TODO: i'm using the number of bytes as a hint that the connection
@@ -157,10 +151,10 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
     // reason socket.is_open() does not do it's job...
 	if(bytes_num == 0) {
         this->flag_is_connected = false;
-        log_debug("TCPNetworkConnector::read_handler(): connection seems to be closed.");
+        FILE_LOG(logDEBUG2) << "NetworkConnector::read_handler(): connection seems to be closed.";
         return;
 	}
-    log_debug("TCPNetworkConnector::read_handler(): read " << bytes_num << " bytes.");
+	FILE_LOG(logDEBUG2) << "NetworkConnector::read_handler(): read " << bytes_num << " bytes.";
 
     ManaMessage msg;
     // Note: message_stream MUST be accessed by only one thread at a time - it's
@@ -172,7 +166,7 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
     	this->client_.handle_message(*this, msg);
 
     if(is_connected())
-        start_read();
+    	start_read();
 }
 
 private:
@@ -187,6 +181,7 @@ private:
  * @param length length of the buffer
  */
 void prepare_buffer(const unsigned char* data, size_t length) {
+	FILE_LOG(logDEBUG3) << "NetworkConnector::prepare_buffer(): preparing " << length << " bytes.";
     lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
     assert(length != 0);
     WriteBufferItem item;

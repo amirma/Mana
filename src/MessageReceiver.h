@@ -22,6 +22,7 @@
 
 #include <string>
 #include <boost/asio.hpp>
+#include "MessageStream.h"
 #include "common.h"
 #include "URL.h"
 
@@ -41,7 +42,7 @@ public:
  * @param addr The local address of the server
  */
 MessageReceiver(boost::asio::io_service& srv, T& c, const URL& url) :
-    io_service_(srv), client_(c), url_(url) {}
+    io_service_(srv), client_(c), url_(url), flag_runing_(false) {}
 
 virtual ~MessageReceiver() {
 }
@@ -54,7 +55,9 @@ virtual void start() = 0;
 virtual void stop() = 0;
 
 protected:
-    // methods
+
+//methods
+
     // properties
     boost::asio::io_service& io_service_;
     T& client_;

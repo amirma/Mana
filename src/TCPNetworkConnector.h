@@ -1,4 +1,4 @@
-/*
+/**
  * TCPNetworkConnector.h
  *
  *  Created on: Sep 9, 2012
@@ -15,6 +15,7 @@
 #include "boost/bind.hpp"
 #include "exception"
 #include "ManaException.h"
+#include "Log.h"
 
 namespace mana {
 
@@ -40,7 +41,8 @@ TCPNetworkConnector(boost::asio::io_service& srv, T& c, const URL& url) :
  * has to outlive the instance of this class.
  */
 TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&& skt,
-	T& c, const URL& url) : NetworkConnector<T>(skt->get_io_service(), c, url), socket_(skt) {
+	T& c, const URL& url) : NetworkConnector<T>(skt->get_io_service(), c, url),
+			socket_(skt), flag_try_reconnect_(false) {
 	if(socket_->is_open()) {
 		this->flag_is_connected = true;
         set_socket_options();
@@ -60,11 +62,10 @@ void set_socket_options() {
 #endif
 }
 
-
 /**
  * @brief Connect to the provided url
  */
-bool connect(const URL& url) {
+virtual bool connect(const URL& url) {
 	if(is_connected()) {
 		return true;
 	}
@@ -78,7 +79,7 @@ bool connect(const URL& url) {
 	}
 	//
 	this->flag_is_connected = true;
-	log_debug("TCPConnector is connected to " << url.url());
+	FILE_LOG(logDEBUG2)  << "TCPConnector is connected to " << url.url();
 	start_read();
     return true;
 }
@@ -87,21 +88,21 @@ bool connect(const URL& url) {
  * @brief Wait for the ongoing transmissions to finish and then
  * terminate the connection
  */
-void disconnect() {
+virtual void disconnect() {
     // TODO: check if there's an ongoing transmission...
     boost::system::error_code ignored_ec;
     socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
     socket_->close();
 }
 
-bool is_connected() {
+virtual bool is_connected() {
 	return socket_->is_open();
 }
 
 // private methods
 private:
 
-void async_connect(const string& url) {
+virtual void async_connect(const string& url) {
 	if(this->flag_is_connected)
 		return;
 	vector<string> tokens;
@@ -115,7 +116,7 @@ void async_connect(const string& url) {
 	async_connect(tokens[1], port);
 }
 
-void async_connect(const string& addr, int prt) {
+virtual void async_connect(const string& addr, int prt) {
 	if(this->flag_is_connected)
 		return;
 	try {
@@ -123,14 +124,14 @@ void async_connect(const string& addr, int prt) {
 		socket_->async_connect(endpnt, boost::bind(&TCPNetworkConnector<T>::connect_handler, this, boost::asio::placeholders::error));
 	} catch(exception& e) {
 		this->flag_is_connected = false;
-		log_info("TCPNetworkConnector::async_connect(): count not connect");
+		FILE_LOG(logWARNING)  << "TCPNetworkConnector::async_connect(): count not connect";
 	}
 }
 
 
 void connect_handler(const boost::system::error_code& ec) {
 	if(!ec && ec.value() != 0) {
-	    log_info("TCPNetworkConnector::connect_handler(): could not connect.");
+		FILE_LOG(logWARNING)  << "TCPNetworkConnector::connect_handler(): could not connect.";
         return;
 	}
     set_socket_options();
@@ -151,7 +152,7 @@ void start_read() {
 virtual void send_buffer(const unsigned char* data, size_t length) {
 	assert(this->write_buff_item_qu_.try_lock() == false);
 	if(!is_connected()) {
-		log_err("TCPNetworkConnector::send_buffer(): socket is not connected. not sending.");
+		FILE_LOG(logWARNING)  << "TCPNetworkConnector::send_buffer(): socket is not connected. not sending.";
 		return;
 	}
     assert(data[0] == BUFF_SEPERATOR);
@@ -160,14 +161,13 @@ virtual void send_buffer(const unsigned char* data, size_t length) {
         this->write_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector<T>::write_handler,
         this, boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred)));
-    log_debug("TCPNetworkConnector::send_buffer(): sent " << length << " bytes.");
+    FILE_LOG(logDEBUG3) << "TCPNetworkConnector::send_buffer(): sent " << length << " bytes.";
 }
 
 // properties
 shared_ptr<boost::asio::ip::tcp::socket> socket_;
-// this flag specifies the behavior in case of connection termination, whether
-// a re-connection should be tried or not
-bool flag_try_reconnect_;
+bool flag_try_reconnect_; // this flag specifies the behavior in case
+	// of connection termination, whether a re-connection should be tried or not
 };
 
 } /* namespace mana */
