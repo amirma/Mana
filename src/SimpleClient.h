@@ -36,7 +36,7 @@ using namespace std;
 class SimpleClient {
 
 public:
-    SimpleClient(const string& str);
+    SimpleClient(const string& str, const string url);
     virtual ~SimpleClient();
     SimpleClient(const SimpleClient&) = delete;
     SimpleClient& operator=(const SimpleClient&) = delete;

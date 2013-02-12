@@ -64,13 +64,14 @@ public:
     void stop();
     void join();
     bool session_established() const;
-    void handle_message(NetworkConnector<ManaContext>& nc, ManaMessage& buff);
+    void handle_message(ManaMessage& msg, MessageReceiver<ManaContext>* mr);
     void handle_session_termination(Session<ManaContext>& s);
     boost::asio::io_service& io_service();
     const string& id() const;
 private:
     boost::asio::io_service io_service_;
-    shared_ptr<NetworkConnector<ManaContext> > net_connection_;
+    //shared_ptr<NetworkConnector<ManaContext> > net_connection_;
+    shared_ptr<MessageReceiver<ManaContext>> message_receiver_;
     // id of this connector
     string local_id_;
     // URL of the remote broker

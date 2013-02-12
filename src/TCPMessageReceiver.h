@@ -32,6 +32,7 @@
 #include "TCPMessageReceiver.h"
 #include "common.h"
 #include "Log.h"
+#include "TCPSession.h"
 
 
 using namespace std;
@@ -65,7 +66,7 @@ virtual ~TCPMessageReceiver() {
 	}
 }
 
-virtual void start() {
+virtual void start() override {
     if(this->flag_runing_)
             return;
     try {
@@ -82,12 +83,16 @@ virtual void start() {
     }
 }
 
-virtual void stop() {
+virtual void stop() override {
 	this->flag_runing_ = false;
 	// cancel all ongoing i/o operations
 	acceptor_ptr_->cancel();
 	// stop listening on the socket
 	acceptor_ptr_->close();
+}
+
+virtual connection_type transport_type() const {
+	return connection_type::tcp;
 }
 
 void begin_accept() {
@@ -107,12 +112,12 @@ void accept_handler(const boost::system::error_code& ec) {
     }
     FILE_LOG(logDEBUG3) << "Accepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string();
     //once the connection is created we move the pointer
-    shared_ptr<NetworkConnector<T>> c = make_shared<TCPNetworkConnector<T>>(std::move(next_connection_socket_),
-    		this->client_, this->url_);
+    shared_ptr<TCPSession<T>> s = make_shared<TCPSession<T>>(std::move(next_connection_socket_), this->client_, this);
     // FIXME: at some point (which ideally must be after the connection termination) we must remove the pointer from the
     // vector otherwise we'll have some sort of memory leak, at a very minimum.
-    this->connections_.push_back(c);
-    this->client_.handle_connect(c);
+    tcp_sessions_.push_back(s);
+    // FIXME: i need to enable this ...
+    //this->client_.handle_connect(c);
     begin_accept();
 }
 
@@ -120,7 +125,7 @@ private:
     // properties
     shared_ptr<boost::asio::ip::tcp::acceptor> acceptor_ptr_;
     shared_ptr<boost::asio::ip::tcp::socket> next_connection_socket_;
-    vector<shared_ptr<NetworkConnector<T>>> connections_;
+    vector<shared_ptr<TCPSession<T>>> tcp_sessions_;
 };
 
 } /* namespace mana */

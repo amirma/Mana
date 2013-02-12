@@ -51,17 +51,8 @@ Broker::~Broker() {
 
 void Broker::add_transport(string str_url) {
 	URL url(str_url);
-    if(url.protocol() == mana::connection_type::tcp) {
-        auto mr = make_shared<TCPMessageReceiver<Broker> >(io_service_, *this, url);
-        message_receivers.push_back(mr);
-    } else if(url.protocol() == mana::connection_type::ka) {
-    	auto mr = make_shared<TCPMessageReceiver<Broker> >(io_service_, *this, url);
-        message_receivers.push_back(mr);
-    } else {
-    	assert(url.protocol() == mana::connection_type::udp);
-    	auto mr = make_shared<TCPMessageReceiver<Broker> >(io_service_, *this, url);
-        message_receivers.push_back(mr);
-    }
+	auto mr = MessageReceiver<Broker>::create(io_service_, *this, url);
+    message_receivers.push_back(mr);
 }
 
 void Broker::start() {
@@ -102,7 +93,7 @@ boost::asio::io_service& Broker::io_service() {
    return io_service_;
 }
 
-void Broker::handle_session_initiation(NetworkConnector<Broker>& nc, ManaMessage& buff) {
+void Broker::handle_session_initiation(ManaMessage& buff, const MessageReceiver<Broker>* mr) {
     // if the subscribing node is already in the list of neighbor
     // then send an error message
     if(is_in_container(neighbors_by_id_, buff.sender())) {
@@ -117,21 +108,22 @@ void Broker::handle_session_initiation(NetworkConnector<Broker>& nc, ManaMessage
     try {
     	URL remote_url(buff.key_value_map(0).value());
     	assert(buff.key_value_map(0).key() == "url");
-		const URL& local_url = nc.url();
+		const URL& local_url = mr->url();
 		// assign a new interface id
-		siena::if_t  if_no = iface_no_generator_.borrow_number();
+		const siena::if_t  if_no = iface_no_generator_.borrow_number();
 		FILE_LOG(logDEBUG2) << "Broker::handle_session_initiation(): iface no: " << if_no;
 		// make sure we got a properly formed message
-		auto tmp = make_shared<Session<Broker>>(*this, local_url, remote_url, &nc, buff.sender(), if_no);
+		auto tmp = make_shared<Session<Broker>>(*this, local_url, remote_url, buff.sender(), if_no);
 		neighbors_by_id_[buff.sender()] = tmp;
 		neighbors_by_iface_[if_no] = std::move(tmp);
     } catch(exception& e) {
+    	FILE_LOG(logINFO) << "Broker::handle_session_initiation(): received invalid or malformed session requesr from " << buff.sender();
 		send_error();
 		return;
 	}
 }
 
-void Broker::handle_sub(NetworkConnector<Broker>& nc, ManaMessage& buff) {
+void Broker::handle_sub(ManaMessage& buff) {
     mana_filter* fltr = new mana_filter();
     to_mana_filter(buff, *fltr);
     //TODO: one predicate per filter is not the right way...
@@ -145,7 +137,7 @@ void Broker::handle_sub(NetworkConnector<Broker>& nc, ManaMessage& buff) {
         send_error();
         return;
         // TODO:
-        // Here we sholud send an error back to the client
+        // Here we should send an error back to the client
         //
     }
     {// lock the forwarding table before inserting filters into it
@@ -180,13 +172,13 @@ void Broker::handle_connect(shared_ptr<NetworkConnector<Broker>>& c) {
     //TODO save a pointer to c in a new session ...
 }
 
-void Broker::handle_message(NetworkConnector<Broker>& nc, ManaMessage& msg) {
+void Broker::handle_message(ManaMessage& msg, MessageReceiver<Broker>* mr) {
 	switch(msg.type()) {
 	case ManaMessage_message_type_t_START_SESSION:
-		handle_session_initiation(nc, msg);
+		handle_session_initiation(msg, mr);
 		break;
 	case ManaMessage_message_type_t_SUB:
-		handle_sub(nc, msg);
+		handle_sub(msg);
 		break;
 	case ManaMessage_message_type_t_NOT:
 		handle_not(msg);

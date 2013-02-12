@@ -23,9 +23,8 @@
 
 using namespace std;
 
-SimpleClient::SimpleClient(const string& str) : client_id_(str),
-    local_url_("ka:127.0.0.1:3351"),
-    remote_url_("ka:127.0.0.1:2350"),
+SimpleClient::SimpleClient(const string& str, const string url) : client_id_(str),
+    local_url_(url), remote_url_("tcp:127.0.0.1:2350"),
     flag_session_established_(false) {}
 
 SimpleClient::~SimpleClient() {}

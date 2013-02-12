@@ -25,7 +25,7 @@ class TCPNetworkConnector: public NetworkConnector<T> {
 public:
     TCPNetworkConnector(const TCPNetworkConnector& other) = delete; // delete copy ctor
     TCPNetworkConnector& operator=(const TCPNetworkConnector&) = delete; // delete assignment operator
-/*
+/**
  * Construct an instance of this class with the given io_service.
  * This constructor is used when we need to manually create a connection.
  */
@@ -46,7 +46,7 @@ TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&& skt,
 	if(socket_->is_open()) {
 		this->flag_is_connected = true;
         set_socket_options();
-		start_read();
+		//start_read();
 	}
 }
 
@@ -65,22 +65,20 @@ void set_socket_options() {
 /**
  * @brief Connect to the provided url
  */
-virtual bool connect(const URL& url) {
+virtual bool connect() {
 	if(is_connected()) {
 		return true;
 	}
 	try {
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(url.address()), url.port());
+		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(this->url_.address()), this->url_.port());
 		socket_->connect(endpoint);
 	} catch(boost::system::system_error& e) {
 		throw ManaException("Error connecting to the endpoint.");
 	} catch(exception& e) {
 		throw ManaException("Error connecting to the endpoint.");
 	}
-	//
-	this->flag_is_connected = true;
-	FILE_LOG(logDEBUG2)  << "TCPConnector is connected to " << url.url();
-	start_read();
+	FILE_LOG(logDEBUG2)  << "TCPConnector is connected to " << this->url_.url();
+	//start_read();
     return true;
 }
 
@@ -101,33 +99,16 @@ virtual bool is_connected() {
 
 // private methods
 private:
-
-virtual void async_connect(const string& url) {
-	if(this->flag_is_connected)
-		return;
-	vector<string> tokens;
-	boost::split(tokens, url, boost::is_any_of(":"));
-	int port = 0;
-	try {
-		port = stoi(tokens[2]);
-	} catch(exception& e) {
-		throw ManaException("TCPNetworkConnector::async_connect(): Could not connect: invalid port number: " + tokens[2]);
-	}
-	async_connect(tokens[1], port);
-}
-
 virtual void async_connect(const string& addr, int prt) {
-	if(this->flag_is_connected)
+	if(this->is_connected())
 		return;
 	try {
 		boost::asio::ip::tcp::endpoint endpnt(boost::asio::ip::address::from_string(addr), prt);
 		socket_->async_connect(endpnt, boost::bind(&TCPNetworkConnector<T>::connect_handler, this, boost::asio::placeholders::error));
 	} catch(exception& e) {
-		this->flag_is_connected = false;
 		FILE_LOG(logWARNING)  << "TCPNetworkConnector::async_connect(): count not connect";
 	}
 }
-
 
 void connect_handler(const boost::system::error_code& ec) {
 	if(!ec && ec.value() != 0) {
@@ -135,21 +116,21 @@ void connect_handler(const boost::system::error_code& ec) {
         return;
 	}
     set_socket_options();
-	this->flag_is_connected = true;
-	start_read();
+	//start_read();
 }
-
+/*
 void start_read() {
     socket_->async_read_some(boost::asio::buffer(this->read_buffer_, MAX_MSG_SIZE),
             this->read_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector<T>::read_handler, this,
     boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
 }
+*/
 
 /**
  * This method has only internal purposes and is used to send a buffer of
  * a given size using the socket.
 */
-virtual void send_buffer(const unsigned char* data, size_t length) {
+virtual void send_buffer(const unsigned char* data, size_t length) override {
 	assert(this->write_buff_item_qu_.try_lock() == false);
 	if(!is_connected()) {
 		FILE_LOG(logWARNING)  << "TCPNetworkConnector::send_buffer(): socket is not connected. not sending.";

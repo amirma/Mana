@@ -101,10 +101,10 @@ public:
 
     // Use this method to add more transport protocols to the broker
     void add_transport(string);
-    void handle_sub(NetworkConnector<Broker>&, ManaMessage&);
+    void handle_sub(ManaMessage&);
     void handle_not(ManaMessage&);
     void handle_heartbeat(ManaMessage&);
-    void handle_message(NetworkConnector<Broker>& nc, ManaMessage& msg);
+    void handle_message(ManaMessage& msg, MessageReceiver<Broker>* mr);
     void handle_session_termination(Session<Broker>& s);
     void handle_connect(shared_ptr<NetworkConnector<Broker>>& c);
     const string& id() const;
@@ -115,7 +115,7 @@ public:
 private:
     // private methods.
     bool handle_match(siena::if_t, const siena::message&);
-    void handle_session_initiation(NetworkConnector<Broker>& nc, ManaMessage& buff);
+    void handle_session_initiation(ManaMessage& buff, const MessageReceiver<Broker>*);
     void send_error();
     // class properties
     boost::asio::io_service io_service_;

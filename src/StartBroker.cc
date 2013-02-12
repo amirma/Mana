@@ -41,7 +41,7 @@ void start_broker() {
 }
 
 int main(void) {
-	Log::ReportingLevel() = logINFO;
+	Log::ReportingLevel() = logDEBUG3;
     // signal handling. This is recommended by glibc documentation:
     // If specific signals are to be ignored (because shell wants
     // so), then the handler should remain the same. (ignore).

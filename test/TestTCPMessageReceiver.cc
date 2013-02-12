@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <boost/asio.hpp>
-#include "UDPMessageReceiver.h"
+#include "TCPMessageReceiver.h"
 #include "ManaMessage.pb.h"
 #include "URL.h"
 
@@ -32,10 +32,11 @@ public:
 };
 
 int main() {
+	Log::ReportingLevel() = logWARNING;
 	MessageHandler hndlr;
-	URL url("udp:127.0.0.1:2350");
+	URL url("tcp:127.0.0.1:2350");
 	boost::asio::io_service io_srv;
-	UDPMessageReceiver<MessageHandler> mr(io_srv, hndlr, url);
+	TCPMessageReceiver<MessageHandler> mr(io_srv, hndlr, url);
 	mr.start();
 	io_srv.run();
 	return 0;

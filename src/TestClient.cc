@@ -21,7 +21,7 @@ using namespace std;
 class TestClient : public SimpleClient {
 public:
 
-    TestClient(const string& str) : SimpleClient(str) {}
+    TestClient(const string& str, const string& url) : SimpleClient(str, url) {}
 
     void run() {
     	ifstream ifs(workload_file.c_str());
@@ -78,12 +78,15 @@ int main(int argc, char* argv[]) {
         signal (SIGTERM, SIG_IGN);
     string id = "";
     string fname = "";
+    string url = "udp:127.0.0.1:3350";
     int i = 0;
     while(++i < argc) {
         if(strcmp(argv[i], "-id") == 0 && i + 1 < argc)
             id = string(argv[++i]);
         else if(strcmp(argv[i], "-wkld") == 0 && i + 1 < argc)
         	fname = string(argv[++i]);
+        else if(strcmp(argv[i], "-url") == 0 && i + 1 < argc)
+            url = string(argv[++i]);
         else
             goto error;
     }
@@ -91,8 +94,8 @@ int main(int argc, char* argv[]) {
     if(id == "" || fname == "")
         goto error;
     // TODO: this has to be passed as a parameter
-	Log::ReportingLevel() = logDEBUG4;
-    client = make_shared<TestClient>(id);
+	Log::ReportingLevel() = logDEBUG3;
+    client = make_shared<TestClient>(id, url);
     client->set_workload(fname);
     client->start();
     return 0;

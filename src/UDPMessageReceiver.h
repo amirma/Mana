@@ -23,20 +23,24 @@ class UDPMessageReceiver: public MessageReceiver<T> {
 public:
 
 	UDPMessageReceiver(boost::asio::io_service& srv, T& client, const URL& url):
-		MessageReceiver<T>(srv, client, url), read_hndlr_strand_(srv) {
+		MessageReceiver<T>(srv, client, url) {
 		this->connection_type_ = mana::udp;
 	}
 
 virtual ~UDPMessageReceiver() {}
 
-virtual void start() {
+virtual void start() override {
 	boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::udp::v4(), this->url_.port());
 	socket_ = make_shared<boost::asio::ip::udp::socket>(this->io_service_, endpoint);
 	start_read();
 	this->flag_runing_ = true;
 }
 
-virtual void stop() {}
+virtual void stop() override {}
+
+virtual connection_type transport_type() const {
+	return connection_type::udp;
+}
 
 private:
 
@@ -70,17 +74,13 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
     // read.
     this->message_stream_.consume(this->read_buffer_.data(), bytes_num);
     while(this->message_stream_.produce(msg))
-    	this->client_.handle_message(msg);
+    	this->client_.handle_message(msg, this);
 
     start_read();
 }
 
 	// properties
     shared_ptr<boost::asio::ip::udp::socket> socket_;
-    boost::asio::strand read_hndlr_strand_;
-	MessageStream message_stream_;
-	array<unsigned char, MAX_MSG_SIZE> read_buffer_;
-	mutex read_buff_mutex_;
 	boost::asio::ip::udp::endpoint all_endpoints_;
 };
 

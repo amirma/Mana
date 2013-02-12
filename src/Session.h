@@ -20,9 +20,6 @@
 #ifndef NEIGHBORNODE_H_
 #define NEIGHBORNODE_H_
 
-#include <queue>
-#include <array>
-#include <mutex>
 #include <chrono>
 #include <memory>
 #include <boost/asio.hpp>
@@ -30,6 +27,8 @@
 #include "MessageReceiver.h"
 #include "ManaMessage.pb.h"
 #include "NetworkConnector.h"
+#include "TCPNetworkConnector.h"
+#include "UDPNetworkConnector.h"
 #include "TaskScheduler.h"
 #include "common.h"
 #include "URL.h"
@@ -82,28 +81,24 @@ Session& operator=(const Session&) = delete;
  * @param lo_url of the local node
  * @param rem_url of the remote node
  */
-Session(T& h, const URL& lo_url, const URL& re_url, NetworkConnector<T>* in_nc,
-	const string& id, siena::if_t ifc):
-    host_(h), ingress_net_connector_(in_nc), outgress_net_connector_(nullptr),
+Session(T& h, const URL& lo_url, const URL& re_url, const string& id, siena::if_t ifc):
+    host_(h), outgress_net_connector_(nullptr),
     remote_id_(id), local_url_(lo_url), remote_url_(re_url),
     remote_endpoint_(boost::asio::ip::address::from_string(remote_url_.address()), remote_url_.port()),
     iface_(ifc), flag_session_live_(false),
     task_scheduler_(h.io_service())  {
 
 	if(remote_url_.protocol() == mana::connection_type::tcp) {
-		outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, local_url_);
+		outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, remote_url_);
 	} else if(remote_url_.protocol() == mana::connection_type::ka) {
-		if(ingress_net_connector_ == nullptr) {
-			outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, local_url_);
-			if(!connect())
-				throw ManaException("Could not connect to " + remote_url_.url());
-		}
-		else
-			outgress_net_connector_ = ingress_net_connector_;
+		outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, remote_url_);
+		if(!connect())
+			throw ManaException("Could not connect to " + remote_url_.url());
+	} else if(remote_url_.protocol() == mana::connection_type::udp) {
+		outgress_net_connector_ = new UDPNetworkConnector<T>(h.io_service(), h, remote_url_);
 	} else {
-		assert(remote_url_.protocol() == mana::connection_type::udp);
-		FILE_LOG(logERROR) << "Malformed URL or method not supported:" << remote_url_.url();
-		exit(-1);
+		FILE_LOG(logERROR) << "Malformed URL or method not supported: " << remote_url_.url();
+		throw ManaException("Malformed URL or method not supported: " + remote_url_.url());
 	}
 
 	establish();
@@ -163,11 +158,17 @@ void establish() {
 	ManaMessage msg;
 	// set sender id and type
 	msg.set_sender(host_.id());
+	msg.set_type(ManaMessage_message_type_t_START_SESSION);
 	auto p = msg.mutable_key_value_map()->Add();
 	p->set_key("url");
 	p->set_value(local_url_.url());
-	msg.set_type(ManaMessage_message_type_t_START_SESSION);
 	send(msg);
+}
+
+void terminate() {
+	// FIXME:
+	// send termination message
+	this->outgress_net_connector_->disconnect();
 }
 
 private:
@@ -202,7 +203,6 @@ bool connect() {
 
 // class properties
 T& host_; // user of this instance. Callbacks are called on this instance
-NetworkConnector<T>* ingress_net_connector_;
 NetworkConnector<T>* outgress_net_connector_;
 const string remote_id_;
 const string local_id_;

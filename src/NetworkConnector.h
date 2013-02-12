@@ -100,20 +100,6 @@ const URL& url() const {
 }
 
 protected:
-    // private methods
-    virtual void start_read() = 0;
-    // class properties
-    boost::asio::io_service& io_service_;
-    T& client_;
-    const URL url_;
-    boost::asio::strand read_hndlr_strand_;
-    boost::asio::strand write_hndlr_strand_;
-    bool flag_is_connected;
-    bool flag_write_op_in_prog_;
-    MessageStream message_stream_;
-    array<unsigned char, MAX_MSG_SIZE> read_buffer_;
-    WriteBufferItemQueueWrapper write_buff_item_qu_;
-    mutex read_buff_mutex_;
 
 /*  this method mutates 'write_buff_item_qu_.qu()' and so must be run by
  *  one thread at a time. This is guaranteed by using 'write_strand_'. Though
@@ -141,33 +127,19 @@ void write_handler(const boost::system::error_code& error, std::size_t bytes_tra
         send_buffer(this->write_buff_item_qu_.qu().front().data_, this->write_buff_item_qu_.qu().front().size_);
 }
 
-void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
-	if(!ec && ec.value() != 0) {
-		FILE_LOG(logDEBUG2) << "NetworkConnector::read_handler(): error reading:" << ec.message();
-		return;
-	}
-	// TODO: i'm using the number of bytes as a hint that the connection
-    // terminated. I'm not sure this is a good way though. For some
-    // reason socket.is_open() does not do it's job...
-	if(bytes_num == 0) {
-        this->flag_is_connected = false;
-        FILE_LOG(logDEBUG2) << "NetworkConnector::read_handler(): connection seems to be closed.";
-        return;
-	}
-	FILE_LOG(logDEBUG2) << "NetworkConnector::read_handler(): read " << bytes_num << " bytes.";
-
-    ManaMessage msg;
-    // Note: message_stream MUST be accessed by only one thread at a time - it's
-    // not thread safe. Here the assumption is that read_handler is run only
-    // by one thread at a time. This is guaranteed by using strand_ for async
-    // read.
-    this->message_stream_.consume(this->read_buffer_.data(), bytes_num);
-    while(this->message_stream_.produce(msg))
-    	this->client_.handle_message(*this, msg);
-
-    if(is_connected())
-    	start_read();
-}
+// private methods
+// class properties
+boost::asio::io_service& io_service_;
+T& client_;
+const URL url_;
+boost::asio::strand read_hndlr_strand_;
+boost::asio::strand write_hndlr_strand_;
+bool flag_is_connected;
+bool flag_write_op_in_prog_;
+MessageStream message_stream_;
+array<unsigned char, MAX_MSG_SIZE> read_buffer_;
+WriteBufferItemQueueWrapper write_buff_item_qu_;
+mutex read_buff_mutex_;
 
 private:
 /*

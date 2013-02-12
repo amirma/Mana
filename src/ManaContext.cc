@@ -26,7 +26,9 @@
 #include <boost/pointer_cast.hpp>
 #include "ManaContext.h"
 #include "ManaException.h"
-#include "TCPNetworkConnector.h"
+#include "MessageReceiver.h"
+#include "TCPMessageReceiver.h"
+#include "UDPMessageReceiver.h"
 #include "common.h"
 #include "ManaFwdTypes.h"
 #include "Utility.h"
@@ -39,7 +41,9 @@ ManaContext::ManaContext(const string& id, const string& loc_url, const string& 
     local_id_(id), local_url_(loc_url), remote_url_(rem_url), app_notification_handler_(h),
     flag_has_subscription(false), flag_session_established_(false), task_scheduler_(io_service_) {
 
-	session_ = make_shared<Session<ManaContext>>(*this, local_url_, remote_url_, nullptr, remote_url_.url(), 0);
+	session_ = make_shared<Session<ManaContext>>(*this, local_url_, remote_url_, remote_url_.url(), 0);
+	message_receiver_ = MessageReceiver<ManaContext>::create(io_service_, *this, local_url_);
+	assert(message_receiver_ != nullptr);
 }
 
 ManaContext::~ManaContext() {
@@ -108,6 +112,7 @@ void ManaContext::start() {
     	work_ = make_shared<boost::asio::io_service::work>(io_service_);
     	io_service_.run();
     });
+    message_receiver_->start();
 }
 
 void ManaContext::handle_session_termination(Session<ManaContext>& s) {
@@ -116,7 +121,9 @@ void ManaContext::handle_session_termination(Session<ManaContext>& s) {
 
 void ManaContext::stop() {
 	//work_->reset();
-    net_connection_->disconnect();
+    session_->terminate();
+    // FIXME: this will probably cause a bug, because stopping io_service
+    // might happen before terminatio messge is sent.
 	io_service_.stop();
     if(thread_->joinable())
         thread_->join();
@@ -127,7 +134,7 @@ bool ManaContext::session_established() const {
     return flag_session_established_;
 }
 
-void ManaContext::handle_message(NetworkConnector<ManaContext>& nc, ManaMessage& buff) {
+void ManaContext::handle_message(ManaMessage& buff, MessageReceiver<ManaContext>* mr) {
 	FILE_LOG(logDEBUG2) << "ManaContext::receive_handler: received message from " << buff.sender();
     switch(buff.type()) {
     case ManaMessage_message_type_t_NOT: {
