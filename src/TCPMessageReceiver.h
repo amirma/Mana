@@ -27,7 +27,7 @@
 #include <boost/asio.hpp>
 #include "MessageReceiver.h"
 #include "string"
-#include "TCPNetworkConnector.h"
+#include "TCPMessageSender.h"
 #include "ManaMessage.pb.h"
 #include "TCPMessageReceiver.h"
 #include "common.h"

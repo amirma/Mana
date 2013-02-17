@@ -36,7 +36,7 @@ using namespace std;
 class SimpleClient {
 
 public:
-    SimpleClient(const string& str, const string url);
+    SimpleClient(const string& str, const string& url, const string& broker);
     virtual ~SimpleClient();
     SimpleClient(const SimpleClient&) = delete;
     SimpleClient& operator=(const SimpleClient&) = delete;
@@ -49,8 +49,8 @@ public:
 protected:
     shared_ptr<mana::ManaContext> context_;
     string client_id_;
-    string local_url_; // url
-    string remote_url_;
+    string client_url_;
+    string broker_url_;
     bool flag_session_established_;
     int listening_port_;
 

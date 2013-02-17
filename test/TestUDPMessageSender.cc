@@ -9,7 +9,7 @@
 #include <iostream>
 #include <random>
 #include <thread>
-#include "UDPNetworkConnector.h"
+#include "UDPMessageSender.h"
 #include "ManaMessage.pb.h"
 #include "URL.h"
 #include "Log.h"
@@ -30,7 +30,7 @@ int main() {
 	thread t([&]() {io_srv.run();});
 	t.detach();
 	MessageHandler hndlr;
-	UDPNetworkConnector<MessageHandler> ms(io_srv, hndlr, url);
+	UDPMessageSender<MessageHandler> ms(io_srv, hndlr, url);
 	// create a message and fill in some fields
 	std::hash<std::string> hash_fn;
 	const int num_chars = 1000;

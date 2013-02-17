@@ -41,6 +41,7 @@ public:
     static TLogLevel& ReportingLevel();
     static std::string ToString(TLogLevel level);
     static TLogLevel FromString(const std::string& level);
+    static TLogLevel string_to_TLogLevel(const string&);
 protected:
     std::ostringstream os;
 private:
@@ -81,21 +82,21 @@ inline std::string Log::ToString(TLogLevel level)
 
 inline TLogLevel Log::FromString(const std::string& level)
 {
-    if (level == "DEBUG4")
+    if (level == "DEBUG4" || level == "debug4")
         return logDEBUG4;
-    if (level == "DEBUG3")
+    if (level == "DEBUG3" || level == "debug3")
         return logDEBUG3;
-    if (level == "DEBUG2")
+    if (level == "DEBUG2" || level == "debug2")
         return logDEBUG2;
-    if (level == "DEBUG1")
+    if (level == "DEBUG1" || level == "debug1")
         return logDEBUG1;
-    if (level == "DEBUG")
+    if (level == "DEBUG"  ||  level == "debug")
         return logDEBUG;
-    if (level == "INFO")
+    if (level == "INFO"   ||  level == "info")
         return logINFO;
-    if (level == "WARNING")
+    if (level == "WARNING" || level == "warning" || level == "warn")
         return logWARNING;
-    if (level == "ERROR")
+    if (level == "ERROR" || level == "error")
         return logERROR;
     Log().Get(logWARNING) << "Unknown logging level '" << level << "'. Using INFO level as default.";
     return logINFO;

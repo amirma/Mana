@@ -1,6 +1,6 @@
 /**
-* @file NetworkConnector.h
-* Interface for NetworkConnector
+* @file MessageSender.h
+* Interface for MessageSender
 *
 * @author Amir Malekpour
 * @version 0.1
@@ -48,16 +48,16 @@ struct WriteBufferItemQueueWrapper {
 };
 
 template <class T>
-class NetworkConnector {
+class MessageSender {
 public:
-NetworkConnector(boost::asio::io_service& srv, T& c, const URL& url) :
+MessageSender(boost::asio::io_service& srv, T& c, const URL& url) :
 		io_service_(srv), client_(c), url_(url), read_hndlr_strand_(srv), write_hndlr_strand_(srv),
 		flag_is_connected(false), flag_write_op_in_prog_(false) {}
 
-virtual ~NetworkConnector() {}
+virtual ~MessageSender() {}
 
-NetworkConnector(const NetworkConnector&) = delete; // delete copy ctor
-NetworkConnector& operator=(const NetworkConnector&) = delete; // delete assig. operator
+MessageSender(const MessageSender&) = delete; // delete copy ctor
+MessageSender& operator=(const MessageSender&) = delete; // delete assig. operator
 
 virtual void send_buffer(const unsigned char* data, size_t length) = 0;
 
@@ -89,7 +89,7 @@ void send(const ManaMessage& msg) {
     assert(*((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) == data_size);
     assert(msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE));
     if(!msg.SerializeWithCachedSizesToArray(arr_buf + MSG_HEADER_SIZE)) {
-    	FILE_LOG(logERROR) << "NetworkConnector::Send(): Could not serialize message to buffer.";
+    	FILE_LOG(logERROR) << "MessageSender::Send(): Could not serialize message to buffer.";
         return;
     }
     prepare_buffer(arr_buf, total_size);
@@ -110,10 +110,10 @@ protected:
 void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred) {
     lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
     if(error) {
-    	FILE_LOG(logERROR) << "NetworkConnector::write_handler(): Error sending data: " << error.message();
+    	FILE_LOG(logERROR) << "MessageSender::write_handler(): Error sending data: " << error.message();
     } else {
-    	FILE_LOG(logDEBUG3) << "NetworkConnector::write_handler(): wrote " << bytes_transferred << " bytes.";
-    	FILE_LOG(logDEBUG4) << "NetworkConnector::write_handler(): wrote " << this->write_buff_item_qu_.qu().front().data_;
+    	FILE_LOG(logDEBUG3) << "MessageSender::write_handler(): wrote " << bytes_transferred << " bytes.";
+    	FILE_LOG(logDEBUG4) << "MessageSender::write_handler(): wrote " << this->write_buff_item_qu_.qu().front().data_;
     }
     assert(this->write_buff_item_qu_.qu().empty() == false); // at least the last
     // buffer that was written must be in the queue
@@ -153,7 +153,7 @@ private:
  * @param length length of the buffer
  */
 void prepare_buffer(const unsigned char* data, size_t length) {
-	FILE_LOG(logDEBUG3) << "NetworkConnector::prepare_buffer(): preparing " << length << " bytes.";
+	FILE_LOG(logDEBUG3) << "MessageSender::prepare_buffer(): preparing " << length << " bytes.";
     lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
     assert(length != 0);
     WriteBufferItem item;

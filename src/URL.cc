@@ -1,6 +1,6 @@
 /**
 * @file URL.cc
-* Interface for NetworkConnector
+* Interface for MessageSender
 *
 * @author Amir Malekpour
 * @version 0.1
@@ -29,6 +29,8 @@ namespace mana {
 URL::URL(const string& str_url) : url_(str_url) {
 	vector<string> tokens;
 	boost::split(tokens, url_, boost::is_any_of(":"));
+        if(tokens.size() < 3)
+	    throw ManaException("Malformed URL or method not supported: " + url_);
 	// convert to lowercase e.g., TCP -> tcp
 	std::transform(tokens[0].begin(), tokens[0].end(), tokens[0].begin(), ::tolower);
 	address_ = tokens[1];

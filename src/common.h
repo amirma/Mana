@@ -116,7 +116,6 @@ void to_protobuf(const mana_filter& predg, ManaMessage& buff);
 
 const int MSG_HEADER_SIZE = sizeof(int) + BUFF_SEPERATOR_LEN_BYTE;
 
-const unsigned int DEFAULT_NUM_OF_BROKER_THREADS  = 1;
 const unsigned int DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 5; // session liveness
 // is checked every DEFAULT_HEARTBEAT_INTERVAL_SECONDS time units
 const float DEFAULT_HEARTBEAT_SEND_INTERVAL_ADJ = 0.25f; // heart beat messages

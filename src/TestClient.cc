@@ -21,7 +21,7 @@ using namespace std;
 class TestClient : public SimpleClient {
 public:
 
-    TestClient(const string& str, const string& url) : SimpleClient(str, url) {}
+    TestClient(const string& str, const string& url, const string& broker) : SimpleClient(str, url, broker) {}
 
     void run() {
     	ifstream ifs(workload_file.c_str());
@@ -66,19 +66,25 @@ void termination_handler(int signum) {
 
 void print_usage() {
     cout << endl << "Usage:\n"
-    "TestClient -id <id> -wkld <workload file>\n";
+    "TestClient -id <id> -url <client url> -broker <broker url> -wkld <workload file>\n";
 }
 
-int main(int argc, char* argv[]) {
+void setup_signal_hndlr() {
     if (signal (SIGINT, termination_handler) == SIG_IGN)
         signal (SIGINT, SIG_IGN);
     if (signal (SIGHUP, termination_handler) == SIG_IGN)
         signal (SIGHUP, SIG_IGN);
     if (signal (SIGTERM, termination_handler) == SIG_IGN)
         signal (SIGTERM, SIG_IGN);
+}
+
+int main(int argc, char* argv[]) {
+    setup_signal_hndlr();
     string id = "";
     string fname = "";
     string url = "udp:127.0.0.1:3350";
+    string broker = "udp:127.0.0.1:2350";
+    string log = "info";
     int i = 0;
     while(++i < argc) {
         if(strcmp(argv[i], "-id") == 0 && i + 1 < argc)
@@ -87,15 +93,17 @@ int main(int argc, char* argv[]) {
         	fname = string(argv[++i]);
         else if(strcmp(argv[i], "-url") == 0 && i + 1 < argc)
             url = string(argv[++i]);
+        else if(strcmp(argv[i], "-broker") == 0 && i + 1 < argc)
+            broker = string(argv[++i]);
+        else if(strcmp(argv[i], "-log") == 0 && i + 1 < argc)
+            log = string(argv[++i]);
         else
             goto error;
     }
-
     if(id == "" || fname == "")
         goto error;
-    // TODO: this has to be passed as a parameter
-	Log::ReportingLevel() = logDEBUG3;
-    client = make_shared<TestClient>(id, url);
+    Log::ReportingLevel() = Log::FromString(log);
+    client = make_shared<TestClient>(id, url, broker);
     client->set_workload(fname);
     client->start();
     return 0;

@@ -40,7 +40,7 @@ using namespace std;
 namespace mana {
 
 
-Broker::Broker(const string& id) : id_(id), num_of_threads_(DEFAULT_NUM_OF_BROKER_THREADS),
+Broker::Broker(const string& id, size_t t) : id_(id), num_of_threads_(t),
     task_scheduler_(io_service_) {
     message_match_handler_ = new BrokerMatchMessageHandler(this);
 }
@@ -168,7 +168,7 @@ void Broker::handle_heartbeat(ManaMessage& buff) {
  * With TCP/KA transport this callback is called by the main acceptor. This
  * enables the Broker to memorize the connection for later use.
  */
-void Broker::handle_connect(shared_ptr<NetworkConnector<Broker>>& c) {
+void Broker::handle_connect(shared_ptr<MessageSender<Broker>>& c) {
     //TODO save a pointer to c in a new session ...
 }
 

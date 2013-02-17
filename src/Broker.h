@@ -32,8 +32,8 @@
 #include <siena/fwdtable.h>
 #include "MessageReceiver.h"
 #include "ManaMessage.pb.h"
-#include "NetworkConnector.h"
-#include "TCPNetworkConnector.h"
+#include "MessageSender.h"
+#include "TCPMessageSender.h"
 #include "TaskScheduler.h"
 #include "Session.h"
 
@@ -92,7 +92,7 @@ class Broker {
     };
 
 public:
-    Broker(const string& id);
+    Broker(const string& id, size_t num_thrd);
     Broker(const Broker&) = delete; //disable copy constructor
     virtual ~Broker();
     void start();
@@ -106,7 +106,7 @@ public:
     void handle_heartbeat(ManaMessage&);
     void handle_message(ManaMessage& msg, MessageReceiver<Broker>* mr);
     void handle_session_termination(Session<Broker>& s);
-    void handle_connect(shared_ptr<NetworkConnector<Broker>>& c);
+    void handle_connect(shared_ptr<MessageSender<Broker>>& c);
     const string& id() const;
     // we want BrokerMatchMessageHandler to be able to call
     // the private method 'handle_match'

@@ -9,7 +9,7 @@
 #include <iostream>
 #include <random>
 #include <thread>
-#include "TCPNetworkConnector.h"
+#include "TCPMessageSender.h"
 #include "ManaMessage.pb.h"
 #include "URL.h"
 #include "Log.h"
@@ -27,10 +27,10 @@ int main() {
 	URL url("tcp:127.0.0.1:2350");
 	boost::asio::io_service io_srv;
 	boost::asio::io_service::work work(io_srv); // disallow the io_service to quit too soon.
-	thread t([&]() {io_srv.run();});
+	thread t([&]{io_srv.run();});
 	t.detach();
 	MessageHandler hndlr;
-	TCPNetworkConnector<MessageHandler> ms(io_srv, hndlr, url);
+	TCPMessageSender<MessageHandler> ms(io_srv, hndlr, url);
 	try {
 		ms.connect();
 	} catch(std::exception& e) {

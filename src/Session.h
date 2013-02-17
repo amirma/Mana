@@ -26,9 +26,9 @@
 #include <siena/fwdtable.h>
 #include "MessageReceiver.h"
 #include "ManaMessage.pb.h"
-#include "NetworkConnector.h"
-#include "TCPNetworkConnector.h"
-#include "UDPNetworkConnector.h"
+#include "MessageSender.h"
+#include "TCPMessageSender.h"
+#include "UDPMessageSender.h"
 #include "TaskScheduler.h"
 #include "common.h"
 #include "URL.h"
@@ -88,14 +88,15 @@ Session(T& h, const URL& lo_url, const URL& re_url, const string& id, siena::if_
     iface_(ifc), flag_session_live_(false),
     task_scheduler_(h.io_service())  {
 
+
 	if(remote_url_.protocol() == mana::connection_type::tcp) {
-		outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, remote_url_);
+		outgress_net_connector_ = new TCPMessageSender<T>(h.io_service(), h, remote_url_);
 	} else if(remote_url_.protocol() == mana::connection_type::ka) {
-		outgress_net_connector_ = new TCPNetworkConnector<T>(h.io_service(), h, remote_url_);
+		outgress_net_connector_ = new TCPMessageSender<T>(h.io_service(), h, remote_url_);
 		if(!connect())
 			throw ManaException("Could not connect to " + remote_url_.url());
 	} else if(remote_url_.protocol() == mana::connection_type::udp) {
-		outgress_net_connector_ = new UDPNetworkConnector<T>(h.io_service(), h, remote_url_);
+		outgress_net_connector_ = new UDPMessageSender<T>(h.io_service(), h, remote_url_);
 	} else {
 		FILE_LOG(logERROR) << "Malformed URL or method not supported: " << remote_url_.url();
 		throw ManaException("Malformed URL or method not supported: " + remote_url_.url());
@@ -203,7 +204,7 @@ bool connect() {
 
 // class properties
 T& host_; // user of this instance. Callbacks are called on this instance
-NetworkConnector<T>* outgress_net_connector_;
+MessageSender<T>* outgress_net_connector_;
 const string remote_id_;
 const string local_id_;
 const URL local_url_;

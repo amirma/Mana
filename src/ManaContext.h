@@ -24,8 +24,8 @@
 #include <memory>
 #include <thread>
 #include <boost/asio.hpp>
-#include "NetworkConnector.h"
-#include "TCPNetworkConnector.h"
+#include "MessageSender.h"
+#include "TCPMessageSender.h"
 #include "common.h"
 #include "ManaMessage.pb.h"
 #include "ManaFwdTypes.h"
@@ -70,7 +70,7 @@ public:
     const string& id() const;
 private:
     boost::asio::io_service io_service_;
-    //shared_ptr<NetworkConnector<ManaContext> > net_connection_;
+    //shared_ptr<MessageSender<ManaContext> > net_connection_;
     shared_ptr<MessageReceiver<ManaContext>> message_receiver_;
     // id of this connector
     string local_id_;

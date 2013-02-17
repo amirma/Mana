@@ -53,19 +53,19 @@ void start_read() {
 
 void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
 	if(!ec && ec.value() != 0) {
-		log_err("UDPNetworkConnector::read_handler(): error reading:" << ec.message());
+		log_err("UDPMessageSender::read_handler(): error reading:" << ec.message());
 		return;
 	}
 	// FIXME: i'm using the number of bytes as a hint that the connection
     // terminated. I'm not sure this is a good way though. For some
     // reason socket.is_open() does not do it's job...
-	// FIXME: this check is just blindly copies and pasted here from TCPNetworkConnector.
+	// FIXME: this check is just blindly copies and pasted here from TCPMessageSender.
 	// I guess it wont even have a meaning here .... gotta check this.
 	if(bytes_num == 0) {
-        log_debug("UDPNetworkConnector::read_handler(): connection seems to be closed.");
+        log_debug("UDPMessageSender::read_handler(): connection seems to be closed.");
         return;
 	}
-    log_debug("UDPNetworkConnector::read_handler(): read " << bytes_num << " bytes.");
+    log_debug("UDPMessageSender::read_handler(): read " << bytes_num << " bytes.");
 
     ManaMessage msg;
     // Note: message_stream MUST be accessed by only one thread at a time - it's

@@ -23,9 +23,8 @@
 
 using namespace std;
 
-SimpleClient::SimpleClient(const string& str, const string url) : client_id_(str),
-    local_url_(url), remote_url_("tcp:127.0.0.1:2350"),
-    flag_session_established_(false) {}
+SimpleClient::SimpleClient(const string& str, const string& url, const string& broker) :
+    client_id_(str), client_url_(url), broker_url_(broker) {}
 
 SimpleClient::~SimpleClient() {}
 
@@ -39,7 +38,7 @@ void SimpleClient::start() {
     try {
     	FILE_LOG(logINFO) << "Starting client...";
         auto hndlr = std::bind(&SimpleClient::handle_notification, this, std::placeholders::_1);
-        context_ = make_shared<mana::ManaContext>(client_id_, local_url_, remote_url_, hndlr);
+        context_ = make_shared<mana::ManaContext>(client_id_, client_url_, broker_url_, hndlr);
         context_->start();
         run();
         context_->join();
@@ -76,12 +75,3 @@ void SimpleClient::stop() {
  *
  */
 void SimpleClient::run() {}
-
-bool SimpleClient::set_broker(const string& str) {
-    if(flag_session_established_) {
-    	FILE_LOG(logERROR) << "Can not change broker after session is established";
-        return false;
-    }
-    remote_url_ = str;
-    return true;
-}

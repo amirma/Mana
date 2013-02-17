@@ -5,7 +5,7 @@ include_directories(/opt/include/)
 link_directories(/opt/lib)
 set(SOURCES ../src/ManaMessage.pb.cc ../src/ManaException.cc ../src/URL.cc
 ../src/ProtobufToFromMana.cc ../src/MessageStream.cc ../src/Utility.cc)
-set(LIBRARIES sff boost_system boost_thread-mt pthread protobuf profiler)
+set(LIBRARIES sff boost_system boost_thread-mt boost_program_options pthread protobuf profiler)
 
 #
 add_executable (StartBroker StartBroker.cc Broker.cc ${SOURCES})

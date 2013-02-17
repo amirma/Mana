@@ -1,17 +1,17 @@
 /**
- * TCPNetworkConnector.h
+ * TCPMessageSender.h
  *
  *  Created on: Sep 9, 2012
  *      Author: amir
  */
 
-#ifndef TCPNetworkConnector_H_
-#define TCPNetworkConnector_H_
+#ifndef TCPMessageSender_H_
+#define TCPMessageSender_H_
 
 #include <memory.h>
 #include <thread>
 #include <boost/algorithm/string.hpp>
-#include "NetworkConnector.h"
+#include "MessageSender.h"
 #include "boost/bind.hpp"
 #include "exception"
 #include "ManaException.h"
@@ -20,17 +20,17 @@
 namespace mana {
 
 template <class T>
-class TCPNetworkConnector: public NetworkConnector<T> {
+class TCPMessageSender: public MessageSender<T> {
 
 public:
-    TCPNetworkConnector(const TCPNetworkConnector& other) = delete; // delete copy ctor
-    TCPNetworkConnector& operator=(const TCPNetworkConnector&) = delete; // delete assignment operator
+    TCPMessageSender(const TCPMessageSender& other) = delete; // delete copy ctor
+    TCPMessageSender& operator=(const TCPMessageSender&) = delete; // delete assignment operator
 /**
  * Construct an instance of this class with the given io_service.
  * This constructor is used when we need to manually create a connection.
  */
-TCPNetworkConnector(boost::asio::io_service& srv, T& c, const URL& url) :
-		NetworkConnector<T>(srv, c, url), flag_try_reconnect_(false) {
+TCPMessageSender(boost::asio::io_service& srv, T& c, const URL& url) :
+		MessageSender<T>(srv, c, url), flag_try_reconnect_(false) {
 	socket_ = make_shared<boost::asio::ip::tcp::socket>(this->io_service_);
 }
 
@@ -40,8 +40,8 @@ TCPNetworkConnector(boost::asio::io_service& srv, T& c, const URL& url) :
  * acceptor that accepts a net connection. Note that the passed socket (skt)
  * has to outlive the instance of this class.
  */
-TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&& skt,
-	T& c, const URL& url) : NetworkConnector<T>(skt->get_io_service(), c, url),
+TCPMessageSender(shared_ptr<boost::asio::ip::tcp::socket>&& skt,
+	T& c, const URL& url) : MessageSender<T>(skt->get_io_service(), c, url),
 			socket_(skt), flag_try_reconnect_(false) {
 	if(socket_->is_open()) {
 		this->flag_is_connected = true;
@@ -50,7 +50,7 @@ TCPNetworkConnector(shared_ptr<boost::asio::ip::tcp::socket>&& skt,
 	}
 }
 
-virtual ~TCPNetworkConnector() {
+virtual ~TCPMessageSender() {
 }
 
 void set_socket_options() {
@@ -104,15 +104,15 @@ virtual void async_connect(const string& addr, int prt) {
 		return;
 	try {
 		boost::asio::ip::tcp::endpoint endpnt(boost::asio::ip::address::from_string(addr), prt);
-		socket_->async_connect(endpnt, boost::bind(&TCPNetworkConnector<T>::connect_handler, this, boost::asio::placeholders::error));
+		socket_->async_connect(endpnt, boost::bind(&TCPMessageSender<T>::connect_handler, this, boost::asio::placeholders::error));
 	} catch(exception& e) {
-		FILE_LOG(logWARNING)  << "TCPNetworkConnector::async_connect(): count not connect";
+		FILE_LOG(logWARNING)  << "TCPMessageSender::async_connect(): count not connect";
 	}
 }
 
 void connect_handler(const boost::system::error_code& ec) {
 	if(!ec && ec.value() != 0) {
-		FILE_LOG(logWARNING)  << "TCPNetworkConnector::connect_handler(): could not connect.";
+		FILE_LOG(logWARNING)  << "TCPMessageSender::connect_handler(): could not connect.";
         return;
 	}
     set_socket_options();
@@ -121,7 +121,7 @@ void connect_handler(const boost::system::error_code& ec) {
 /*
 void start_read() {
     socket_->async_read_some(boost::asio::buffer(this->read_buffer_, MAX_MSG_SIZE),
-            this->read_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector<T>::read_handler, this,
+            this->read_hndlr_strand_.wrap(boost::bind(&TCPMessageSender<T>::read_handler, this,
     boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
 }
 */
@@ -133,16 +133,16 @@ void start_read() {
 virtual void send_buffer(const unsigned char* data, size_t length) override {
 	assert(this->write_buff_item_qu_.try_lock() == false);
 	if(!is_connected()) {
-		FILE_LOG(logWARNING)  << "TCPNetworkConnector::send_buffer(): socket is not connected. not sending.";
+		FILE_LOG(logWARNING)  << "TCPMessageSender::send_buffer(): socket is not connected. not sending.";
 		return;
 	}
     assert(data[0] == BUFF_SEPERATOR);
     assert(*((int*)(data + BUFF_SEPERATOR_LEN_BYTE)) + MSG_HEADER_SIZE ==  static_cast<long>(length));
     boost::asio::async_write(*socket_, boost::asio::buffer(data, length),
-        this->write_hndlr_strand_.wrap(boost::bind(&TCPNetworkConnector<T>::write_handler,
+        this->write_hndlr_strand_.wrap(boost::bind(&TCPMessageSender<T>::write_handler,
         this, boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred)));
-    FILE_LOG(logDEBUG3) << "TCPNetworkConnector::send_buffer(): sent " << length << " bytes.";
+    FILE_LOG(logDEBUG3) << "TCPMessageSender::send_buffer(): sent " << length << " bytes.";
 }
 
 // properties
@@ -152,4 +152,4 @@ bool flag_try_reconnect_; // this flag specifies the behavior in case
 };
 
 } /* namespace mana */
-#endif /* TCPNetworkConnector_H_ */
+#endif /* TCPMessageSender_H_ */
