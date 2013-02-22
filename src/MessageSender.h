@@ -47,6 +47,11 @@ struct WriteBufferItemQueueWrapper {
 	PROTECTED_MEMBER(queue<WriteBufferItem>, qu);
 };
 
+/**
+ * Type T is the user (owner) of an instance of the Session
+ * class. This user is usually an end-host like a server (broker) or
+ * a client.
+ * */
 template <class T>
 class MessageSender {
 public:

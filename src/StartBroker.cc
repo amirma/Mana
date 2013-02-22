@@ -42,7 +42,7 @@ void termination_handler(int signum) {
     broker->shutdown();
 }
 
-void setup_signal_hndlr() {
+static void setup_signal_hndlr() {
     // signal handling. This is recommended by glibc documentation:
     // If specific signals are to be ignored (because shell wants
     // so), then the handler should remain the same. (ignore).
@@ -54,7 +54,7 @@ void setup_signal_hndlr() {
      signal (SIGTERM, SIG_IGN);
 }
 
-void start_broker(const boost::program_options::variables_map& vm) {
+static void start_broker(const boost::program_options::variables_map& vm) {
     const string id = vm["id"].as<string>();
     const size_t tr = vm["threads"].as<int>();
     broker = make_shared<mana::Broker>(id, tr);
@@ -68,12 +68,12 @@ void start_broker(const boost::program_options::variables_map& vm) {
     broker->start();
 }
 
-void print_help() {
+static void print_help() {
     cout << "Usage:" << endl << "StartBroker --id <broker id> --url <url>" << endl;
     cout << desc << "\n";
 }
 
-void setup_opts() {
+static void setup_opts() {
 desc.add_options()
     ("help,h", "print help")
     ("id,i",  boost::program_options::value<string>(), "broker identifier (e.g., broker1)")
@@ -85,7 +85,7 @@ desc.add_options()
     ("threads,t", boost::program_options::value<int>()->default_value(default_num_threads), "number of threads (default = 4)");
 }
 
-void validate_opts(const boost::program_options::variables_map& vm) {
+static void validate_opts(const boost::program_options::variables_map& vm) {
     if (vm.count("help")) {
         print_help();
         exit(-1);

@@ -109,6 +109,9 @@ Session(T& h, const URL& lo_url, const URL& re_url, const string& id, siena::if_
                 DEFAULT_HEARTBEAT_INTERVAL_SECONDS, TimeUnit::second);
         unsigned int t = static_cast<unsigned int>((1 - DEFAULT_HEARTBEAT_SEND_INTERVAL_ADJ) * DEFAULT_HEARTBEAT_INTERVAL_SECONDS);
         task_scheduler_.schedule_at_periods(std::bind(&Session<T>::send_heartbeat, this), t, TimeUnit::second);
+        //
+        auto tsk = []{cout << "da!";};
+        task_scheduler_.schedule_at_periods(tsk, t, TimeUnit::second);
         update_hb_reception_ts();
     } catch(exception& e) {}
 
@@ -146,30 +149,28 @@ void update_hb_reception_ts() {
 }
 
 void send(ManaMessage const & msg) {
-	//make sure all required fields are filled
-	assert(msg.IsInitialized());
-	assert(msg.has_type());
-	if(outgress_net_connector_)
-		outgress_net_connector_->send(msg);
+    assert(msg.IsInitialized());
+    assert(msg.has_type());
+    outgress_net_connector_->send(msg);
 }
 
 void establish() {
-	if(this->flag_session_live_)
-		return;
-	ManaMessage msg;
-	// set sender id and type
-	msg.set_sender(host_.id());
-	msg.set_type(ManaMessage_message_type_t_START_SESSION);
-	auto p = msg.mutable_key_value_map()->Add();
-	p->set_key("url");
-	p->set_value(local_url_.url());
-	send(msg);
+    if(this->flag_session_live_)
+            return;
+    ManaMessage msg;
+    // set sender id and type
+    msg.set_sender(host_.id());
+    msg.set_type(ManaMessage_message_type_t_START_SESSION);
+    auto p = msg.mutable_key_value_map()->Add();
+    p->set_key("url");
+    p->set_value(local_url_.url());
+    send(msg);
 }
 
 void terminate() {
-	// FIXME:
-	// send termination message
-	this->outgress_net_connector_->disconnect();
+    // FIXME:
+    // send termination message
+    this->outgress_net_connector_->disconnect();
 }
 
 private:

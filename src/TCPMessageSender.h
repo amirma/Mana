@@ -1,8 +1,20 @@
 /**
- * TCPMessageSender.h
+ * @file TCPMessageSender.h
  *
- *  Created on: Sep 9, 2012
- *      Author: amir
+ * @author Amir Malekpour
+ * @version 0.1
+ *
+ * Copyright © 2012 Amir Malekpour
+ *
+ *  Mana is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Mana is distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *  FOR A PARTICULAR PURPOSE. For more details see the GNU General Public License
+ *  at <http: *www.gnu.org/licenses/>
  */
 
 #ifndef TCPMessageSender_H_
@@ -19,6 +31,14 @@
 
 namespace mana {
 
+/**
+ * TCPMessage sender sends messages on a TCP connection. Upon a send a TCP connection
+ * is established and terminated after send is complete. For details on T see
+ * @link MessageSender @endlink
+ *
+ * @see MessageSender
+ * @see UDPMessageSender
+ */
 template <class T>
 class TCPMessageSender: public MessageSender<T> {
 
@@ -133,8 +153,12 @@ void start_read() {
 virtual void send_buffer(const unsigned char* data, size_t length) override {
 	assert(this->write_buff_item_qu_.try_lock() == false);
 	if(!is_connected()) {
-		FILE_LOG(logWARNING)  << "TCPMessageSender::send_buffer(): socket is not connected. not sending.";
+            try {
+                connect(); // fixme: because connect is syncronized this whole method is synced. Must be fixed.
+            } catch(exception& e) {
+		FILE_LOG(logWARNING)  << "TCPMessageSender::send_buffer(): socket could not connected. not sending.";
 		return;
+            }
 	}
     assert(data[0] == BUFF_SEPERATOR);
     assert(*((int*)(data + BUFF_SEPERATOR_LEN_BYTE)) + MSG_HEADER_SIZE ==  static_cast<long>(length));
@@ -143,6 +167,8 @@ virtual void send_buffer(const unsigned char* data, size_t length) override {
         this, boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred)));
     FILE_LOG(logDEBUG3) << "TCPMessageSender::send_buffer(): sent " << length << " bytes.";
+    //
+    disconnect();
 }
 
 // properties
