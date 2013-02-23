@@ -9,10 +9,10 @@
 #define UDPMESSAGERECEIVER_H_
 
 #include <functional>
-#include <string>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include "MessageReceiver.h"
+#include "Log.h"
 
 using namespace std;
 
@@ -53,7 +53,7 @@ void start_read() {
 
 void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
 	if(!ec && ec.value() != 0) {
-		log_err("UDPMessageSender::read_handler(): error reading:" << ec.message());
+		FILE_LOG(logERROR) << "UDPMessageSender::read_handler(): error reading:" << ec.message();
 		return;
 	}
 	// FIXME: i'm using the number of bytes as a hint that the connection
@@ -62,10 +62,10 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
 	// FIXME: this check is just blindly copies and pasted here from TCPMessageSender.
 	// I guess it wont even have a meaning here .... gotta check this.
 	if(bytes_num == 0) {
-        log_debug("UDPMessageSender::read_handler(): connection seems to be closed.");
+		FILE_LOG(logDEBUG1) << "UDPMessageSender::read_handler(): connection seems to be closed.";
         return;
 	}
-    log_debug("UDPMessageSender::read_handler(): read " << bytes_num << " bytes.");
+	FILE_LOG(logDEBUG2) << "UDPMessageSender::read_handler(): read " << bytes_num << " bytes.";
 
     ManaMessage msg;
     // Note: message_stream MUST be accessed by only one thread at a time - it's

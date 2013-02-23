@@ -1,4 +1,5 @@
 #include "MessageStream.h"
+#include "Log.h"
 
 namespace mana {
 
@@ -17,7 +18,7 @@ void MessageStream::consume(const unsigned char* buff, int size) {
     // access the same instance of MessageStream.
     new_data_ = buff;
     new_data_size_ = size;
-    log_debug("MessageStream:consume(): received new buffer. Buffer size: " << size);
+    FILE_LOG(logDEBUG2)  << "MessageStream:consume(): received new buffer. Buffer size: " << size;
 }
 
 /*
@@ -46,7 +47,7 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         while(i < size && data[i] != BUFF_SEPERATOR)
             i++;
         consumed_size = i;
-        log_warn("MessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i);
+        FILE_LOG(logWARNING)  << "MessageStream::do_produce():" << __LINE__ <<  " Warning: corrupted data was received. Discarded bytes: " << i;
         return false;
     }
     //if 'size' is less than the length of a header we return
@@ -69,13 +70,13 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         while(i < size && data[i] != BUFF_SEPERATOR)
             i++;
         consumed_size = i;
-        log_warn("MessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i
-                << " data size: " << data_size);
+        FILE_LOG(logWARNING)  << "MessageStream::do_produce():" << __LINE__ <<  " Warning: corrupted data was received. Discarded bytes: " << i
+        		<< " data size: " << data_size;
         return false;
     }
-    log_debug("MessageStream::consume(): message size: " << data_size);
+    FILE_LOG(logDEBUG2) << "MessageStream::do_produce(): message size: " << data_size;
     if(MSG_HEADER_SIZE + data_size > size) {
-        log_debug("MessageStream::do_consume(): message is incomplete");
+    	FILE_LOG(logWARNING)  << "MessageStream::do_produce(): message is incomplete";
         consumed_size = 0;
         return false;
     }
@@ -88,7 +89,7 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         while(i < size && data[i] != BUFF_SEPERATOR)
             i++;
         consumed_size = i + MSG_HEADER_SIZE;
-        log_warn("MessageStream::do_consume(): Warning: corrupted data was received. Discarded bytes: " << i);
+        FILE_LOG(logWARNING) << "MessageStream::do_produce():" << __LINE__ <<  " Warning: corrupted data was received. Discarded bytes: " << i;
         return false;
     }
     consumed_size = data_size + MSG_HEADER_SIZE;
@@ -101,7 +102,7 @@ bool MessageStream::produce(ManaMessage& msg) {
     // new buffer. So we copy one message worth of data into the unconsumed
     // buffer and send that to do_consume.
     if(unconsumed_data_size_ != 0) {
-        log_debug("MessageStream:produce(): There's " << unconsumed_data_size_ << "bytes of remaining data");
+    	FILE_LOG(logDEBUG3)  << "MessageStream:produce(): There's " << unconsumed_data_size_ << "bytes of remaining data";
         int i = 0;
         while(i < new_data_size_ && i < MAX_MSG_SIZE - unconsumed_data_size_ && new_data_[i] != BUFF_SEPERATOR) {
             unconsumed_data_[unconsumed_data_size_++] = new_data_[i++];

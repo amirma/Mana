@@ -168,7 +168,7 @@ virtual void send_buffer(const unsigned char* data, size_t length) override {
         boost::asio::placeholders::bytes_transferred)));
     FILE_LOG(logDEBUG3) << "TCPMessageSender::send_buffer(): sent " << length << " bytes.";
     //
-    disconnect();
+    //disconnect();
 }
 
 // properties

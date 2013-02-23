@@ -110,8 +110,6 @@ Session(T& h, const URL& lo_url, const URL& re_url, const string& id, siena::if_
         unsigned int t = static_cast<unsigned int>((1 - DEFAULT_HEARTBEAT_SEND_INTERVAL_ADJ) * DEFAULT_HEARTBEAT_INTERVAL_SECONDS);
         task_scheduler_.schedule_at_periods(std::bind(&Session<T>::send_heartbeat, this), t, TimeUnit::second);
         //
-        auto tsk = []{cout << "da!";};
-        task_scheduler_.schedule_at_periods(tsk, t, TimeUnit::second);
         update_hb_reception_ts();
     } catch(exception& e) {}
 

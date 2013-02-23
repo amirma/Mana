@@ -37,7 +37,11 @@ namespace mana {
 
 struct WriteBufferItem {
         const unsigned char* data_;
-        int size_;
+        size_t offset_;
+        size_t size_;
+        bool flag_delete_; // if the flag is
+        // set after sending this item, the buffer has to be
+        // released.
     };
 
 // we put a shared data with its associated
@@ -123,13 +127,17 @@ void write_handler(const boost::system::error_code& error, std::size_t bytes_tra
     assert(this->write_buff_item_qu_.qu().empty() == false); // at least the last
     // buffer that was written must be in the queue
     assert(this->write_buff_item_qu_.qu().front().size_ != 0);
-    // delete the memory and remove the item from the queue
-    delete[] this->write_buff_item_qu_.qu().front().data_;
+    // delete the memory and remove the item from the queue, if this was
+    // the last item in a trail of buffers.
+    if(this->write_buff_item_qu_.qu().front().flag_delete_)
+    	delete[] this->write_buff_item_qu_.qu().front().data_;
     this->write_buff_item_qu_.qu().pop();
     // if there's more items in the queue waiting to be written
     // to the socket continue sending ...
-    if(this->write_buff_item_qu_.qu().empty() == false)
-        send_buffer(this->write_buff_item_qu_.qu().front().data_, this->write_buff_item_qu_.qu().front().size_);
+    if(this->write_buff_item_qu_.qu().empty() == false) {
+    	const auto& tmp = this->write_buff_item_qu_.qu().front();
+        send_buffer(tmp.data_ + tmp.offset_, tmp.size_);
+    }
 }
 
 // private methods
@@ -147,7 +155,7 @@ WriteBufferItemQueueWrapper write_buff_item_qu_;
 mutex read_buff_mutex_;
 
 private:
-/*
+/*WriteBufferItem item;
  * Prepares a buffer for transmission over the network.
  * If there is a transmission going on already, the buffer will be queued for
  * later transmission. Otherwise the buffer is sent out without being queued.
@@ -160,14 +168,31 @@ private:
 void prepare_buffer(const unsigned char* data, size_t length) {
 	FILE_LOG(logDEBUG3) << "MessageSender::prepare_buffer(): preparing " << length << " bytes.";
     lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
-    assert(length != 0);
-    WriteBufferItem item;
-    item.data_ = data;
-    item.size_ = length;
+    assert(length > 0);
     bool flg_send_not_in_progress = this->write_buff_item_qu_.qu().empty();
-    this->write_buff_item_qu_.qu().push(item);
-    if(flg_send_not_in_progress)
-        send_buffer(item.data_, item.size_);
+    // if the message size is more that the limit we have to break it into
+    // multiple sends. Hence the loop.
+    size_t offset = 0;
+    do {
+    	WriteBufferItem item;
+    	if(length > MAX_PCKT_SIZE)
+    		item.size_ = MAX_PCKT_SIZE;
+    	else
+    		item.size_ = length;
+    	item.data_ = data;
+    	item.offset_ = offset;
+    	item.flag_delete_ = false;
+    	length -= item.size_;
+    	offset += item.size_;
+    	this->write_buff_item_qu_.qu().push(item);
+    } while(length > 0);
+    // the last item in this series of items must have its delete flag set to one
+    // so after sending it, we know we must freed the buffer.
+    this->write_buff_item_qu_.qu().back().flag_delete_ = true;
+    if(flg_send_not_in_progress) {
+    	const auto& tmp = this->write_buff_item_qu_.qu().front();
+    	send_buffer(tmp.data_ + tmp.offset_, tmp.size_);
+    }
     assert(!this->write_buff_item_qu_.qu().empty());
     assert(this->write_buff_item_qu_.qu().front().size_ != 0);
 }

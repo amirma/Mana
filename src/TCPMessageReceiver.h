@@ -26,7 +26,6 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include "MessageReceiver.h"
-#include "string"
 #include "TCPMessageSender.h"
 #include "ManaMessage.pb.h"
 #include "TCPMessageReceiver.h"
@@ -108,7 +107,7 @@ void begin_accept() {
 
 void accept_handler(const boost::system::error_code& ec) {
     if(!ec && ec.value() != 0) {
-            log_err("error: " << ec.message());
+    	FILE_LOG(logERROR) << "TCPMessageReceiver::accept_handler(): " << ec.message();
     }
     FILE_LOG(logDEBUG3) << "Accepted connection from "  << next_connection_socket_->remote_endpoint().address().to_string();
     //once the connection is created we move the pointer

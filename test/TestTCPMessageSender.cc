@@ -23,7 +23,7 @@ public:
 };
 
 int main() {
-	Log::ReportingLevel() = logWARNING;
+	Log::ReportingLevel() = logDEBUG2;
 	URL url("tcp:127.0.0.1:2350");
 	boost::asio::io_service io_srv;
 	boost::asio::io_service::work work(io_srv); // disallow the io_service to quit too soon.
@@ -39,7 +39,7 @@ int main() {
 	}
 	// create a message and fill in some fields
 	std::hash<std::string> hash_fn;
-	const int num_chars = 1000;
+	const int num_chars = 5000;
 	char payload[num_chars+1];
 	payload[num_chars] = 0; // null-ended string
 	ManaMessage msg;
@@ -60,6 +60,8 @@ int main() {
 		p->set_value(to_string(hash));
 		ms.send(msg);
 	}
+        ms.disconnect();
+        io_srv.reset();
 	sleep(1);
 	return 0;
 }

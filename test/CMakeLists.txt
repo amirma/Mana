@@ -1,4 +1,4 @@
-SET (CMAKE_CXX_FLAGS "-std=c++0x -DNDEBUG -g -O2")
+SET (CMAKE_CXX_FLAGS "-std=c++0x -DNDEBUG -g -O0")
 #
 include_directories(/opt/include/)
 include_directories(../src/)

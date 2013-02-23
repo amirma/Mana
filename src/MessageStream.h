@@ -3,7 +3,6 @@
 
 #include "common.h"
 #include "ManaMessage.pb.h"
-#include <iostream>
 
 namespace mana {
 

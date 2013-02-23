@@ -33,7 +33,7 @@ int main() {
 	UDPMessageSender<MessageHandler> ms(io_srv, hndlr, url);
 	// create a message and fill in some fields
 	std::hash<std::string> hash_fn;
-	const int num_chars = 1000;
+	const int num_chars = 5000;
 	char payload[num_chars+1];
 	payload[num_chars] = 0; // null-ended string
 	ManaMessage msg;
@@ -55,5 +55,6 @@ int main() {
 		ms.send(msg);
 	}
 	sleep(1);
+        io_srv.reset();
 	return 0;
 }

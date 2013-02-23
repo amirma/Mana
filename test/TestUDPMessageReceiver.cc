@@ -10,6 +10,7 @@
 #include "UDPMessageReceiver.h"
 #include "ManaMessage.pb.h"
 #include "URL.h"
+#include "Log.h"
 
 
 using namespace std;
@@ -32,6 +33,7 @@ public:
 };
 
 int main() {
+        Log::ReportingLevel() = logINFO;
 	MessageHandler hndlr;
 	URL url("udp:127.0.0.1:2350");
 	boost::asio::io_service io_srv;
