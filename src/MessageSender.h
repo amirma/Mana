@@ -92,6 +92,10 @@ void send(const ManaMessage& msg) {
     // the message into a protobuf
     int data_size = msg.ByteSize();
     int total_size = MSG_HEADER_SIZE + data_size;
+    if(total_size > MAX_MSG_SIZE) {
+    	FILE_LOG(logWARNING) << "MessageSender::Send(): Message size is more than the allowed limit (" << MAX_MSG_SIZE << " Bytes). Message was discarded.";
+        return;
+    }
     unsigned char* arr_buf = new unsigned char[total_size];
     arr_buf[0] = BUFF_SEPERATOR;
     *((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) = data_size;

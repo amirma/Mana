@@ -39,20 +39,20 @@ int main() {
 	}
 	// create a message and fill in some fields
 	std::hash<std::string> hash_fn;
-	const int num_chars = 5000;
+	const int num_chars = 2000000;
 	char payload[num_chars+1];
 	payload[num_chars] = 0; // null-ended string
 	ManaMessage msg;
-	for(int k = 0; k < 10; k++) {
+	for(int k = 0; k < 10000; k++) {
 		msg.Clear();
 		msg.set_sender("test sender");
 		msg.set_type(ManaMessage_message_type_t_HEARTBEAT);
 		// prepare a big payload, send the payload with its hash to the receiver
 		std::random_device rd;
 		std::mt19937 gen(rd());
-		std::uniform_int_distribution<> dis(1, 254);
+		std::uniform_int_distribution<> dis(32, 253);
 		for(int i = 0; i < num_chars; i++)
-			payload[i] = dis(gen);
+		    payload[i] = dis(gen);
 		auto hash = hash_fn(payload);
 		msg.set_payload(payload);
 		auto p = msg.mutable_key_value_map()->Add();
@@ -60,8 +60,8 @@ int main() {
 		p->set_value(to_string(hash));
 		ms.send(msg);
 	}
+	sleep(1);
         ms.disconnect();
         io_srv.reset();
-	sleep(1);
 	return 0;
 }

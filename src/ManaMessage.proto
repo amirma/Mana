@@ -110,7 +110,7 @@ message ManaMessage {
     optional string unsubscription = 6;
 
     // ------------------- payload -------------------------- //
-    optional string payload = 7;
+    optional bytes payload = 7;
 
     // -------------------- map ---------------------------- //
     // this object is used to store control information. Depending

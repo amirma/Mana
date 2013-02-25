@@ -90,8 +90,8 @@ template<typename T, typename U> struct argument_type<T(U)> { typedef U type; };
 // constants
 #define BUFF_SEPERATOR 254 //ETB
 #define BUFF_SEPERATOR_LEN_BYTE 1
-#define MAX_MSG_SIZE  1000000 //Bytes
-#define MAX_PCKT_SIZE 1000000 //Bytes
+#define MAX_MSG_SIZE  3000000 //Bytes
+#define MAX_PCKT_SIZE 1400 //Bytes
 
 using namespace mana;
 

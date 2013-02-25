@@ -33,7 +33,7 @@ public:
 };
 
 int main() {
-        Log::ReportingLevel() = logINFO;
+        Log::ReportingLevel() = logDEBUG3;
 	MessageHandler hndlr;
 	URL url("udp:127.0.0.1:2350");
 	boost::asio::io_service io_srv;

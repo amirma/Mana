@@ -234,7 +234,7 @@ void protobuf_AddDesc_ManaMessage_2eproto() {
     "\005\0226\n\014subscription\030\004 \001(\0132 .mana.ManaMessa"
     "ge.subscription_t\0226\n\014notification\030\005 \001(\0132"
     " .mana.ManaMessage.notification_t\022\026\n\016uns"
-    "ubscription\030\006 \001(\t\022\017\n\007payload\030\007 \001(\t\0227\n\rke"
+    "ubscription\030\006 \001(\t\022\017\n\007payload\030\007 \001(\014\0227\n\rke"
     "y_value_map\030\010 \003(\0132 .mana.ManaMessage.key"
     "_value_pair\032\210\001\n\007value_t\022*\n\004type\030\001 \002(\0162\034."
     "mana.ManaMessage.tag_type_t\022\024\n\014string_va"
@@ -259,7 +259,7 @@ void protobuf_AddDesc_ManaMessage_2eproto() {
     "ERMINATE_SESSION\020\004\022\031\n\025TERMINATE_SESSION_"
     "ACK\020\005\022\007\n\003ACK\020\006\022\r\n\tHEARTBEAT\020\007\022\007\n\003SUB\020e\022\007"
     "\n\003NOT\020f\022\n\n\005UNSUB\020\202\001\022\026\n\021ERR_NOT_SUPPORTED"
-    "\020\310\001\"E\n\ntag_type_t\022\n\n\006STRING\020\001\022\007\n\003INT\020\002\022\n"
+    "\020\311\001\"E\n\ntag_type_t\022\n\n\006STRING\020\001\022\007\n\003INT\020\002\022\n"
     "\n\006DOUBLE\020\003\022\010\n\004BOOL\020\004\022\014\n\010ANY_TYPE\020\005", 1314);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "ManaMessage.proto", &protobuf_RegisterTypes);
@@ -306,7 +306,7 @@ bool ManaMessage_message_type_t_IsValid(int value) {
     case 101:
     case 102:
     case 130:
-    case 200:
+    case 201:
       return true;
     default:
       return false;
@@ -2276,16 +2276,13 @@ bool ManaMessage::MergePartialFromCodedStream(
         break;
       }
       
-      // optional string payload = 7;
+      // optional bytes payload = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_payload:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_payload()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->payload().data(), this->payload().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -2367,12 +2364,9 @@ void ManaMessage::SerializeWithCachedSizes(
       6, this->unsubscription(), output);
   }
   
-  // optional string payload = 7;
+  // optional bytes payload = 7;
   if (has_payload()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->payload().data(), this->payload().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
+    ::google::protobuf::internal::WireFormatLite::WriteBytes(
       7, this->payload(), output);
   }
   
@@ -2435,13 +2429,10 @@ void ManaMessage::SerializeWithCachedSizes(
         6, this->unsubscription(), target);
   }
   
-  // optional string payload = 7;
+  // optional bytes payload = 7;
   if (has_payload()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->payload().data(), this->payload().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         7, this->payload(), target);
   }
   
@@ -2504,10 +2495,10 @@ int ManaMessage::ByteSize() const {
           this->unsubscription());
     }
     
-    // optional string payload = 7;
+    // optional bytes payload = 7;
     if (has_payload()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->payload());
     }
     

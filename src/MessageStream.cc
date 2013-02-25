@@ -47,7 +47,7 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         while(i < size && data[i] != BUFF_SEPERATOR)
             i++;
         consumed_size = i;
-        FILE_LOG(logWARNING)  << "MessageStream::do_produce():" << __LINE__ <<  " Warning: corrupted data was received. Discarded bytes: " << i;
+        FILE_LOG(logWARNING)  << "MessageStream::do_produce():" << __LINE__ <<  " : corrupted data was received. Discarded bytes: " << i	;
         return false;
     }
     //if 'size' is less than the length of a header we return
@@ -61,7 +61,7 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
     // and try to debug. For fault tolerance purposes or when we are
     // using UDP and no checksumming is done we need to be prepared for
     // anything, hence the following check...
-    if( data_size < 0 || data_size > MAX_MSG_SIZE) {
+    if(data_size < 0 || data_size > MAX_MSG_SIZE) {
         // seems like we got rubbish in the buffer, lets skip 
         // to either the end of the buffer of to the beginning of 
         // a new message.
@@ -74,9 +74,11 @@ bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage&
         		<< " data size: " << data_size;
         return false;
     }
-    FILE_LOG(logDEBUG2) << "MessageStream::do_produce(): message size: " << data_size;
+    FILE_LOG(logDEBUG2) << "MessageStream::do_produce() message size (w/o header): " << data_size << " Header size: " << MSG_HEADER_SIZE;
+    // not enough data was received to reconcile the message. Just return.
     if(MSG_HEADER_SIZE + data_size > size) {
-    	FILE_LOG(logWARNING)  << "MessageStream::do_produce(): message is incomplete";
+    	FILE_LOG(logDEBUG2)  << "MessageStream::do_produce():" << __LINE__ <<  " : buffer is incomplete." <<
+    			" Data required to reconcile message: " << MSG_HEADER_SIZE + data_size << ", data available: " << size;
         consumed_size = 0;
         return false;
     }
@@ -102,33 +104,41 @@ bool MessageStream::produce(ManaMessage& msg) {
     // new buffer. So we copy one message worth of data into the unconsumed
     // buffer and send that to do_consume.
     if(unconsumed_data_size_ != 0) {
-    	FILE_LOG(logDEBUG3)  << "MessageStream:produce(): There's " << unconsumed_data_size_ << "bytes of remaining data";
+    	FILE_LOG(logDEBUG2)  << "MessageStream:produce(): There's " << unconsumed_data_size_ << " Bytes of unconsumed data";
         int i = 0;
-        while(i < new_data_size_ && i < MAX_MSG_SIZE - unconsumed_data_size_ && new_data_[i] != BUFF_SEPERATOR) {
+        while(i < new_data_size_ && unconsumed_data_size_ < MAX_MSG_SIZE && new_data_[i] != BUFF_SEPERATOR) {
             unconsumed_data_[unconsumed_data_size_++] = new_data_[i++];
+        }
+        // If the unconsumed_data_ buffer is full and there's still unconsumed data but the end of a message is
+        // not reached then the received buffer was corrupted. We need to throw away all the unconsumed data.
+        if(i < new_data_size_ && MAX_MSG_SIZE <= unconsumed_data_size_  && new_data_[i] != BUFF_SEPERATOR) {
+        	assert(false);
         }
         assert(new_data_size_ - i >= 0);
         new_data_ += i;
         new_data_size_ -= i;
-        // if that managed to extract a good message the return true
+        // if that managed to extract a good message then return true
         // otherwise proceed to the rest of the buffer
-        int c = 0;
-        if(do_produce(unconsumed_data_, unconsumed_data_size_ + i, msg, c)) {
+        int consumed = 0;
+        if(do_produce(unconsumed_data_, unconsumed_data_size_, msg, consumed)) {
             // assert: all the buffer must be consumed
-            assert(c == unconsumed_data_size_);
+            assert(consumed == unconsumed_data_size_);
             unconsumed_data_size_ = 0; // we consumed all of it.
             return true;
         }
-        unconsumed_data_size_ = 0; // we consumed all of it.
+        unconsumed_data_size_ -= consumed;
     }
+    // new_data_size_ must never be a negative number
     assert(new_data_size_ >=0);
 
-    // if no data left, return false
+    // now all the unconsumed data from before is consumed. If no new data is
+    // left, return false
     if(new_data_size_ <= 0)
         return false;
 
-    // try reading and consuming until either there's a success and 
-    // or we consumed the whole buffer or ALMOST all of it.
+    // otherwise try reading and consuming the new data until either there's a success and
+    // we consumed the whole buffer or ALMOST all of it. (i.e., until there's not enough data
+    // to reconstruct a whole new message
     int consumed = 0;
     do {
         if(do_produce(new_data_, new_data_size_, msg, consumed)) {
@@ -145,7 +155,6 @@ bool MessageStream::produce(ManaMessage& msg) {
     // if no data is left, return false
     if(new_data_size_ <= 0)
         return false;
-
     // if we get to here it means reading/parsing failed.
     // this means that we reached ALMOST the end of this buffer,
     // i.e., there's the beginning of a new message in new_buffer_
@@ -155,16 +164,15 @@ bool MessageStream::produce(ManaMessage& msg) {
     assert(consumed == 0);
     assert(new_data_[0] == BUFF_SEPERATOR);
     // there must not by any unconsumed data in unconsumed_data_.
-    assert(unconsumed_data_size_ == 0);
+    //assert(unconsumed_data_size_ == 0);
     int i = 0;
     while(new_data_size_ > 0) {
-        unconsumed_data_[i] = new_data_[i];
+        unconsumed_data_[unconsumed_data_size_++] = new_data_[i++];
         new_data_size_--;
-        i++;
     }
     assert(new_data_size_ == 0); // now everything must be consumed or copied 
     // over to the other buffer.
-    unconsumed_data_size_ = i;
+    FILE_LOG(logDEBUG2)  << "MessageStream:produce(): " << unconsumed_data_size_ << " Bytes of data remained unconsumed." ;
     return false;
 }
 

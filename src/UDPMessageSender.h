@@ -76,8 +76,6 @@ private:
 */
 virtual void send_buffer(const unsigned char* data, size_t length) {
 	assert(this->write_buff_item_qu_.try_lock() == false);
-    assert(data[0] == BUFF_SEPERATOR);
-    assert(*((int*)(data + BUFF_SEPERATOR_LEN_BYTE)) + MSG_HEADER_SIZE ==  static_cast<long>(length));
     socket_->async_send_to(boost::asio::buffer(data, length), remote_endpoint_,
         this->write_hndlr_strand_.wrap(boost::bind(&UDPMessageSender<T>::write_handler,
         this, boost::asio::placeholders::error,

@@ -160,8 +160,6 @@ virtual void send_buffer(const unsigned char* data, size_t length) override {
 		return;
             }
 	}
-    assert(data[0] == BUFF_SEPERATOR);
-    assert(*((int*)(data + BUFF_SEPERATOR_LEN_BYTE)) + MSG_HEADER_SIZE ==  static_cast<long>(length));
     boost::asio::async_write(*socket_, boost::asio::buffer(data, length),
         this->write_hndlr_strand_.wrap(boost::bind(&TCPMessageSender<T>::write_handler,
         this, boost::asio::placeholders::error,

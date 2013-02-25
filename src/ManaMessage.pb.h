@@ -77,7 +77,7 @@ enum ManaMessage_message_type_t {
   ManaMessage_message_type_t_SUB = 101,
   ManaMessage_message_type_t_NOT = 102,
   ManaMessage_message_type_t_UNSUB = 130,
-  ManaMessage_message_type_t_ERR_NOT_SUPPORTED = 200
+  ManaMessage_message_type_t_ERR_NOT_SUPPORTED = 201
 };
 bool ManaMessage_message_type_t_IsValid(int value);
 const ManaMessage_message_type_t ManaMessage_message_type_t_message_type_t_MIN = ManaMessage_message_type_t_START_SESSION;
@@ -924,14 +924,14 @@ class ManaMessage : public ::google::protobuf::Message {
   inline ::std::string* mutable_unsubscription();
   inline ::std::string* release_unsubscription();
   
-  // optional string payload = 7;
+  // optional bytes payload = 7;
   inline bool has_payload() const;
   inline void clear_payload();
   static const int kPayloadFieldNumber = 7;
   inline const ::std::string& payload() const;
   inline void set_payload(const ::std::string& value);
   inline void set_payload(const char* value);
-  inline void set_payload(const char* value, size_t size);
+  inline void set_payload(const void* value, size_t size);
   inline ::std::string* mutable_payload();
   inline ::std::string* release_payload();
   
@@ -1745,7 +1745,7 @@ inline ::std::string* ManaMessage::release_unsubscription() {
   }
 }
 
-// optional string payload = 7;
+// optional bytes payload = 7;
 inline bool ManaMessage::has_payload() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -1778,7 +1778,7 @@ inline void ManaMessage::set_payload(const char* value) {
   }
   payload_->assign(value);
 }
-inline void ManaMessage::set_payload(const char* value, size_t size) {
+inline void ManaMessage::set_payload(const void* value, size_t size) {
   set_has_payload();
   if (payload_ == &::google::protobuf::internal::kEmptyString) {
     payload_ = new ::std::string;
