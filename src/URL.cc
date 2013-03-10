@@ -50,17 +50,19 @@ URL::URL(const string& str_url) : url_(str_url) {
 }
 
 URL::URL(const URL& url) {
-	url_ = url.url_;
+    url_ = url.url_;
     protocol_ = url.protocol();
     address_ = url.address();
     port_ = url.port();
 }
 
 URL& URL::operator=(const URL& url) {
-	url_ = url.url_;
-    protocol_ = url.protocol();
-    address_ = url.address();
-    port_ = url.port();
+    if(&url != this) {
+        url_ = url.url_;
+        protocol_ = url.protocol();
+        address_ = url.address();
+        port_ = url.port();
+    }
     return *this;
 }
 
