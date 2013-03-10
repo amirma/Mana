@@ -46,8 +46,8 @@ private:
 
 void start_read() {
     socket_->async_receive_from(boost::asio::buffer(this->read_buffer_, MAX_MSG_SIZE),
-    		all_endpoints_,
-    		this->read_hndlr_strand_.wrap(boost::bind(&UDPMessageReceiver<T>::read_handler, this,
+    	all_endpoints_,
+    	this->read_hndlr_strand_.wrap(boost::bind(&UDPMessageReceiver<T>::read_handler, this,
     boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)));
 }
 
@@ -73,8 +73,10 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
     // by one thread at a time. This is guaranteed by using strand_ for async
     // read.
     this->message_stream_.consume(this->read_buffer_.data(), bytes_num);
-    while(this->message_stream_.produce(msg))
+    while(this->message_stream_.produce(msg)) {
     	this->client_.handle_message(msg, this);
+    	msg.Clear();
+    }
 
     start_read();
 }

@@ -36,7 +36,7 @@ URL::URL(const string& str_url) : url_(str_url) {
 	address_ = tokens[1];
 	try {
 		port_ = stoi(tokens[2]);
-	} catch(exception& e) {
+	} catch(const exception& e) {
 		throw ManaException("Invalid port number in " + url_);
 	}
 	if(tokens[0] == "tcp")
@@ -85,7 +85,7 @@ const string& URL::url() const {
 bool URL::is_valid(const string& str) {
 	try {
 		URL url(str);
-	} catch (exception& e){
+	} catch (const exception& e){
 		return false;
 	}
 	return true;

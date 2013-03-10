@@ -3,7 +3,7 @@
  * simepl types.
  */
 #include "common.h"
-#include <iostream>
+#include "Log.h"
 
 using namespace std;
 
@@ -39,7 +39,7 @@ void to_mana_message(const ManaMessage& buff, mana_message& msg) {
             break;
         }
         default:
-            log_warn("\nProtobufToFromMana::to_mana_message: ignoring unrecognized attribute type");
+        	FILE_LOG(logWARNING) << "ProtobufToFromMana::to_mana_message: ignoring unrecognized attribute type";
         }
     }
 }
@@ -76,7 +76,8 @@ void to_mana_filter(const ManaMessage& buff, mana_filter& fltr) {
             break;
         }
         default:
-            log_warn("\nProtobufToFromMana::to_mana_filter: ignoring unrecognized attribute type");
+        	FILE_LOG(logWARNING) << "ProtobufToFromMana::to_mana_filter: ignoring unrecognized attribute type";
+        	break;
         }
     }
 }
@@ -112,7 +113,7 @@ void to_protobuf(const mana_message& msg, ManaMessage& buff) {
                 break;
             */
             default:
-                log_warn("\nProtobufToFromMana::to_protobuf: ignoring unrecognized attribute type");
+            	FILE_LOG(logWARNING) << "ProtobufToFromMana::to_protobuf: ignoring unrecognized attribute type";
         }
     }
 }
@@ -149,7 +150,7 @@ void to_protobuf(const mana_filter& fltr, ManaMessage& buff) {
                 break;
             */
             default:
-                log_warn("\nProtobufToFromMana::to_protobuf: ignoring unrecognized attribute type");
+            	FILE_LOG(logWARNING) << "ProtobufToFromMana::to_protobuf: ignoring unrecognized attribute type";
 
        }
 

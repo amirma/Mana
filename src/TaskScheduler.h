@@ -68,7 +68,7 @@ TaskScheduler(boost::asio::io_service& srv) : io_service_(srv), timer_(srv),
 virtual ~TaskScheduler() {
     try{
         cancell_all();
-    } catch(exception& e){
+    } catch(const exception& e){
         // ignore
     }
 }
@@ -85,10 +85,11 @@ virtual ~TaskScheduler() {
 *  @param dur is the time after which we want the task to be executed
 *  @param tu is a value of TimeUnit
 *  */
-void schedule_after_duration(T&& f, unsigned int dur, TimeUnit tu) {
+template <class F>
+void schedule_after_duration(F&& f, unsigned int dur, TimeUnit tu) {
     // if time unit if seconds convert 'dur' to milliseconds
     unsigned t_milisec = (tu == TimeUnit::second ? dur * 1000 : dur);
-    auto task = make_shared<TaskWrapper>(std::forward<T>(f), t_milisec);
+    auto task = make_shared<TaskWrapper>(std::forward<F>(f), t_milisec);
     insert_task(std::move(task));
 }
 
@@ -105,10 +106,11 @@ void schedule_after_duration(T&& f, unsigned int dur, TimeUnit tu) {
 *  now() + dur
 *  @param tu is a value of TimeUnit
 *  */
-void schedule_at_periods(T&& f, unsigned int period, TimeUnit tu) {
+template <class F>
+void schedule_at_periods(F&& f, unsigned int period, TimeUnit tu) {
     // if time unit if seconds convert 'dur' to milliseconds
     unsigned t_milisec = (tu == TimeUnit::second ? period * 1000 : period);
-    auto task = make_shared<TaskWrapper>(std::forward<T>(f), t_milisec);
+    auto task = make_shared<TaskWrapper>(std::forward<F>(f), t_milisec);
     task->flag_is_recurrent_ = true;
     insert_task(std::move(task));
 }
@@ -130,7 +132,8 @@ private:
 /**  Wrap a function object along with its relative execution time and a
  *  flag that tells if the task is recurrent or not. For internal purposes only */
 struct TaskWrapper {
-    TaskWrapper(T&& f, unsigned int t) : p_functor_(std::forward<T>(f)),
+	template <typename F>
+    TaskWrapper(F&& f, unsigned int t) : p_functor_(std::forward<F>(f)),
     interval_millisec_(t) , flag_is_recurrent_(false) {
         exec_time_ = std::chrono::system_clock::now() + interval_millisec_;
     }

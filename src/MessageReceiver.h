@@ -90,7 +90,7 @@ boost::asio::io_service& io_service_;
 T& client_;
 const URL url_;
 boost::asio::strand read_hndlr_strand_;
-array<unsigned char, MAX_MSG_SIZE> read_buffer_;
+array<byte, MAX_MSG_SIZE> read_buffer_;
 MessageStream message_stream_;
 mutex read_buff_mutex_;
 connection_type connection_type_;

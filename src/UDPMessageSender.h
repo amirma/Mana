@@ -13,9 +13,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
 #include "MessageSender.h"
-#include "exception"
 #include "ManaException.h"
 #include "Log.h"
+#include "common.h"
 
 namespace mana {
 
@@ -74,7 +74,7 @@ private:
  * This method has only internal purposes and is used to send a buffer of
  * a given size using the socket.
 */
-virtual void send_buffer(const unsigned char* data, size_t length) {
+virtual void send_buffer(const byte* data, size_t length) {
 	assert(this->write_buff_item_qu_.try_lock() == false);
     socket_->async_send_to(boost::asio::buffer(data, length), remote_endpoint_,
         this->write_hndlr_strand_.wrap(boost::bind(&UDPMessageSender<T>::write_handler,

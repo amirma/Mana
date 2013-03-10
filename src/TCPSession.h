@@ -94,8 +94,10 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
     // by one thread at a time. This is guaranteed by using strand_ for async
     // read.
     this->message_stream_.consume(this->read_buffer_.data(), bytes_num);
-    while(this->message_stream_.produce(msg))
+    while(this->message_stream_.produce(msg)) {
     	this->client_.handle_message(msg, message_receiver_);
+    	msg.Clear();
+    }
 
     if(is_connected())
     	start_read();

@@ -68,7 +68,7 @@ class IFaceNoGenerator {
         /**
          * @brief Return the number to the pool. This method is thread safe.
          */
-        void free_number(siena::if_t n) {
+        void return_number(siena::if_t n) {
             lock_guard<std::mutex> lock_(mutex_);
             queue_.push(n);
         }
@@ -101,10 +101,10 @@ public:
 
     // Use this method to add more transport protocols to the broker
     void add_transport(string);
-    void handle_sub(ManaMessage&);
-    void handle_not(ManaMessage&);
-    void handle_heartbeat(ManaMessage&);
-    void handle_message(ManaMessage& msg, MessageReceiver<Broker>* mr);
+    void handle_sub(const ManaMessage&);
+    void handle_not(const ManaMessage&);
+    void handle_session_message(const ManaMessage&);
+    void handle_message(const ManaMessage& msg, MessageReceiver<Broker>* mr);
     void handle_session_termination(Session<Broker>& s);
     void handle_connect(shared_ptr<MessageSender<Broker>>& c);
     const string& id() const;
@@ -115,7 +115,7 @@ public:
 private:
     // private methods.
     bool handle_match(siena::if_t, const siena::message&);
-    void handle_session_initiation(ManaMessage& buff, const MessageReceiver<Broker>*);
+    void handle_session_initiation(const ManaMessage& buff, const MessageReceiver<Broker>*);
     void send_error();
     // class properties
     boost::asio::io_service io_service_;
@@ -136,12 +136,12 @@ private:
  * @brief Helper class to pass to the forwarding table.
  **/
 class BrokerMatchMessageHandler : public siena::MatchMessageHandler {
-    public:
-        BrokerMatchMessageHandler(Broker* broker) : broker_(broker) {}
-        virtual ~BrokerMatchMessageHandler () {}
-        virtual bool output (siena::if_t iface, const siena::message& msg) {
-            return broker_->handle_match(iface, msg);
-        }
+public:
+	BrokerMatchMessageHandler(Broker* broker) : broker_(broker) {}
+	virtual ~BrokerMatchMessageHandler () {}
+	virtual bool output (siena::if_t iface, const siena::message& msg) {
+		return broker_->handle_match(iface, msg);
+	}
     private:
         Broker* broker_;
 };

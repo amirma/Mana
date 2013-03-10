@@ -9,7 +9,7 @@ MessageStream::MessageStream() :
 
 MessageStream::~MessageStream() {}
 
-void MessageStream::consume(const unsigned char* buff, int size) {
+void MessageStream::consume(const byte* buff, int size) {
     assert(new_data_size_ == 0); // there must not be any
     // data remained from before. If this assertion fails,
     // either the MessageStream::consume() is not called enough
@@ -32,7 +32,7 @@ void MessageStream::consume(const unsigned char* buff, int size) {
  * value is non-zero it means there was an error in the buffer and some bytes
  * were skipped (consumed).
  */
-bool MessageStream::do_produce(const unsigned char* data, int size, ManaMessage& msg, int& consumed_size) const {
+bool MessageStream::do_produce(const byte* data, int size, ManaMessage& msg, int& consumed_size) const {
     assert(size > 0);
     assert(data[0] == BUFF_SEPERATOR);// this should not fail unless
     // received data is corrupted somehow. In debug build we must fail

@@ -24,13 +24,13 @@
 #include "common.h"
 #include "Utility.h"
 #include "ManaException.h"
+#include "Log.h"
 
 namespace mana {
 
 using namespace std;
 
 void string_to_mana_message(const string& str, mana_message& m) {
-    //log_info("\n" << str);
     try {
         vector<string> attr_vector;
     	boost::split(attr_vector, str, boost::is_any_of(","));
@@ -73,18 +73,17 @@ void string_to_mana_message(const string& str, mana_message& m) {
                     break;
                 }
                 default:
-                    log_warn("\nWarning: unrecognized type \'" << tokens[0] << "\'");
+                	FILE_LOG(logWARNING) << "Warning: unrecognized type \'" << tokens[0] << "\'";
                     break;
             }
         }
-    } catch(exception& e) {
+    } catch(const exception& e) {
         throw mana::ManaException("string_to_mana_message(): Invalid string.");
     }
 }
 
 void string_to_mana_filter(const string& str, mana_filter& f) {
     try {
-        //log_info("\n" << str);
         vector<string> constraint_vector;
     	boost::split(constraint_vector, str, boost::is_any_of(","));
         for(auto constraint_item : constraint_vector) {
@@ -99,7 +98,7 @@ void string_to_mana_filter(const string& str, mana_filter& f) {
             vector<string> tokens;
         	boost::split(tokens, constraint_item, boost::is_any_of(" "));
             if(!validate_constraint(tokens)) {
-                log_warn("\nSimpleClinet::string_to_mana_filter(): Invalid constraint in: " << str);
+            	FILE_LOG(logWARNING) << "SimpleClinet::string_to_mana_filter(): Invalid constraint in: " << str;
                 continue;
             }
             siena::string_t cst =  tokens[1].c_str();
@@ -130,11 +129,11 @@ void string_to_mana_filter(const string& str, mana_filter& f) {
                     break;
                 }
                 default:
-                    log_warn("\nWarning: unrecognized type \'" << tokens[0] << "\'");
+                	FILE_LOG(logWARNING) << "Warning: unrecognized type \'" << tokens[0] << "\'";
                     break;
             }
         }
-    } catch(exception& e) {
+    } catch(const exception& e) {
         throw mana::ManaException("string_to_filter_message(): Invalid string.");
     }
 }

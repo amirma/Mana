@@ -61,7 +61,7 @@ virtual ~TCPMessageReceiver() {
 			// stop listening on the socket
 			acceptor_ptr_->close();
 			this->flag_runing_ = false;
-		} catch(exception& e) {/* ignore errors */}
+		} catch(const exception& e) {/* ignore errors */}
 	}
 }
 
@@ -77,7 +77,7 @@ virtual void start() override {
         acceptor_ptr_->listen();
         this->flag_runing_ = true;
         begin_accept();
-    } catch(exception& e) {
+    } catch(const exception& e) {
         FILE_LOG(logWARNING) << "TCPMessageReceiver<T>::start: error listening to socket on " << this->url_.url();
     }
 }
@@ -99,7 +99,7 @@ void begin_accept() {
 		next_connection_socket_ = make_shared<boost::asio::ip::tcp::socket>(this->io_service_);
 		acceptor_ptr_->async_accept(*next_connection_socket_, boost::bind(&TCPMessageReceiver<T>::accept_handler,
 						this, boost::asio::placeholders::error));
-    } catch(exception& e) {
+    } catch(const exception& e) {
     	FILE_LOG(logWARNING) << "TCPMessageReceiver::begin_accept: an error occurred while accepting a new connection: " <<
                             e.what();
     }

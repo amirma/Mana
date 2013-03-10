@@ -38,7 +38,7 @@ static boost::program_options::options_description desc;
 static const int default_num_threads = 4;
 static const string default_log_severity = "info";
 
-void termination_handler(int signum) {
+static void termination_handler(int signum) {
     broker->shutdown();
 }
 
@@ -63,7 +63,8 @@ static void start_broker(const boost::program_options::variables_map& vm) {
     for(auto& url : url_list)
         broker->add_transport(url);
     // set logging level
-    Log::ReportingLevel() = Log::FromString(vm["log"].as<string>());
+    //Log::ReportingLevel() = Log::FromString(vm["log"].as<string>());
+    Log::ReportingLevel() = logDEBUG3;
     //
     broker->start();
 }
@@ -114,7 +115,7 @@ int main(int argc, char* argv[]) {
     try {
         boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
         boost::program_options::notify(vm);
-    } catch(exception& e) {
+    } catch(const exception& e) {
         print_help();
         return -1;
     }

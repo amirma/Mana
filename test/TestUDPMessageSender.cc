@@ -33,11 +33,11 @@ int main() {
 	UDPMessageSender<MessageHandler> ms(io_srv, hndlr, url);
 	// create a message and fill in some fields
 	std::hash<std::string> hash_fn;
-	const int num_chars = 14000;
+	const int num_chars = 1200;
 	char payload[num_chars+1];
 	payload[num_chars] = 0; // null-ended string
 	ManaMessage msg;
-	for(int k = 0; k < 100; k++) {
+	for(int k = 0; k < 10; k++) {
 		msg.Clear();
 		msg.set_sender("test sender");
 		msg.set_type(ManaMessage_message_type_t_HEARTBEAT);
@@ -56,6 +56,8 @@ int main() {
 	}
 	sleep(3);
         io_srv.stop();
-        t.join();
+        try {
+            t.join();
+        } catch(...){}
 	return 0;
 }

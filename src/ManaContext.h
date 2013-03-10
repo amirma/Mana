@@ -64,7 +64,7 @@ public:
     void stop();
     void join();
     bool session_established() const;
-    void handle_message(ManaMessage& msg, MessageReceiver<ManaContext>* mr);
+    void handle_message(const ManaMessage& msg, MessageReceiver<ManaContext>* mr);
     void handle_session_termination(Session<ManaContext>& s);
     boost::asio::io_service& io_service();
     const string& id() const;
@@ -83,7 +83,6 @@ private:
     void send_message(ManaMessage&);
     bool is_connected();
     bool flag_has_subscription;
-    bool flag_session_established_;
     TaskScheduler<std::function<void()>> task_scheduler_;
     shared_ptr<Session<ManaContext>> session_;
 };

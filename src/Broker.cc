@@ -68,7 +68,7 @@ void Broker::start() {
         	break;
     }
     if(!flag) {
-    	log_err("Broker::start: No active transport. Terminating.\n");
+    	FILE_LOG(logERROR) << "Broker::start(): No active transport. Terminating.";
     	exit(-1);
     }
     try {
@@ -78,7 +78,7 @@ void Broker::start() {
         // the last thread does not detach so we block here until the broker
         // is shutdown
         io_service_.run();
-    } catch (exception& e) {
+    } catch (const exception& e) {
         FILE_LOG(logERROR) << "An error happened in the broker execution: " << e.what();
     }
 }
@@ -93,7 +93,7 @@ boost::asio::io_service& Broker::io_service() {
    return io_service_;
 }
 
-void Broker::handle_session_initiation(ManaMessage& buff, const MessageReceiver<Broker>* mr) {
+void Broker::handle_session_initiation(const ManaMessage& buff, const MessageReceiver<Broker>* mr) {
     // if the subscribing node is already in the list of neighbor
     // then send an error message
     if(is_in_container(neighbors_by_id_, buff.sender())) {
@@ -116,14 +116,14 @@ void Broker::handle_session_initiation(ManaMessage& buff, const MessageReceiver<
 		auto tmp = make_shared<Session<Broker>>(*this, local_url, remote_url, buff.sender(), if_no);
 		neighbors_by_id_[buff.sender()] = tmp;
 		neighbors_by_iface_[if_no] = std::move(tmp);
-    } catch(exception& e) {
+    } catch(const exception& e) {
     	FILE_LOG(logINFO) << "Broker::handle_session_initiation(): received invalid or malformed session requesr from " << buff.sender();
 		send_error();
 		return;
 	}
 }
 
-void Broker::handle_sub(ManaMessage& buff) {
+void Broker::handle_sub(const ManaMessage& buff) {
     mana_filter* fltr = new mana_filter();
     to_mana_filter(buff, *fltr);
     //TODO: one predicate per filter is not the right way...
@@ -147,7 +147,7 @@ void Broker::handle_sub(ManaMessage& buff) {
     }
 }
 
-void Broker::handle_not(ManaMessage& buff) {
+void Broker::handle_not(const ManaMessage& buff) {
     mana_message msg;
     to_mana_message(buff, msg);
     //FIXME:  this has to turn to read/write locking
@@ -155,10 +155,10 @@ void Broker::handle_not(ManaMessage& buff) {
     fwd_table_wrapper_.const_fwd_table().match(msg, *message_match_handler_);
 }
 
-void Broker::handle_heartbeat(ManaMessage& buff) {
+void Broker::handle_session_message(const ManaMessage& buff) {
     if(is_in_container(neighbors_by_id_, buff.sender())) {
     	FILE_LOG(logDEBUG2)  << "Received hearbeat from " << buff.sender();
-    	neighbors_by_id_[buff.sender()]->update_hb_reception_ts();
+    	neighbors_by_id_[buff.sender()]->handle_session_msg(buff);
     }
 }
 
@@ -172,25 +172,28 @@ void Broker::handle_connect(shared_ptr<MessageSender<Broker>>& c) {
     //TODO save a pointer to c in a new session ...
 }
 
-void Broker::handle_message(ManaMessage& msg, MessageReceiver<Broker>* mr) {
+void Broker::handle_message(const ManaMessage& msg, MessageReceiver<Broker>* mr) {
 	switch(msg.type()) {
-	case ManaMessage_message_type_t_START_SESSION:
-		handle_session_initiation(msg, mr);
-		break;
 	case ManaMessage_message_type_t_SUB:
 		handle_sub(msg);
 		break;
 	case ManaMessage_message_type_t_NOT:
 		handle_not(msg);
 		break;
+	case ManaMessage_message_type_t_START_SESSION:
+		handle_session_initiation(msg, mr);
+		break;
 	case ManaMessage_message_type_t_HEARTBEAT:
-		handle_heartbeat(msg);
+	case ManaMessage_message_type_t_START_SESSION_ACK :
+	case ManaMessage_message_type_t_START_SESSION_ACK_ACK:
+	case ManaMessage_message_type_t_TERMINATE_SESSION :
+	case ManaMessage_message_type_t_TERMINATE_SESSION_ACK :
+		handle_session_message(msg);
 		break;
 	default: // other types ...
 		FILE_LOG(logWARNING) << "Broker::handle_message: message of invalid typed was received.";
 		break;
 	}
-	msg.Clear();
 }
 
 bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
@@ -201,7 +204,7 @@ bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
     // fill in the rest of the message parts
     try {
     	to_protobuf(dynamic_cast<const mana_message&>(msg), buff);
-    } catch(exception& e) {
+    } catch(const exception& e) {
     	// ignore the message
     	FILE_LOG(logWARNING) << "Broker::handle_match: static_cast from siena::message& to ManaMessage& failed.";
     	return true;
@@ -216,7 +219,7 @@ bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
         return true;
     neighbors_by_iface_[iface]->send(buff);
     //
-    unsigned char data[MAX_MSG_SIZE];
+    byte data[MAX_MSG_SIZE];
     assert(buff.SerializeToArray(data, MAX_MSG_SIZE));
     return true;
 }
@@ -228,11 +231,10 @@ const string& Broker::id() const {
 void Broker::handle_session_termination(Session<Broker>& s) {
 	FILE_LOG(logDEBUG2) << "Broker::handle_session_termination: Session " << s.remote_id() << " terminated.";
     // FIXME: Locking needed
-    // FIXME: iface number must be released, commented out for now ...
-    //iface_no_generator_.return_number(s.iface());
+    iface_no_generator_.return_number(s.iface());
     neighbors_by_iface_.erase(s.iface());
     neighbors_by_id_.erase(s.remote_id());
-    // and of course we need to find a way to remnove the predicate from the
+    // and of course we need to find a way to remove the predicate from the
     // table and then return the interface number back to the pool. (disabled for now)
 }
 

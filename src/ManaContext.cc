@@ -39,7 +39,7 @@ namespace mana {
 ManaContext::ManaContext(const string& id, const string& loc_url, const string& rem_url,
 		std::function<void(const mana_message&)> h) :
     local_id_(id), local_url_(loc_url), remote_url_(rem_url), app_notification_handler_(h),
-    flag_has_subscription(false), flag_session_established_(false), task_scheduler_(io_service_) {
+    flag_has_subscription(false), task_scheduler_(io_service_) {
 
 	session_ = make_shared<Session<ManaContext>>(*this, local_url_, remote_url_, remote_url_.url(), 0);
 	message_receiver_ = MessageReceiver<ManaContext>::create(io_service_, *this, local_url_);
@@ -113,9 +113,11 @@ void ManaContext::start() {
     	io_service_.run();
     });
     message_receiver_->start();
+    session_->establish();
 }
 
 void ManaContext::handle_session_termination(Session<ManaContext>& s) {
+	// TODO ...
 	FILE_LOG(logINFO) << "Session to " << s.remote_id() << " terminated.";
 }
 
@@ -123,18 +125,17 @@ void ManaContext::stop() {
 	//work_->reset();
     session_->terminate();
     // FIXME: this will probably cause a bug, because stopping io_service
-    // might happen before terminatio messge is sent.
+    // might happen before termination message is sent.
 	io_service_.stop();
     if(thread_->joinable())
         thread_->join();
-    flag_session_established_ = false;
 }
 
 bool ManaContext::session_established() const {
-    return flag_session_established_;
+    return session_->is_active();
 }
 
-void ManaContext::handle_message(ManaMessage& buff, MessageReceiver<ManaContext>* mr) {
+void ManaContext::handle_message(const ManaMessage& buff, MessageReceiver<ManaContext>* mr) {
 	FILE_LOG(logDEBUG2) << "ManaContext::receive_handler: received message from " << buff.sender();
     switch(buff.type()) {
     case ManaMessage_message_type_t_NOT: {
@@ -144,11 +145,14 @@ void ManaContext::handle_message(ManaMessage& buff, MessageReceiver<ManaContext>
         app_notification_handler_(msg);
         break;
     }
-    case ManaMessage_message_type_t_HEARTBEAT: {
-    	FILE_LOG(logDEBUG2) << "Received hearbeat from " << buff.sender();
-    	session_->update_hb_reception_ts();
+    case ManaMessage_message_type_t_HEARTBEAT:
+    case ManaMessage_message_type_t_START_SESSION:
+    case ManaMessage_message_type_t_START_SESSION_ACK :
+    case ManaMessage_message_type_t_START_SESSION_ACK_ACK:
+    case ManaMessage_message_type_t_TERMINATE_SESSION :
+    case ManaMessage_message_type_t_TERMINATE_SESSION_ACK :
+    	session_->handle_session_msg(buff);
     	break;
-    }
     default:
     	FILE_LOG(logWARNING) << "ManaContext::receive_handler(): unrecognized message type: " << buff.type();
         break;

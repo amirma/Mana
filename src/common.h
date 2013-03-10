@@ -20,47 +20,6 @@
 // utility macros
 #define is_in_container(container, key) (container.find(key)!=container.end())
 
-
-// logging macros
-#define FLG_PR_DEBUG false
-#define FLG_PR_WARN  true
-
-
-#define log_err(txt) do { \
-                    std::time_t t = std::time(nullptr); \
-                    char str[100];\
-                    std::strftime(str, 100, "%F %T", std::localtime(&t));\
-                    cout << endl << str << " " <<  txt;\
-                    cout.flush();\
-                    } while(false);
-
-
-#define log_warn(txt) while(FLG_PR_WARN) { \
-                    std::time_t t = std::time(nullptr); \
-                    char str[100];\
-                    std::strftime(str, 100, "%F %T", std::localtime(&t));\
-                    cout << endl << str << " " <<  txt;\
-                    cout.flush();\
-                    break; \
-                    };
-
-#define log_debug(txt) while(FLG_PR_DEBUG) { \
-                    std::time_t t = std::time(nullptr); \
-                    char str[100];\
-                    std::strftime(str, 100, "%F %T", std::localtime(&t));\
-                    cout << endl << str << " " <<  txt;\
-                    cout.flush();\
-                    break; \
-                    };
-
-#define log_info(txt) do { \
-                    std::time_t t = std::time(nullptr); \
-                    char str[100];\
-                    std::strftime(str, 100, "%F %T", std::localtime(&t));\
-                    cout << endl << str << " " <<  txt;\
-                    cout.flush();\
-                    } while(false);
-
 // concurrency macros
 /*  The following two macros are based on Herb Sutter's template at
  *  http://www.drdobbs.com/windows/associate-mutexes-with-data-to-prevent-r/224701827?pgno=3
@@ -71,23 +30,13 @@
      public:    void     unlock()      {  mut_.unlock();  } \
      private:   MutType mut_;
 
-/*
-template<typename T> struct argument_type;
-template<typename T, typename U> struct argument_type<T(U)> { typedef U type; };
-#define PROTECTED_MEMBER(Type,name) \
-     public:    argument_type<void(t)>::type&    name()     { assert(!mut_.try_lock()); return name##_; } \
-     public:    const argument_type<void(t)>::type&    const_##name()     { return name##_; } \
-     private:   argument_type<void(t)>::type    name##_;
-*/
-
 #define PROTECTED_MEMBER(Type,name) \
      public:    Type&    name()     { assert(!mut_.try_lock()); return name##_; } \
      public:    const Type&    const_##name()     { return name##_; } \
      private:   Type    name##_;
 
 
-
-// constants
+// global constants
 #define BUFF_SEPERATOR 254 //ETB
 #define BUFF_SEPERATOR_LEN_BYTE 1
 #define MAX_MSG_SIZE  3000000 //Bytes
@@ -103,6 +52,7 @@ enum enum_connection_type {
     udp
 };
 typedef enum_connection_type connection_type;
+typedef unsigned char byte;
 
 /*
  * These function convert from/to  a SienaMessagePlus to different

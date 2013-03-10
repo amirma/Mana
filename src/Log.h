@@ -27,6 +27,8 @@
 
 namespace mana {
 
+using namespace std;
+
 inline std::string NowTime();
 
 enum TLogLevel {logERROR, logWARNING, logINFO, logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4};

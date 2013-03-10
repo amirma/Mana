@@ -19,9 +19,8 @@ class MessageHandler {
 public:
 
 	void handle_message(ManaMessage& msg, MessageReceiver<MessageHandler>* mr) {
-		cout << "Receiver message from " << msg.sender() << endl;
 		if(msg.has_payload()) {
-			cout << "Payload hash: " << msg.key_value_map(0).value() << endl;
+			// cout << "Payload hash: " << msg.key_value_map(0).value() << endl;
 			std::hash<std::string> hash_fn;
 			size_t hash = hash_fn(msg.payload());
 			if(to_string(hash) == msg.key_value_map(0).value())
@@ -31,7 +30,21 @@ public:
 	}
 };
 
+void termination_handler(int signum) {
+    exit(0);
+}
+
+static void setup_signal_hndlr() {
+    if (signal (SIGINT, termination_handler) == SIG_IGN)
+     signal (SIGINT, SIG_IGN);
+    if (signal (SIGHUP, termination_handler) == SIG_IGN)
+     signal (SIGHUP, SIG_IGN);
+    if (signal (SIGTERM, termination_handler) == SIG_IGN)
+     signal (SIGTERM, SIG_IGN);
+}
+
 int main() {
+        setup_signal_hndlr();
 	Log::ReportingLevel() = logWARNING;
 	MessageHandler hndlr;
 	URL url("tcp:127.0.0.1:2350");

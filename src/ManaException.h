@@ -15,7 +15,7 @@ using namespace std;
 
 namespace mana {
 
-// virtual inheritence for exceptions is a good practice...
+// virtual inheritance for const exceptions is a good practice...
 class ManaException: virtual public std::exception {
 public:
 	ManaException(const string& str = "");

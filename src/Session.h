@@ -33,6 +33,7 @@
 #include "common.h"
 #include "URL.h"
 #include "Log.h"
+#include "StateMachine.h"
 
 using namespace std;
 
@@ -85,9 +86,10 @@ Session(T& h, const URL& lo_url, const URL& re_url, const string& id, siena::if_
     host_(h), outgress_net_connector_(nullptr),
     remote_id_(id), local_url_(lo_url), remote_url_(re_url),
     remote_endpoint_(boost::asio::ip::address::from_string(remote_url_.address()), remote_url_.port()),
-    iface_(ifc), flag_session_live_(false),
-    task_scheduler_(h.io_service())  {
+    iface_(ifc), flg_session_alive_(false),
+    task_scheduler_(h.io_service()), state_machine_(3)  {
 
+	setup_state_machine();
 
 	if(remote_url_.protocol() == mana::connection_type::tcp) {
 		outgress_net_connector_ = new TCPMessageSender<T>(h.io_service(), h, remote_url_);
@@ -102,7 +104,7 @@ Session(T& h, const URL& lo_url, const URL& re_url, const string& id, siena::if_
 		throw ManaException("Malformed URL or method not supported: " + remote_url_.url());
 	}
 
-	establish();
+	//establish();
 
     try {
         task_scheduler_.schedule_at_periods(std::bind(&Session<T>::check_session_liveness, this),
@@ -111,7 +113,7 @@ Session(T& h, const URL& lo_url, const URL& re_url, const string& id, siena::if_
         task_scheduler_.schedule_at_periods(std::bind(&Session<T>::send_heartbeat, this), t, TimeUnit::second);
         //
         update_hb_reception_ts();
-    } catch(exception& e) {}
+    } catch(const exception& e) {}
 
 }
 
@@ -134,16 +136,7 @@ const string& remote_id() const {
 
 /** @brief If the session is active returns true */
 bool is_active() const {
-    return flag_session_live_;
-}
-
-const std::chrono::time_point<std::chrono::system_clock>& last_hb_reception_ts() const {
-    return last_hb_reception_ts_;
-}
-
-void update_hb_reception_ts() {
-    this->last_hb_reception_ts_ = std::chrono::system_clock::now();
-    flag_session_live_ = false;
+    return flg_session_alive_;
 }
 
 void send(ManaMessage const & msg) {
@@ -153,8 +146,8 @@ void send(ManaMessage const & msg) {
 }
 
 void establish() {
-    if(this->flag_session_live_)
-            return;
+    if(this->is_active())
+    	return;
     ManaMessage msg;
     // set sender id and type
     msg.set_sender(host_.id());
@@ -163,6 +156,8 @@ void establish() {
     p->set_key("url");
     p->set_value(local_url_.url());
     send(msg);
+    assert(state_machine_.current_state() == NOT_ESTABLISHED);
+    //state_machine_.process(REQ_SENT);
 }
 
 void terminate() {
@@ -171,7 +166,35 @@ void terminate() {
     this->outgress_net_connector_->disconnect();
 }
 
+void handle_session_msg(const ManaMessage& msg) {
+	switch(msg.type()) {
+	case ManaMessage_message_type_t_HEARTBEAT :
+		update_hb_reception_ts();
+		FILE_LOG(logDEBUG2) << "Session::handle_session_msg: Received heartbeat from " << msg.sender();
+		break;
+	case ManaMessage_message_type_t_START_SESSION:
+    case ManaMessage_message_type_t_START_SESSION_ACK :
+    case ManaMessage_message_type_t_START_SESSION_ACK_ACK:
+    case ManaMessage_message_type_t_TERMINATE_SESSION :
+    case ManaMessage_message_type_t_TERMINATE_SESSION_ACK :
+    	//session_.handle_sesstion_message(msg);
+    	break;
+	default:
+		FILE_LOG(logWARNING) << "Session::handle_session_msg: unrecognized message type.";
+		break;
+	}
+}
+
 private:
+
+void update_hb_reception_ts() {
+    this->last_hb_reception_ts_ = std::chrono::system_clock::now();
+    flg_session_alive_ = false;
+}
+
+const std::chrono::time_point<std::chrono::system_clock>& last_hb_reception_ts() const {
+    return last_hb_reception_ts_;
+}
 
 void send_heartbeat() {
     ManaMessage msg;
@@ -185,9 +208,8 @@ void check_session_liveness() {
 	FILE_LOG(logDEBUG2) << "Session::check_neighbors_and_send_hb: checking neighbors...";
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
     if(now - this->last_hb_reception_ts_ > std::chrono::seconds(DEFAULT_HEARTBEAT_INTERVAL_SECONDS)) {
-        flag_session_live_ = false;
+        flg_session_alive_ = false;
         host_.handle_session_termination(*this);
-        //ingress_net_connector_->disconnect();
     }
 }
 
@@ -201,6 +223,19 @@ bool connect() {
 	return true;
 }
 
+void setup_state_machine() {
+	// from not established goes to request sent with input REQ_SENT
+	state_machine_.add_transition(NOT_ESTABLISHED, REQ_SENT, REQ_SENT);
+	state_machine_.add_transition(REQ_SENT, ESTABLISHED, ESTABLISHED);
+	state_machine_.add_transition(ESTABLISHED, TERM_REQ_SENT, TERM_REQ_SENT);
+	//state_machine_.add_transition(TERM_REQ_SENT, NOT_ESTABLISHED, NOT_ESTABLISHED);
+
+	// specify blocking state transitions
+	//state_machine_.set_blocking(REQ_SENT);
+	//state_machine_.set_blocking(TERM_REQ_SENT);
+	// now add transition handlers*/
+}
+
 // class properties
 T& host_; // user of this instance. Callbacks are called on this instance
 MessageSender<T>* outgress_net_connector_;
@@ -210,10 +245,14 @@ const URL local_url_;
 const URL remote_url_;
 const boost::asio::ip::udp::endpoint remote_endpoint_;
 const siena::if_t iface_; // interface id in the forwarding table
-bool flag_session_live_; // true, if the session is active (based on HB messages)
+bool flg_session_alive_; // true, if the session is active (based on HB messages)
 std::chrono::time_point<std::chrono::system_clock> last_hb_reception_ts_; /* The
 	time at which we last received a heartbeat from this neighbor */
 TaskScheduler<std::function<void()>> task_scheduler_;
+
+enum States {NOT_ESTABLISHED, REQ_SENT, ESTABLISHED, TERM_REQ_SENT};
+StateMachine state_machine_;
+
 };
 
 } /* namespace mana */

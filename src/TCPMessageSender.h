@@ -25,9 +25,9 @@
 #include <boost/algorithm/string.hpp>
 #include "MessageSender.h"
 #include "boost/bind.hpp"
-#include "exception"
 #include "ManaException.h"
 #include "Log.h"
+#include "common.h"
 
 namespace mana {
 
@@ -94,7 +94,7 @@ virtual bool connect() {
 		socket_->connect(endpoint);
 	} catch(boost::system::system_error& e) {
 		throw ManaException("Error connecting to the endpoint.");
-	} catch(exception& e) {
+	} catch(const exception& e) {
 		throw ManaException("Error connecting to the endpoint.");
 	}
 	FILE_LOG(logDEBUG2)  << "TCPConnector is connected to " << this->url_.url();
@@ -125,7 +125,7 @@ virtual void async_connect(const string& addr, int prt) {
 	try {
 		boost::asio::ip::tcp::endpoint endpnt(boost::asio::ip::address::from_string(addr), prt);
 		socket_->async_connect(endpnt, boost::bind(&TCPMessageSender<T>::connect_handler, this, boost::asio::placeholders::error));
-	} catch(exception& e) {
+	} catch(const exception& e) {
 		FILE_LOG(logWARNING)  << "TCPMessageSender::async_connect(): count not connect";
 	}
 }
@@ -150,15 +150,15 @@ void start_read() {
  * This method has only internal purposes and is used to send a buffer of
  * a given size using the socket.
 */
-virtual void send_buffer(const unsigned char* data, size_t length) override {
+virtual void send_buffer(const byte* data, size_t length) override {
 	assert(this->write_buff_item_qu_.try_lock() == false);
 	if(!is_connected()) {
-            try {
-                connect(); // fixme: because connect is syncronized this whole method is synced. Must be fixed.
-            } catch(exception& e) {
-		FILE_LOG(logWARNING)  << "TCPMessageSender::send_buffer(): socket could not connected. not sending.";
-		return;
-            }
+		try {
+			connect(); // fixme: because connect is syncronized this whole method is synced. Must be fixed.
+		} catch(const exception& e) {
+			FILE_LOG(logWARNING)  << "TCPMessageSender::send_buffer(): socket could not connected. not sending.";
+			return;
+		}
 	}
     boost::asio::async_write(*socket_, boost::asio::buffer(data, length),
         this->write_hndlr_strand_.wrap(boost::bind(&TCPMessageSender<T>::write_handler,

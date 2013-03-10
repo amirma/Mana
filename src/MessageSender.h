@@ -36,7 +36,7 @@ using namespace std;
 namespace mana {
 
 struct WriteBufferItem {
-        const unsigned char* data_;
+        const byte* data_;
         size_t offset_;
         size_t size_;
         bool flag_delete_; // if the flag is
@@ -68,7 +68,7 @@ virtual ~MessageSender() {}
 MessageSender(const MessageSender&) = delete; // delete copy ctor
 MessageSender& operator=(const MessageSender&) = delete; // delete assig. operator
 
-virtual void send_buffer(const unsigned char* data, size_t length) = 0;
+virtual void send_buffer(const byte* data, size_t length) = 0;
 
 virtual void async_connect(const string&, int) {}
 virtual void async_connect(const string&) {}
@@ -96,7 +96,7 @@ void send(const ManaMessage& msg) {
     	FILE_LOG(logWARNING) << "MessageSender::Send(): Message size is more than the allowed limit (" << MAX_MSG_SIZE << " Bytes). Message was discarded.";
         return;
     }
-    unsigned char* arr_buf = new unsigned char[total_size];
+    byte* arr_buf = new byte[total_size];
     arr_buf[0] = BUFF_SEPERATOR;
     *((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) = data_size;
     assert(*((int*)(arr_buf + BUFF_SEPERATOR_LEN_BYTE)) == data_size);
@@ -154,7 +154,7 @@ boost::asio::strand write_hndlr_strand_;
 bool flag_is_connected;
 bool flag_write_op_in_prog_;
 MessageStream message_stream_;
-array<unsigned char, MAX_MSG_SIZE> read_buffer_;
+array<byte, MAX_MSG_SIZE> read_buffer_;
 WriteBufferItemQueueWrapper write_buff_item_qu_;
 mutex read_buff_mutex_;
 
@@ -169,7 +169,7 @@ private:
  * @param data data A pointer to the buffer
  * @param length length of the buffer
  */
-void prepare_buffer(const unsigned char* data, size_t length) {
+void prepare_buffer(const byte* data, size_t length) {
 	FILE_LOG(logDEBUG3) << "MessageSender::prepare_buffer(): preparing " << length << " bytes.";
     lock_guard<WriteBufferItemQueueWrapper> lock(this->write_buff_item_qu_);
     assert(length > 0);

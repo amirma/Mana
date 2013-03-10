@@ -14,15 +14,15 @@ class MessageStream {
         MessageStream();
         virtual ~MessageStream();
         MessageStream(const MessageStream&) = delete; // delete copy constructor
-        void consume(const unsigned char* buff, int size);
+        void consume(const byte* buff, int size);
         bool produce(ManaMessage& msg);
 private:
 
-    bool do_produce(const unsigned char*, int size, ManaMessage& msg, int& consumed) const;
+    bool do_produce(const byte*, int size, ManaMessage& msg, int& consumed) const;
     bool check_has_message_header();
-    unsigned char unconsumed_data_[MAX_MSG_SIZE];
+    byte unconsumed_data_[MAX_MSG_SIZE];
     int unconsumed_data_size_;
-    const unsigned char* new_data_;
+    const byte* new_data_;
     int new_data_size_;
 };
 
