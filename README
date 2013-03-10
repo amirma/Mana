@@ -1,6 +1,6 @@
-========================== Mana Content-based Messaging System =============================
-Mana is a high performance content-based messaging broker, Written in C++11. At it's heart,
-Mana uses Siena Fast Forward (SFF) matching engine to match messages against subscriptions.
+======= Mana Content-based Messaging System =======
 
-
+Mana is a high throughput content-based, publish/subscribe messaging broker written in C++11.
+At it's heart, Mana uses Siena Fast Forward (SFF) matching engine for matching messages
+against subscriptions (see http://www.inf.usi.ch/carzaniga/cbn/forwarding/index.html).
 
