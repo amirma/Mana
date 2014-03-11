@@ -4,38 +4,31 @@
  */
 #include "common.h"
 #include "Log.h"
+#include "ManaFwdTypes.h"
+#include "ManaMessage.pb.h"
 
 using namespace std;
 
-namespace mana { 
+namespace mana {
 
 void to_mana_message(const ManaMessage& buff, mana_message& msg) {
     for(int i = 0; i < buff.notification().attribute().size(); i++) {
         const string& st = buff.notification().attribute(i).name();
-        siena::string_t name(st.c_str());
         switch(buff.notification().attribute(i).value().type()) {
         case ManaMessage_tag_type_t_STRING: {
-            const string& st = buff.notification().attribute(i).value().string_value();
-            mana_value* sv = new mana_value(siena::string_t(st.c_str()));
-            msg.add(name, sv);
+            msg.add(st.c_str(), buff.notification().attribute(i).value().string_value());
             break;
         }
         case ManaMessage_tag_type_t_INT: {
-            mana_value* sv = 
-                new mana_value(static_cast<siena::int_t>(buff.notification().attribute(i).value().int_value()));
-            msg.add(name, sv);
+            msg.add(st.c_str(), buff.notification().attribute(i).value().int_value());
             break;
         }
         case ManaMessage_tag_type_t_DOUBLE: {
-            mana_value* sv = 
-                new mana_value(static_cast<siena::double_t>(buff.notification().attribute(i).value().double_value()));
-            msg.add(name, sv);
+            msg.add(st.c_str(), buff.notification().attribute(i).value().double_value());
             break;
         }
         case ManaMessage_tag_type_t_BOOL: {
-            mana_value* sv  = 
-                new mana_value(static_cast<siena::bool_t>(buff.notification().attribute(i).value().bool_value()));
-            msg.add(name, sv);
+            msg.add(st.c_str(), buff.notification().attribute(i).value().bool_value());
             break;
         }
         default:
@@ -52,25 +45,25 @@ void to_mana_filter(const ManaMessage& buff, mana_filter& fltr) {
         switch(buff.subscription().constraints(i).value().type()) {
         case ManaMessage_tag_type_t_STRING: {
             const string& st = buff.subscription().constraints(i).value().string_value();
-            mana_op_value* sopv = 
+            mana_op_value* sopv =
                 new mana_op_value(op_id, siena::string_t(st.c_str()));
             fltr.add(name, sopv);
             break;
         }
         case ManaMessage_tag_type_t_INT: {
-            mana_op_value* sopv = 
+            mana_op_value* sopv =
                 new mana_op_value(op_id, static_cast<siena::int_t>(buff.subscription().constraints(i).value().int_value()));
             fltr.add(name, sopv);
             break;
         }
         case ManaMessage_tag_type_t_DOUBLE: {
-            mana_op_value* sopv = 
+            mana_op_value* sopv =
                 new mana_op_value(op_id, static_cast<siena::double_t>(buff.subscription().constraints(i).value().double_value()));
             fltr.add(name, sopv);
             break;
         }
         case ManaMessage_tag_type_t_BOOL: {
-            mana_op_value* sopv  = 
+            mana_op_value* sopv  =
                 new mana_op_value(op_id, static_cast<siena::bool_t>(buff.subscription().constraints(i).value().bool_value()));
             fltr.add(name, sopv);
             break;
@@ -83,8 +76,8 @@ void to_mana_filter(const ManaMessage& buff, mana_filter& fltr) {
 }
 
 /*  Fill in the protobuf from a mana_message.
- *  NOTE: the required field 'sender' is not set here. It must 
- *  be set separately by the caller. 
+ *  NOTE: the required field 'sender' is not set here. It must
+ *  be set separately by the caller.
  *  */
 void to_protobuf(const mana_message& msg, ManaMessage& buff) {
     buff.set_type(ManaMessage_message_type_t_NOT);
@@ -119,8 +112,8 @@ void to_protobuf(const mana_message& msg, ManaMessage& buff) {
 }
 
 /*  Fill in the protobuf from a mana_message.
- *  NOTE: the required field 'sender' is not set here. It must 
- *  be set separately by the caller. 
+ *  NOTE: the required field 'sender' is not set here. It must
+ *  be set separately by the caller.
  *  */
 void to_protobuf(const mana_filter& fltr, ManaMessage& buff) {
     // set message type

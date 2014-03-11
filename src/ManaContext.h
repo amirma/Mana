@@ -24,18 +24,18 @@
 #include <memory>
 #include <thread>
 #include <boost/asio.hpp>
-#include "MessageSender.h"
-#include "TCPMessageSender.h"
 #include "common.h"
-#include "ManaMessage.pb.h"
-#include "ManaFwdTypes.h"
+#include "Log.h"
 #include "TaskScheduler.h"
-#include "Session.h"
 #include "URL.h"
 
 using namespace std;
 
 namespace mana {
+
+class ManaMessage; // to avoid including ManaMessage.h
+template <class T> class Session;
+template <class T> class MessageReceiver;
 
 /**
 * @brief The client's interface to the publish/subscribe network.
@@ -57,8 +57,8 @@ public:
     virtual ~ManaContext();
     void publish(const string&);
     void publish(const mana_message&);
-    void subscribe(const string& sub);
     void subscribe(const mana_filter&);
+    void subscribe(const string& sub);
     void unsubscribe();
     void start();
     void stop();

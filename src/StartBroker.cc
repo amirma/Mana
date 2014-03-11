@@ -27,8 +27,8 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include "Broker.h"
+#include "URL.h"
 #include "Log.h"
-//#include "common.h"
 
 using namespace std;
 
@@ -55,16 +55,14 @@ static void setup_signal_hndlr() {
 }
 
 static void start_broker(const boost::program_options::variables_map& vm) {
-    const string id = vm["id"].as<string>();
-    const size_t tr = vm["threads"].as<int>();
+    const auto id = vm["id"].as<string>();
+    const auto tr = vm["threads"].as<int>();
     broker = make_shared<mana::Broker>(id, tr);
     //
     auto url_list = vm["url"].as<vector<string>>();
     for(auto& url : url_list)
         broker->add_transport(url);
-    // set logging level
-    //Log::ReportingLevel() = Log::FromString(vm["log"].as<string>());
-    Log::ReportingLevel() = logDEBUG3;
+    mana::Log::ReportingLevel() = mana::Log::FromString(vm["log"].as<string>());
     //
     broker->start();
 }
@@ -101,7 +99,7 @@ static void validate_opts(const boost::program_options::variables_map& vm) {
     }
     // validate URL formats
     for(auto& url : vm["url"].as<vector<string>>()) {
-        if(URL::is_valid(url) == false) {
+        if(mana::URL::is_valid(url) == false) {
            cout << "URL is not valid: " << url << endl;
             exit(-1);
         }

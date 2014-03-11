@@ -26,7 +26,6 @@
 #include <array>
 #include <boost/asio.hpp>
 #include "common.h"
-#include "ManaMessage.pb.h"
 #include "MessageStream.h"
 #include "URL.h"
 #include "Log.h"
@@ -34,6 +33,8 @@
 using namespace std;
 
 namespace mana {
+
+class ManaMessage;
 
 struct WriteBufferItem {
         const byte* data_;
@@ -77,7 +78,7 @@ virtual void disconnect() {}
 virtual bool is_connected() {return true;}
 
 /**
- * @brief Send a SienPlusMessage out to the network.
+ * @brief Send a ManaMessage out to the network.
  *
  * This is the only public interface for message transmission.
  * This method is thread-safe i.e., multiple threads can call

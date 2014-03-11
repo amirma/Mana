@@ -10,10 +10,7 @@
 #include <memory>
 #include <signal.h>
 #include <boost/algorithm/string.hpp>
-#include "SimpleClient.h"
-#include "common.h"
-#include "Utility.h"
-#include "Log.h"
+#include "Mana.h"
 
 using namespace std;
 
@@ -21,43 +18,43 @@ class TestClient: public SimpleClient {
 public:
 
 	TestClient(const string& str, const string& url, const string& broker) :
-			SimpleClient(str, url, broker) {
+	    SimpleClient(str, url, broker) {
 	}
 
-	void run() {
-		try {
-			while (cin.good()) {
-				string line;
-				getline(cin, line);
-				if (line[0] == '#') //ignore commented lines
-					continue;
-				vector<string> tokens;
-				boost::split(tokens, line, boost::is_any_of(" "));
-				if (tokens[0] != client_id_)
-					continue;
-				size_t first = line.find_first_of("\"");
-				size_t second = line.find_first_of("\"", first + 1);
-				string str = line.substr(first + 1, second - first - 1);
-				if (tokens[3] == "pub") {
-					FILE_LOG(logINFO) << "Publishing: " << line;
-					context_->publish(str);
-				} else if (tokens[3] == "sub") {
-					FILE_LOG(logINFO) << "Subscribing: " << line;
-					context_->subscribe(str);
-				}
-			}
-		} catch (const exception& e) {
-			cout << "Error: " << e.what();
-			exit(-1);
-		}
-	}
+        void run() {
+            try {
+                while (cin.good()) {
+                    string line;
+                    getline(cin, line);
+                    if (line[0] == '#' || line.empty()) //ignore commented lines
+                        continue;
+                    vector<string> tokens;
+                    boost::split(tokens, line, boost::is_any_of(" "));
+                    if (tokens[0] != client_id_)
+                        continue;
+                    auto first = line.find_first_of("\"");
+                    auto second = line.find_first_of("\"", first + 1);
+                    auto str = line.substr(first + 1, second - first - 1);
+                    if (tokens[3] == "pub") {
+                        cout << endl << "Publishing: " << line;
+                        context_->publish(str);
+                    } else if (tokens[3] == "sub") {
+                        cout << endl << "Subscribing: " << line;
+                        context_->subscribe(str);
+                    }
+                }
+            } catch (const exception& e) {
+                cout << "Error: " << e.what();
+                exit(-1);
+            }
+        }
 
 }; // class
 
 shared_ptr<TestClient> client = nullptr;
 
 void termination_handler(int signum) {
-	FILE_LOG(logINFO) << "TestClient: Received signal " << signum
+	cout << endl << "TestClient: Received signal " << signum
 			<< ". Client is terminating.";
 	client->stop();
 	exit(0);
@@ -84,7 +81,6 @@ int main(int argc, char* argv[]) {
 	string fname = "-";
 	string url = "udp:127.0.0.1:3350";
 	string broker = "udp:127.0.0.1:2350";
-	string log = "info";
 	int i = 0;
 	while (++i < argc) {
 		if (strcmp(argv[i], "-id") == 0 && i + 1 < argc)
@@ -93,16 +89,12 @@ int main(int argc, char* argv[]) {
 			url = string(argv[++i]);
 		else if (strcmp(argv[i], "-broker") == 0 && i + 1 < argc)
 			broker = string(argv[++i]);
-		else if (strcmp(argv[i], "-log") == 0 && i + 1 < argc)
-			log = string(argv[++i]);
 		else
 			goto error;
 	}
 	if (id == "" || fname == "")
 		goto error;
-	//Log::ReportingLevel() = Log::FromString(log);
-	Log::ReportingLevel() = logDEBUG3;
-	client = make_shared < TestClient > (id, url, broker);
+	client = make_shared<TestClient> (id, url, broker);
 	try {
 		client->start();
 	} catch (const exception& e) {

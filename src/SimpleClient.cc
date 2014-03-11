@@ -18,8 +18,8 @@
  */
 
 #include "SimpleClient.h"
-#include "ManaException.h"
 #include "Utility.h"
+#include "Mana.h"
 
 using namespace std;
 
@@ -28,22 +28,22 @@ SimpleClient::SimpleClient(const string& str, const string& url, const string& b
 
 SimpleClient::~SimpleClient() {}
 
-void SimpleClient::handle_notification(const mana_message& m) {
-	FILE_LOG(logINFO) << "Application received notification: ";
-    for(auto attr : m)
-    	FILE_LOG(logINFO) << attr.name().begin << " ";
+void SimpleClient::handle_notification(const mana::mana_message& m) {
+    cout << endl << "Application received notification: ";
+    for(auto& attr : m)
+    	cout << attr.name().begin << " ";
 }
 
 void SimpleClient::start() {
     try {
-    	FILE_LOG(logINFO) << "Starting client...";
+    	cout << endl << "Starting client...";
         auto hndlr = std::bind(&SimpleClient::handle_notification, this, std::placeholders::_1);
         context_ = make_shared<mana::ManaContext>(client_id_, client_url_, broker_url_, hndlr);
         context_->start();
         run();
         context_->join();
     } catch(mana::ManaException& e) {
-    	FILE_LOG(logERROR) << e.what();
+    	cout << endl << e.what();
         exit(-1);
     }
 }

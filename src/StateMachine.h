@@ -47,7 +47,7 @@ public:
 
 private:
 	atomic_int current_state_;
-	const size_t num_of_states_;
+	const int num_of_states_;
 	State* states_;
 	mutex mutex_;
 };

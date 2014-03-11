@@ -16,8 +16,7 @@
 namespace mana {
 
 //  forward declaration for a pointer we will have later
-template <class T>
-class TCPMessageReceiver;
+template <class T> class TCPMessageReceiver;
 
 template <class T>
 class TCPSession : private MessageReceiver<T> {

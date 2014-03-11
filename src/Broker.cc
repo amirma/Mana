@@ -64,8 +64,8 @@ void Broker::start() {
     bool flag = false;
     for(auto& tr : message_receivers)
         if(tr->is_runing()) {
-        	flag = true;
-        	break;
+        flag = true;
+        break;
     }
     if(!flag) {
     	FILE_LOG(logERROR) << "Broker::start(): No active transport. Terminating.";
@@ -74,7 +74,7 @@ void Broker::start() {
     try {
         // all threads except one get detached
         for (unsigned int i = 0; i < num_of_threads_ - 1; i++)
-            std::thread([&](){io_service_.run();}).detach();
+        std::thread([&](){io_service_.run();}).detach();
         // the last thread does not detach so we block here until the broker
         // is shutdown
         io_service_.run();
@@ -107,20 +107,20 @@ void Broker::handle_session_initiation(const ManaMessage& buff, const MessageRec
     }
     try {
     	URL remote_url(buff.key_value_map(0).value());
-    	assert(buff.key_value_map(0).key() == "url");
-		const URL& local_url = mr->url();
-		// assign a new interface id
-		const siena::if_t  if_no = iface_no_generator_.borrow_number();
-		FILE_LOG(logDEBUG2) << "Broker::handle_session_initiation(): iface no: " << if_no;
-		// make sure we got a properly formed message
-		auto tmp = make_shared<Session<Broker>>(*this, local_url, remote_url, buff.sender(), if_no);
-		neighbors_by_id_[buff.sender()] = tmp;
-		neighbors_by_iface_[if_no] = std::move(tmp);
+        assert(buff.key_value_map(0).key() == "url");
+        const URL& local_url = mr->url();
+        // assign a new interface id
+        const siena::if_t  if_no = iface_no_generator_.borrow_number();
+        FILE_LOG(logDEBUG2) << "Broker::handle_session_initiation(): iface no: " << if_no;
+        // make sure we got a properly formed message
+        auto tmp = make_shared<Session<Broker>>(*this, local_url, remote_url, buff.sender(), if_no);
+        neighbors_by_id_[buff.sender()] = tmp;
+        neighbors_by_iface_[if_no] = std::move(tmp);
     } catch(const exception& e) {
-    	FILE_LOG(logINFO) << "Broker::handle_session_initiation(): received invalid or malformed session requesr from " << buff.sender();
-		send_error();
-		return;
-	}
+        FILE_LOG(logINFO) << "Broker::handle_session_initiation(): received invalid or malformed session requesr from " << buff.sender();
+        send_error();
+        return;
+    }
 }
 
 void Broker::handle_sub(const ManaMessage& buff) {

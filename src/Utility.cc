@@ -21,9 +21,12 @@
 #include <iostream>
 #include <vector>
 #include <boost/algorithm/string.hpp>
+
+#include <siena/types.h>
 #include "common.h"
 #include "Utility.h"
 #include "ManaException.h"
+#include "ManaFwdTypes.h"
 #include "Log.h"
 
 namespace mana {
@@ -44,7 +47,7 @@ void string_to_mana_message(const string& str, mana_message& m) {
             else if(attr_item[len - 1] == ' ')
                 attr_item = attr_item.substr(0, len - 1);
             vector<string> tokens;
-        	boost::split(tokens, attr_item, boost::is_any_of(" "));
+            boost::split(tokens, attr_item, boost::is_any_of(" "));
             siena::string_t cst =  tokens[1].c_str();
             // figure out the type of the attribute
             switch(tokens[0][0]) {
@@ -142,5 +145,17 @@ bool validate_constraint(const vector<string>& tokens) {
     //TODO:
     return true;
 }
+
+template <class T>
+auto transform_type(T&& val) -> decltype(std::forward<T>(val))
+{
+	return std::forward<T>(val);
+}
+
+const char* transform_type(std::string val)
+{
+	return val.c_str();
+}
+
 
 } // namespace mana

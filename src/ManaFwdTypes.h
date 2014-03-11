@@ -31,6 +31,96 @@
 
 #include <siena/types.h>
 
+namespace mana
+{
+
+template <class T> struct StdTypesToSienaType       {};
+template <> struct StdTypesToSienaType<int>    	    {typedef siena::int_t type;};
+template <> struct StdTypesToSienaType<double>      {typedef siena::double_t type;};
+template <> struct StdTypesToSienaType<float>       {typedef siena::double_t type;};
+template <> struct StdTypesToSienaType<std::string> {typedef siena::string_t type;};
+template <> struct StdTypesToSienaType<const char*> {typedef siena::string_t type;};
+template <> struct StdTypesToSienaType<bool>  {typedef siena::bool_t type;};
+
+// for all types except std::string we just return the same value.
+template <class T>
+inline auto convert_type(T&& val) -> decltype(std::forward<T>(val))
+{
+	return std::forward<T>(val);
+}
+
+// for std::string we need a different method of conversion so we overload
+inline const char* convert_type(std::string val)
+{
+	return val.c_str();
+}
+
+template <class T> struct ops {};
+
+template<>  struct ops<int>
+{
+    struct eq {};   // equal
+    struct lt {};   // less than
+    struct gt {};   // greater than
+    struct any {};  //any value
+    struct ne {};   // not equal
+};
+
+template<>  struct ops<double>
+{
+    struct eq {};   // equal
+    struct lt {};   // less than
+    struct gt {};   // greater than
+    struct any {};  //any value
+    struct ne {};   // not equal
+};
+
+template<>  struct ops<bool>
+{
+    struct eq {};   // equal
+    struct lt {};   // less than: false lt  true
+    struct gt {};   // greater than: true gt false
+    struct any {};  //any value
+    struct ne {};   // not equal
+};
+
+template<>  struct ops<std::string>
+{
+    struct eq {};   // equal
+    struct lt {};   // less than
+    struct gt {};   // greater than
+    struct sf {};   // sufinx
+    struct pf {};   // prefix
+    struct ss {};   // subsctring
+    struct re {};   // regular exp.
+    struct any {};  //any value
+    struct ne {};   // not equal
+};
+
+template<>  struct ops<const char*>
+{
+    struct eq {};   // equal
+    struct lt {};   // less than
+    struct gt {};   // greater than
+    struct sf {};   // sufinx
+    struct pf {};   // prefix
+    struct ss {};   // subsctring
+    struct re {};   // regular exp.
+    struct any {};  //any value
+    struct ne {};   // not equal
+};
+
+template <class T, class V> struct ManaOpsToSienaOps {};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::eq> {static const siena::operator_id op = siena::eq_id;};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::lt> {static const siena::operator_id op = siena::lt_id;};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::gt> {static const siena::operator_id op = siena::gt_id;};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::sf> {static const siena::operator_id op = siena::sf_id;};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::pf> {static const siena::operator_id op = siena::pf_id;};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::ss> {static const siena::operator_id op = siena::ss_id;};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::re> {static const siena::operator_id op = siena::re_id;};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::any> {static const siena::operator_id op = siena::any_id;};
+template <class T> struct ManaOpsToSienaOps<T, typename ops<T>::ne> {static const siena::operator_id op = siena::ne_id;};
+
 const int DEFAULT_MEM_ITEM_NUMBER = 10;
 
 class MemoryManager {
@@ -112,8 +202,17 @@ public:
     virtual mana_attribute	end() const;
     virtual iterator *	find(const siena::string_t & name) const;
     virtual bool	contains(const siena::string_t & name) const;
-    bool		add(const siena::string_t & name,
-			    const mana_value * a);
+    bool		add(const siena::string_t & name, const mana_value * a);
+
+    template <typename T>
+    mana_message&		add(const std::string & name, T val)
+    {
+        typename StdTypesToSienaType<T>::type v = convert_type(val);
+        siena::string_t n(name.c_str());
+        mana_value* sv = new mana_value(v);
+        add(n, sv);
+        return *this;
+    }
 
     mana_message();
 
@@ -163,8 +262,18 @@ private:
 class mana_filter: public siena::filter {
 public:
     virtual iterator *		first() const;
-    void			add(const siena::string_t name,
-				    const mana_op_value * v);
+    void add(const siena::string_t name, const mana_op_value * v);
+
+    template<class V, class T>
+    mana_filter& add(const std::string& name, T op, V val)
+    {
+        typename StdTypesToSienaType<V>::type v = val;
+        mana_op_value* sov = new mana_op_value(ManaOpsToSienaOps<V, T>::op, v);
+        mana_filter f;
+        siena::string_t nm(name.c_str());
+        add(nm, sov);
+        return *this;
+    }
 
     mana_constraint begin() const;
     mana_constraint end() const;
@@ -205,5 +314,8 @@ private:
 };
 
 #include "ManaFwdTypes.icc"
+
+
+}
 
 #endif

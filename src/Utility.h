@@ -22,12 +22,14 @@
 #define  _UTILITY_H_
 
 #include <string>
-#include <siena/types.h>
-#include "ManaFwdTypes.h"
+
+using namespace std;
 
 namespace mana {
 
-using namespace std;
+class mana_message;
+class mana_filter;
+
 
 /*
  *  @brief Take a string and fill in the fields of the message

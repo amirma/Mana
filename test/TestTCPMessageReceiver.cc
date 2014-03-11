@@ -1,4 +1,4 @@
-/*
+/**
  * TestUDPMessageReceiver.cc
  *
  *  Created on: Feb 6, 2013
@@ -18,16 +18,16 @@ using namespace mana;
 class MessageHandler {
 public:
 
-	void handle_message(ManaMessage& msg, MessageReceiver<MessageHandler>* mr) {
-		if(msg.has_payload()) {
-			// cout << "Payload hash: " << msg.key_value_map(0).value() << endl;
-			std::hash<std::string> hash_fn;
-			size_t hash = hash_fn(msg.payload());
-			if(to_string(hash) == msg.key_value_map(0).value())
-				cout << "Payload hash verified." << endl;
-		} else
-			cout << "No payload" << endl;
-	}
+    void handle_message(ManaMessage& msg, MessageReceiver<MessageHandler>* mr) {
+        if(msg.has_payload()) {
+            // cout << "Payload hash: " << msg.key_value_map(0).value() << endl;
+            std::hash<std::string> hash_fn;
+            size_t hash = hash_fn(msg.payload());
+            if(to_string(hash) == msg.key_value_map(0).value())
+                cout << "Payload hash verified." << endl;
+        } else
+            cout << "No payload" << endl;
+    }
 };
 
 void termination_handler(int signum) {
@@ -44,15 +44,15 @@ static void setup_signal_hndlr() {
 }
 
 int main() {
-        setup_signal_hndlr();
-	Log::ReportingLevel() = logWARNING;
-	MessageHandler hndlr;
-	URL url("tcp:127.0.0.1:2350");
-	boost::asio::io_service io_srv;
-	TCPMessageReceiver<MessageHandler> mr(io_srv, hndlr, url);
-	mr.start();
-	io_srv.run();
-	return 0;
+    setup_signal_hndlr();
+    Log::ReportingLevel() = logWARNING;
+    MessageHandler hndlr;
+    URL url("tcp:127.0.0.1:2350");
+    boost::asio::io_service io_srv;
+    TCPMessageReceiver<MessageHandler> mr(io_srv, hndlr, url);
+    mr.start();
+    io_srv.run();
+    return 0;
 }
 
 

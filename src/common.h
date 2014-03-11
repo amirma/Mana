@@ -12,9 +12,6 @@
 #include <mutex>
 #include <iomanip>
 #include <ctime>
-#include <siena/types.h>
-#include "ManaMessage.pb.h"
-#include "ManaFwdTypes.h"
 
 
 // utility macros
@@ -42,8 +39,6 @@
 #define MAX_MSG_SIZE  3000000 //Bytes
 #define MAX_PCKT_SIZE 1400 //Bytes
 
-using namespace mana;
-
 namespace mana {
 
 enum enum_connection_type {
@@ -55,10 +50,16 @@ typedef enum_connection_type connection_type;
 typedef unsigned char byte;
 
 /*
- * These function convert from/to  a SienaMessagePlus to different
- * siena types. Note that when filling in a protobuf the field
+ * These function convert from/to  a ManaMessage to different
+ * Mana types. Note that when filling in a protobuf the field
  * 'sender' is not set in these function.
  */
+
+class ManaMessage;
+class mana_message;
+class mana_filter;
+
+
 void to_mana_message(const ManaMessage& buff, mana_message& msg);
 void to_mana_filter(const ManaMessage& buff, mana_filter& pred);
 //

@@ -86,7 +86,7 @@ Session(T& h, const URL& lo_url, const URL& re_url, const string& id, siena::if_
     host_(h), outgress_net_connector_(nullptr),
     remote_id_(id), local_url_(lo_url), remote_url_(re_url),
     remote_endpoint_(boost::asio::ip::address::from_string(remote_url_.address()), remote_url_.port()),
-    iface_(ifc), flg_session_alive_(false),
+    iface_(ifc), flg_session_live_(false),
     task_scheduler_(h.io_service()), state_machine_(3)  {
 
 	setup_state_machine();
@@ -136,7 +136,7 @@ const string& remote_id() const {
 
 /** @brief If the session is active returns true */
 bool is_active() const {
-    return flg_session_alive_;
+    return flg_session_live_;
 }
 
 void send(ManaMessage const & msg) {
@@ -180,7 +180,7 @@ void handle_session_msg(const ManaMessage& msg) {
     	//session_.handle_sesstion_message(msg);
     	break;
 	default:
-		FILE_LOG(logWARNING) << "Session::handle_session_msg: unrecognized message type.";
+		FILE_LOG(logINFO) << "Session::handle_session_msg: unrecognized message type.";
 		break;
 	}
 }
@@ -189,7 +189,7 @@ private:
 
 void update_hb_reception_ts() {
     this->last_hb_reception_ts_ = std::chrono::system_clock::now();
-    flg_session_alive_ = false;
+    flg_session_live_ = false;
 }
 
 const std::chrono::time_point<std::chrono::system_clock>& last_hb_reception_ts() const {
@@ -208,7 +208,7 @@ void check_session_liveness() {
 	FILE_LOG(logDEBUG2) << "Session::check_neighbors_and_send_hb: checking neighbors...";
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
     if(now - this->last_hb_reception_ts_ > std::chrono::seconds(DEFAULT_HEARTBEAT_INTERVAL_SECONDS)) {
-        flg_session_alive_ = false;
+        flg_session_live_ = false;
         host_.handle_session_termination(*this);
     }
 }
@@ -245,7 +245,7 @@ const URL local_url_;
 const URL remote_url_;
 const boost::asio::ip::udp::endpoint remote_endpoint_;
 const siena::if_t iface_; // interface id in the forwarding table
-bool flg_session_alive_; // true, if the session is active (based on HB messages)
+bool flg_session_live_; // true, if the session is active (based on HB messages)
 std::chrono::time_point<std::chrono::system_clock> last_hb_reception_ts_; /* The
 	time at which we last received a heartbeat from this neighbor */
 TaskScheduler<std::function<void()>> task_scheduler_;

@@ -29,6 +29,7 @@
 #include "MessageReceiver.h"
 #include "TCPMessageReceiver.h"
 #include "UDPMessageReceiver.h"
+#include "Session.h"
 #include "common.h"
 #include "ManaFwdTypes.h"
 #include "Utility.h"
