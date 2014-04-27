@@ -31,7 +31,7 @@
 #include <boost/asio.hpp>
 #include <siena/fwdtable.h>
 #include "MessageReceiver.h"
-#include "ManaMessage.pb.h"
+#include "ManaMessageProtobuf.pb.h"
 #include "MessageSender.h"
 #include "TCPMessageSender.h"
 #include "TaskScheduler.h"
@@ -101,10 +101,10 @@ public:
 
     // Use this method to add more transport protocols to the broker
     void add_transport(string);
-    void handle_sub(const ManaMessage&);
-    void handle_not(const ManaMessage&);
-    void handle_session_message(const ManaMessage&);
-    void handle_message(const ManaMessage& msg, MessageReceiver<Broker>* mr);
+    void handle_sub(const ManaMessageProtobuf&);
+    void handle_not(const ManaMessageProtobuf&);
+    void handle_session_message(const ManaMessageProtobuf&);
+    void handle_message(const ManaMessageProtobuf& msg, MessageReceiver<Broker>* mr);
     void handle_session_termination(Session<Broker>& s);
     void handle_connect(shared_ptr<MessageSender<Broker>>& c);
     const string& id() const;
@@ -115,7 +115,7 @@ public:
 private:
     // private methods.
     bool handle_match(siena::if_t, const siena::message&);
-    void handle_session_initiation(const ManaMessage& buff, const MessageReceiver<Broker>*);
+    void handle_session_initiation(const ManaMessageProtobuf& buff, const MessageReceiver<Broker>*);
     void send_error();
     // class properties
     boost::asio::io_service io_service_;

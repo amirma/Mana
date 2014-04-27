@@ -93,7 +93,7 @@ boost::asio::io_service& Broker::io_service() {
    return io_service_;
 }
 
-void Broker::handle_session_initiation(const ManaMessage& buff, const MessageReceiver<Broker>* mr) {
+void Broker::handle_session_initiation(const ManaMessageProtobuf& buff, const MessageReceiver<Broker>* mr) {
     // if the subscribing node is already in the list of neighbor
     // then send an error message
     if(is_in_container(neighbors_by_id_, buff.sender())) {
@@ -123,9 +123,9 @@ void Broker::handle_session_initiation(const ManaMessage& buff, const MessageRec
     }
 }
 
-void Broker::handle_sub(const ManaMessage& buff) {
-    mana_filter* fltr = new mana_filter();
-    to_mana_filter(buff, *fltr);
+void Broker::handle_sub(const ManaMessageProtobuf& buff) {
+    ManaFilter* fltr = new ManaFilter();
+    to_ManaFilter(buff, *fltr);
     //TODO: one predicate per filter is not the right way...
     mana_predicate pred;
     pred.add(fltr);
@@ -147,15 +147,15 @@ void Broker::handle_sub(const ManaMessage& buff) {
     }
 }
 
-void Broker::handle_not(const ManaMessage& buff) {
-    mana_message msg;
-    to_mana_message(buff, msg);
+void Broker::handle_not(const ManaMessageProtobuf& buff) {
+    ManaMessage msg;
+    to_ManaMessage(buff, msg);
     //FIXME:  this has to turn to read/write locking
     lock_guard<FwdTableWrapper> lock(fwd_table_wrapper_);
     fwd_table_wrapper_.const_fwd_table().match(msg, *message_match_handler_);
 }
 
-void Broker::handle_session_message(const ManaMessage& buff) {
+void Broker::handle_session_message(const ManaMessageProtobuf& buff) {
     if(is_in_container(neighbors_by_id_, buff.sender())) {
     	FILE_LOG(logDEBUG2)  << "Received hearbeat from " << buff.sender();
     	neighbors_by_id_[buff.sender()]->handle_session_msg(buff);
@@ -172,22 +172,22 @@ void Broker::handle_connect(shared_ptr<MessageSender<Broker>>& c) {
     //TODO save a pointer to c in a new session ...
 }
 
-void Broker::handle_message(const ManaMessage& msg, MessageReceiver<Broker>* mr) {
+void Broker::handle_message(const ManaMessageProtobuf& msg, MessageReceiver<Broker>* mr) {
 	switch(msg.type()) {
-	case ManaMessage_message_type_t_SUB:
+	case ManaMessageProtobuf_message_type_t_SUB:
 		handle_sub(msg);
 		break;
-	case ManaMessage_message_type_t_NOT:
+	case ManaMessageProtobuf_message_type_t_NOT:
 		handle_not(msg);
 		break;
-	case ManaMessage_message_type_t_START_SESSION:
+	case ManaMessageProtobuf_message_type_t_START_SESSION:
 		handle_session_initiation(msg, mr);
 		break;
-	case ManaMessage_message_type_t_HEARTBEAT:
-	case ManaMessage_message_type_t_START_SESSION_ACK :
-	case ManaMessage_message_type_t_START_SESSION_ACK_ACK:
-	case ManaMessage_message_type_t_TERMINATE_SESSION :
-	case ManaMessage_message_type_t_TERMINATE_SESSION_ACK :
+	case ManaMessageProtobuf_message_type_t_HEARTBEAT:
+	case ManaMessageProtobuf_message_type_t_START_SESSION_ACK :
+	case ManaMessageProtobuf_message_type_t_START_SESSION_ACK_ACK:
+	case ManaMessageProtobuf_message_type_t_TERMINATE_SESSION :
+	case ManaMessageProtobuf_message_type_t_TERMINATE_SESSION_ACK :
 		handle_session_message(msg);
 		break;
 	default: // other types ...
@@ -198,15 +198,15 @@ void Broker::handle_message(const ManaMessage& msg, MessageReceiver<Broker>* mr)
 
 bool Broker::handle_match(siena::if_t iface, const siena::message& msg) {
 	FILE_LOG(logDEBUG2) << "Broker::handle_match(): match for client " << neighbors_by_iface_[iface]->remote_id();
-    ManaMessage buff;
+    ManaMessageProtobuf buff;
     // set the sender id
     buff.set_sender(id_);
     // fill in the rest of the message parts
     try {
-    	to_protobuf(dynamic_cast<const mana_message&>(msg), buff);
+    	to_protobuf(dynamic_cast<const ManaMessage&>(msg), buff);
     } catch(const exception& e) {
     	// ignore the message
-    	FILE_LOG(logWARNING) << "Broker::handle_match: static_cast from siena::message& to ManaMessage& failed.";
+    	FILE_LOG(logWARNING) << "Broker::handle_match: static_cast from siena::message& to ManaMessageProtobuf& failed.";
     	return true;
     }
     // FIXME: i've not yet found a way to remove a subscription from

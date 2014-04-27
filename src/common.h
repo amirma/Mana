@@ -50,21 +50,21 @@ typedef enum_connection_type connection_type;
 typedef unsigned char byte;
 
 /*
- * These function convert from/to  a ManaMessage to different
+ * These function convert from/to  a ManaMessageProtobuf to different
  * Mana types. Note that when filling in a protobuf the field
  * 'sender' is not set in these function.
  */
 
+class ManaMessageProtobuf;
 class ManaMessage;
-class mana_message;
-class mana_filter;
+class ManaFilter;
 
 
-void to_mana_message(const ManaMessage& buff, mana_message& msg);
-void to_mana_filter(const ManaMessage& buff, mana_filter& pred);
+void to_ManaMessage(const ManaMessageProtobuf& buff, ManaMessage& msg);
+void to_ManaFilter(const ManaMessageProtobuf& buff, ManaFilter& pred);
 //
-void to_protobuf(const mana_message& msg, ManaMessage& buff);
-void to_protobuf(const mana_filter& predg, ManaMessage& buff);
+void to_protobuf(const ManaMessage& msg, ManaMessageProtobuf& buff);
+void to_protobuf(const ManaFilter& predg, ManaMessageProtobuf& buff);
 
 const int MSG_HEADER_SIZE = sizeof(int) + BUFF_SEPERATOR_LEN_BYTE;
 

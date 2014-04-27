@@ -10,7 +10,7 @@
 #include <random>
 #include <thread>
 #include "TCPMessageSender.h"
-#include "ManaMessage.pb.h"
+#include "ManaMessageProtobuf.pb.h"
 #include "URL.h"
 #include "Log.h"
 
@@ -19,7 +19,7 @@ using namespace mana;
 
 class MessageHandler {
 public:
-	void handle_message(ManaMessage& msg) {}
+	void handle_message(ManaMessageProtobuf& msg) {}
 };
 
 int main() {
@@ -42,11 +42,11 @@ int main() {
 	const int num_chars = 1000000;
 	char payload[num_chars+1];
 	payload[num_chars] = 0; // null-ended string
-	ManaMessage msg;
+	ManaMessageProtobuf msg;
 	for(int k = 0; k < 10; k++) {
 		msg.Clear();
 		msg.set_sender("test sender");
-		msg.set_type(ManaMessage_message_type_t_HEARTBEAT);
+		msg.set_type(ManaMessageProtobuf_message_type_t_HEARTBEAT);
 		// prepare a big payload, send the payload with its hash to the receiver
 		std::random_device rd;
 		std::mt19937 gen(rd());

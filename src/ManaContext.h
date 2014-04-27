@@ -33,7 +33,7 @@ using namespace std;
 
 namespace mana {
 
-class ManaMessage; // to avoid including ManaMessage.h
+class ManaMessageProtobuf; // to avoid including ManaMessageProtobuf.h
 template <class T> class Session;
 template <class T> class MessageReceiver;
 
@@ -50,21 +50,21 @@ public:
 	 * @param loc_url The clients local url
 	 * @param rem_url The URL of the remote host (broker)
 	 * @param h A function object which is called when a message match occurs. The signiture of
-	 * the function object is as <b>void functor(const mana_message& msg)</b>
+	 * the function object is as <b>void functor(const ManaMessage& msg)</b>
 	 */
-    ManaContext(const string& id, const string& loc_url, const string& rem_url, std::function<void(const mana_message&)> h);
+    ManaContext(const string& id, const string& loc_url, const string& rem_url, std::function<void(const ManaMessage&)> h);
     ManaContext(const ManaContext& other) = delete; //disable copy constructor
     virtual ~ManaContext();
     void publish(const string&);
-    void publish(const mana_message&);
-    void subscribe(const mana_filter&);
+    void publish(const ManaMessage&);
+    void subscribe(const ManaFilter&);
     void subscribe(const string& sub);
     void unsubscribe();
     void start();
     void stop();
     void join();
     bool session_established() const;
-    void handle_message(const ManaMessage& msg, MessageReceiver<ManaContext>* mr);
+    void handle_message(const ManaMessageProtobuf& msg, MessageReceiver<ManaContext>* mr);
     void handle_session_termination(Session<ManaContext>& s);
     boost::asio::io_service& io_service();
     const string& id() const;
@@ -77,10 +77,10 @@ private:
     // URL of the remote broker
     URL local_url_;
     URL remote_url_;
-    std::function<void(const mana_message&)> app_notification_handler_;
+    std::function<void(const ManaMessage&)> app_notification_handler_;
     shared_ptr<boost::asio::io_service::work> work_;
     shared_ptr<thread> thread_;
-    void send_message(ManaMessage&);
+    void send_message(ManaMessageProtobuf&);
     bool is_connected();
     bool flag_has_subscription;
     TaskScheduler<std::function<void()>> task_scheduler_;

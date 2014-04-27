@@ -1,6 +1,6 @@
 package mana;
 
-message ManaMessage {
+message ManaMessageProtobuf {
 
  	// constants and type definitions
 

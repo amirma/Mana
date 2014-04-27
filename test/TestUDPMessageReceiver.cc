@@ -8,7 +8,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include "UDPMessageReceiver.h"
-#include "ManaMessage.pb.h"
+#include "ManaMessageProtobuf.pb.h"
 #include "URL.h"
 #include "Log.h"
 
@@ -19,7 +19,7 @@ using namespace mana;
 class MessageHandler {
 public:
 
-    void handle_message(ManaMessage& msg, MessageReceiver<MessageHandler>* mr) {
+    void handle_message(ManaMessageProtobuf& msg, MessageReceiver<MessageHandler>* mr) {
         if(msg.has_payload()) {
             std::hash<std::string> hash_fn;
             size_t hash = hash_fn(msg.payload());

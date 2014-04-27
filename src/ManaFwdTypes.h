@@ -195,7 +195,7 @@ private:
     attribute_map::const_iterator end;
 };
 
-class mana_message: public siena::message {
+class ManaMessage: public siena::message {
 public:
     virtual iterator *	first() const;
     virtual mana_attribute    begin() const;
@@ -205,7 +205,7 @@ public:
     bool		add(const siena::string_t & name, const mana_value * a);
 
     template <typename T>
-    mana_message&		add(const std::string & name, T val)
+    ManaMessage&		add(const std::string & name, T val)
     {
         typename StdTypesToSienaType<T>::type v = convert_type(val);
         siena::string_t n(name.c_str());
@@ -214,9 +214,9 @@ public:
         return *this;
     }
 
-    mana_message();
+    ManaMessage();
 
-    virtual ~mana_message();
+    virtual ~ManaMessage();
 
 private:
     attribute_map attrs;
@@ -259,17 +259,17 @@ private:
     constraint_map::const_iterator end;
 };
 
-class mana_filter: public siena::filter {
+class ManaFilter: public siena::filter {
 public:
     virtual iterator *		first() const;
     void add(const siena::string_t name, const mana_op_value * v);
 
     template<class V, class T>
-    mana_filter& add(const std::string& name, T op, V val)
+    ManaFilter& add(const std::string& name, T op, V val)
     {
         typename StdTypesToSienaType<V>::type v = val;
         mana_op_value* sov = new mana_op_value(ManaOpsToSienaOps<V, T>::op, v);
-        mana_filter f;
+        ManaFilter f;
         siena::string_t nm(name.c_str());
         add(nm, sov);
         return *this;
@@ -278,15 +278,15 @@ public:
     mana_constraint begin() const;
     mana_constraint end() const;
 
-    mana_filter();
-    virtual ~mana_filter();
+    ManaFilter();
+    virtual ~ManaFilter();
 
 private:
     constraint_map constraints;
     MemoryManager memmgr;
 };
 
-typedef std::list<mana_filter *> filter_list;
+typedef std::list<ManaFilter *> filter_list;
 
 class mana_predicate_i: public siena::predicate::iterator {
 public:
@@ -303,8 +303,8 @@ private:
 class mana_predicate : public siena::predicate {
 public:
     virtual iterator *		first() const;
-    void			add(mana_filter * v);
-    mana_filter *		back();
+    void			add(ManaFilter * v);
+    ManaFilter *		back();
 
     mana_predicate();
     virtual ~mana_predicate();

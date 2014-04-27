@@ -38,7 +38,7 @@
 namespace mana {
 
 ManaContext::ManaContext(const string& id, const string& loc_url, const string& rem_url,
-		std::function<void(const mana_message&)> h) :
+		std::function<void(const ManaMessage&)> h) :
     local_id_(id), local_url_(loc_url), remote_url_(rem_url), app_notification_handler_(h),
     flag_has_subscription(false), task_scheduler_(io_service_) {
 
@@ -52,13 +52,13 @@ ManaContext::~ManaContext() {
 }
 
 void ManaContext::publish(const string& str) {
-    mana_message msg;
-    string_to_mana_message(str, msg);
+    ManaMessage msg;
+    string_to_ManaMessage(str, msg);
     publish(msg);
 }
 
-void ManaContext::publish(const mana_message& msg) {
-    ManaMessage buff;
+void ManaContext::publish(const ManaMessage& msg) {
+    ManaMessageProtobuf buff;
     // set the sender id
     buff.set_sender(local_id_);
     // fill in the rest of the message parts
@@ -68,7 +68,7 @@ void ManaContext::publish(const mana_message& msg) {
     send_message(buff);
 }
 
-void ManaContext::send_message(ManaMessage& msg) {
+void ManaContext::send_message(ManaMessageProtobuf& msg) {
     session_->send(msg);
 }
 
@@ -77,19 +77,19 @@ void ManaContext::send_message(ManaMessage& msg) {
  * called to handle the notification
  */
 void ManaContext::subscribe(const string& str) {
-    mana_filter f;
-    string_to_mana_filter(str, f);
+    ManaFilter f;
+    string_to_ManaFilter(str, f);
     subscribe(f);
 }
 
-void ManaContext::subscribe(const mana_filter& filtr) {
+void ManaContext::subscribe(const ManaFilter& filtr) {
     // TODO: here we need to check the sanity of the filter
     // in different aspects:
     // 1. If the operators make sense for the supplied values
     // 2. If a given constraint has a consistent value types among
     // different filters of this subscriber.
 
-    ManaMessage buff;
+    ManaMessageProtobuf buff;
     // set sender id
     buff.set_sender(local_id_);
     // fill in the constraints : type, name, operator, value
@@ -136,22 +136,22 @@ bool ManaContext::session_established() const {
     return session_->is_active();
 }
 
-void ManaContext::handle_message(const ManaMessage& buff, MessageReceiver<ManaContext>* mr) {
+void ManaContext::handle_message(const ManaMessageProtobuf& buff, MessageReceiver<ManaContext>* mr) {
 	FILE_LOG(logDEBUG2) << "ManaContext::receive_handler: received message from " << buff.sender();
     switch(buff.type()) {
-    case ManaMessage_message_type_t_NOT: {
-        mana_message msg;
-        to_mana_message(buff, msg);
+    case ManaMessageProtobuf_message_type_t_NOT: {
+        ManaMessage msg;
+        to_ManaMessage(buff, msg);
         FILE_LOG(logDEBUG2) << "ManaContext::receive_handler(): dispatching notification to the application.";
         app_notification_handler_(msg);
         break;
     }
-    case ManaMessage_message_type_t_HEARTBEAT:
-    case ManaMessage_message_type_t_START_SESSION:
-    case ManaMessage_message_type_t_START_SESSION_ACK :
-    case ManaMessage_message_type_t_START_SESSION_ACK_ACK:
-    case ManaMessage_message_type_t_TERMINATE_SESSION :
-    case ManaMessage_message_type_t_TERMINATE_SESSION_ACK :
+    case ManaMessageProtobuf_message_type_t_HEARTBEAT:
+    case ManaMessageProtobuf_message_type_t_START_SESSION:
+    case ManaMessageProtobuf_message_type_t_START_SESSION_ACK :
+    case ManaMessageProtobuf_message_type_t_START_SESSION_ACK_ACK:
+    case ManaMessageProtobuf_message_type_t_TERMINATE_SESSION :
+    case ManaMessageProtobuf_message_type_t_TERMINATE_SESSION_ACK :
     	session_->handle_session_msg(buff);
     	break;
     default:

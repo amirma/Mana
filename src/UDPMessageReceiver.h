@@ -67,7 +67,7 @@ void read_handler(const boost::system::error_code& ec, std::size_t bytes_num) {
 	}
 	FILE_LOG(logDEBUG2) << "UDPMessageSender::read_handler(): read " << bytes_num << " bytes.";
 
-    ManaMessage msg;
+    ManaMessageProtobuf msg;
     // Note: message_stream MUST be accessed by only one thread at a time - it's
     // not thread safe. Here the assumption is that read_handler is run only
     // by one thread at a time. This is guaranteed by using strand_ for async

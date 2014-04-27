@@ -33,7 +33,7 @@ namespace mana {
 
 using namespace std;
 
-void string_to_mana_message(const string& str, mana_message& m) {
+void string_to_ManaMessage(const string& str, ManaMessage& m) {
     try {
         vector<string> attr_vector;
     	boost::split(attr_vector, str, boost::is_any_of(","));
@@ -81,11 +81,11 @@ void string_to_mana_message(const string& str, mana_message& m) {
             }
         }
     } catch(const exception& e) {
-        throw mana::ManaException("string_to_mana_message(): Invalid string.");
+        throw mana::ManaException("string_to_ManaMessage(): Invalid string.");
     }
 }
 
-void string_to_mana_filter(const string& str, mana_filter& f) {
+void string_to_ManaFilter(const string& str, ManaFilter& f) {
     try {
         vector<string> constraint_vector;
     	boost::split(constraint_vector, str, boost::is_any_of(","));
@@ -101,7 +101,7 @@ void string_to_mana_filter(const string& str, mana_filter& f) {
             vector<string> tokens;
         	boost::split(tokens, constraint_item, boost::is_any_of(" "));
             if(!validate_constraint(tokens)) {
-            	FILE_LOG(logWARNING) << "SimpleClinet::string_to_mana_filter(): Invalid constraint in: " << str;
+            	FILE_LOG(logWARNING) << "SimpleClinet::string_to_ManaFilter(): Invalid constraint in: " << str;
                 continue;
             }
             siena::string_t cst =  tokens[1].c_str();

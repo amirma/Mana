@@ -4,7 +4,7 @@ SET (CMAKE_CXX_FLAGS "-std=c++11 -g -Wall")
 include_directories(/opt/include/)
 link_directories(/opt/lib)
 
-set(SOURCES ManaMessage.pb.cc ManaException.cc URL.cc
+set(SOURCES ManaMessageProtobuf.pb.cc ManaException.cc URL.cc
 ProtobufToFromMana.cc MessageStream.cc Utility.cc
 StateMachine.cc ManaContext.cc)
 
@@ -18,4 +18,4 @@ add_executable (StartBroker StartBroker.cc Broker.cc)
 target_link_libraries (StartBroker ${LIBRARIES} mana)
 
 # This target is to generate protocol buffers classes from the protobuf.
-#add_custom_target(protobuf protoc -I . --cpp_out . ManaMessage.proto)
+#add_custom_target(protobuf protoc -I . --cpp_out . ManaMessageProtobuf.proto)

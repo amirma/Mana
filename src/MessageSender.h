@@ -34,7 +34,7 @@ using namespace std;
 
 namespace mana {
 
-class ManaMessage;
+class ManaMessageProtobuf;
 
 struct WriteBufferItem {
         const byte* data_;
@@ -78,7 +78,7 @@ virtual void disconnect() {}
 virtual bool is_connected() {return true;}
 
 /**
- * @brief Send a ManaMessage out to the network.
+ * @brief Send a ManaMessageProtobuf out to the network.
  *
  * This is the only public interface for message transmission.
  * This method is thread-safe i.e., multiple threads can call
@@ -88,7 +88,7 @@ virtual bool is_connected() {return true;}
  * is taken care of by the network connector. This means that after this method
  * returns the caller can safely reuse msg.
  */
-void send(const ManaMessage& msg) {
+void send(const ManaMessageProtobuf& msg) {
     // add buffer separators and header and then serialize
     // the message into a protobuf
     int data_size = msg.ByteSize();

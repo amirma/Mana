@@ -25,7 +25,7 @@
 #include <boost/asio.hpp>
 #include <siena/fwdtable.h>
 #include "MessageReceiver.h"
-#include "ManaMessage.pb.h"
+#include "ManaMessageProtobuf.pb.h"
 #include "MessageSender.h"
 #include "TCPMessageSender.h"
 #include "UDPMessageSender.h"
@@ -139,7 +139,7 @@ bool is_active() const {
     return flg_session_live_;
 }
 
-void send(ManaMessage const & msg) {
+void send(ManaMessageProtobuf const & msg) {
     assert(msg.IsInitialized());
     assert(msg.has_type());
     outgress_net_connector_->send(msg);
@@ -148,10 +148,10 @@ void send(ManaMessage const & msg) {
 void establish() {
     if(this->is_active())
     	return;
-    ManaMessage msg;
+    ManaMessageProtobuf msg;
     // set sender id and type
     msg.set_sender(host_.id());
-    msg.set_type(ManaMessage_message_type_t_START_SESSION);
+    msg.set_type(ManaMessageProtobuf_message_type_t_START_SESSION);
     auto p = msg.mutable_key_value_map()->Add();
     p->set_key("url");
     p->set_value(local_url_.url());
@@ -166,17 +166,17 @@ void terminate() {
     this->outgress_net_connector_->disconnect();
 }
 
-void handle_session_msg(const ManaMessage& msg) {
+void handle_session_msg(const ManaMessageProtobuf& msg) {
 	switch(msg.type()) {
-	case ManaMessage_message_type_t_HEARTBEAT :
+	case ManaMessageProtobuf_message_type_t_HEARTBEAT :
 		update_hb_reception_ts();
 		FILE_LOG(logDEBUG2) << "Session::handle_session_msg: Received heartbeat from " << msg.sender();
 		break;
-	case ManaMessage_message_type_t_START_SESSION:
-    case ManaMessage_message_type_t_START_SESSION_ACK :
-    case ManaMessage_message_type_t_START_SESSION_ACK_ACK:
-    case ManaMessage_message_type_t_TERMINATE_SESSION :
-    case ManaMessage_message_type_t_TERMINATE_SESSION_ACK :
+	case ManaMessageProtobuf_message_type_t_START_SESSION:
+    case ManaMessageProtobuf_message_type_t_START_SESSION_ACK :
+    case ManaMessageProtobuf_message_type_t_START_SESSION_ACK_ACK:
+    case ManaMessageProtobuf_message_type_t_TERMINATE_SESSION :
+    case ManaMessageProtobuf_message_type_t_TERMINATE_SESSION_ACK :
     	//session_.handle_sesstion_message(msg);
     	break;
 	default:
@@ -197,10 +197,10 @@ const std::chrono::time_point<std::chrono::system_clock>& last_hb_reception_ts()
 }
 
 void send_heartbeat() {
-    ManaMessage msg;
+    ManaMessageProtobuf msg;
     // set sender id and type
     msg.set_sender(host_.id());
-    msg.set_type(ManaMessage_message_type_t_HEARTBEAT);
+    msg.set_type(ManaMessageProtobuf_message_type_t_HEARTBEAT);
     send(msg);
 }
 

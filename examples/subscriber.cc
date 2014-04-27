@@ -7,7 +7,7 @@ class Subscriber {
 
     public:
 
-        void handle_notification(const mana::mana_message& m) {
+        void handle_notification(const mana::ManaMessage& m) {
             cout << endl << "Application received notification: ";
             for(auto attr : m)
                 std::cout << attr.name().begin << " ";
@@ -16,7 +16,10 @@ class Subscriber {
         void stop() {
             try {
                 context_->stop();
-            } catch(exception& e) {/* handle the exception */}
+            } catch(exception& e) {
+                cout << endl << e.what();
+                exit(-1);
+            }
         }
 
     void start() {
@@ -29,12 +32,12 @@ class Subscriber {
             context_->start();
 
             // first subscription
-            mana::mana_filter f1;
+            mana::ManaFilter f1;
             f1.add("const1", mana::ops<int>::eq(), 5);
             context_->subscribe(f1);
 
             //second subscription
-            mana::mana_filter f2;
+            mana::ManaFilter f2;
             f2.add("const2", mana::ops<const char*>::eq(), "Mr. Bean").add("age", mana::ops<int>::eq(), 30);
             context_->subscribe(f2);
 
@@ -54,7 +57,7 @@ class Subscriber {
 }; // class Subscriber
 
 
-int main(int argc, char* argv[]) {
+int main() {
     Subscriber subscriber;
     subscriber.start();
     return 0;

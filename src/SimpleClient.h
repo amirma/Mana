@@ -31,7 +31,7 @@ using namespace std;
 
 namespace mana
 {
-class mana_message;
+class ManaMessage;
 }
 
 /**
@@ -44,7 +44,7 @@ public:
     virtual ~SimpleClient();
     SimpleClient(const SimpleClient&) = delete;
     SimpleClient& operator=(const SimpleClient&) = delete;
-    void handle_notification(const mana::mana_message& m);
+    void handle_notification(const mana::ManaMessage& m);
     virtual void stop();
     virtual void start();
     virtual void run(); // the subclass implements this

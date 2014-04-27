@@ -2,7 +2,7 @@
 #define MESSAGESTREAM_H_
 
 #include "common.h"
-#include "ManaMessage.pb.h"
+#include "ManaMessageProtobuf.pb.h"
 
 namespace mana {
 
@@ -15,10 +15,10 @@ class MessageStream {
         virtual ~MessageStream();
         MessageStream(const MessageStream&) = delete; // delete copy constructor
         void consume(const byte* buff, int size);
-        bool produce(ManaMessage& msg);
+        bool produce(ManaMessageProtobuf& msg);
 private:
 
-    bool do_produce(const byte*, int size, ManaMessage& msg, int& consumed) const;
+    bool do_produce(const byte*, int size, ManaMessageProtobuf& msg, int& consumed) const;
     bool check_has_message_header();
     byte unconsumed_data_[MAX_MSG_SIZE];
     int unconsumed_data_size_;

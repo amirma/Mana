@@ -27,19 +27,19 @@ using namespace std;
 
 namespace mana {
 
-class mana_message;
-class mana_filter;
+class ManaMessage;
+class ManaFilter;
 
 
 /*
  *  @brief Take a string and fill in the fields of the message
  */
-void string_to_mana_message(const string& str, mana_message& m);
+void string_to_ManaMessage(const string& str, ManaMessage& m);
 
 /*
  *  @brief Take a string and fill in the fields of the filter
  */
-void string_to_mana_filter(const string& str, mana_filter& f);
+void string_to_ManaFilter(const string& str, ManaFilter& f);
 
 /*
  * \brief receive a tuple of tokens in the form of <type,name,operator,value>

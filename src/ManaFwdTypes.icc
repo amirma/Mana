@@ -80,9 +80,9 @@ inline mana_attribute& mana_attribute::operator* () {
     return *this;
 }
 
-inline mana_message::mana_message() : attrs() {}
+inline ManaMessage::ManaMessage() : attrs() {}
 
-inline mana_message::iterator * mana_message::first() const {
+inline ManaMessage::iterator * ManaMessage::first() const {
     if (attrs.begin() == attrs.end()) {
 	return 0;
     } else {
@@ -90,15 +90,15 @@ inline mana_message::iterator * mana_message::first() const {
     }
 }
 
-inline mana_attribute mana_message::begin() const {
+inline mana_attribute ManaMessage::begin() const {
 	return mana_attribute(attrs.begin(), attrs.end());
 }
 
-inline mana_attribute mana_message::end() const {
+inline mana_attribute ManaMessage::end() const {
 	return mana_attribute(attrs.end(), attrs.end());
 }
 
-inline mana_message::iterator * mana_message::find(const siena::string_t & name) const {
+inline ManaMessage::iterator * ManaMessage::find(const siena::string_t & name) const {
     attribute_map::const_iterator i = attrs.find(name);
     if (i == attrs.end()) {
 	return 0;
@@ -107,11 +107,11 @@ inline mana_message::iterator * mana_message::find(const siena::string_t & name)
     }
 }
 
-inline bool mana_message::contains(const siena::string_t & name) const {
+inline bool ManaMessage::contains(const siena::string_t & name) const {
     return attrs.find(name) != attrs.end();
 }
 
-inline bool mana_message::add(const siena::string_t & name,
+inline bool ManaMessage::add(const siena::string_t & name,
 				const mana_value * a) {
     return attrs.insert(attribute_map::value_type(memmgr.get_managed_copy(name), a)).second;
 }
@@ -179,7 +179,7 @@ inline mana_constraint::mana_constraint(constraint_map::const_iterator b,
 
     : i(b), end(e) {}
 
-inline mana_filter::iterator * mana_filter::first() const {
+inline ManaFilter::iterator * ManaFilter::first() const {
     if (constraints.begin() == constraints.end()) {
 	return 0;
     } else {
@@ -188,20 +188,20 @@ inline mana_filter::iterator * mana_filter::first() const {
     }
 }
 
-inline mana_constraint mana_filter::begin() const {
+inline mana_constraint ManaFilter::begin() const {
 	return mana_constraint(constraints.begin(), constraints.end());
 }
 
-inline mana_constraint mana_filter::end() const {
+inline mana_constraint ManaFilter::end() const {
 	return mana_constraint(constraints.end(), constraints.end());
 }
 
-inline void mana_filter::add(const siena::string_t name,
+inline void ManaFilter::add(const siena::string_t name,
 			       const mana_op_value * v) {
     constraints.insert(constraint_map::value_type(memmgr.get_managed_copy(name), v));
 }
 
-inline mana_filter::mana_filter() : constraints() {}
+inline ManaFilter::ManaFilter() : constraints() {}
 
 inline siena::filter::iterator * mana_predicate_i::first() const {
     return (*i)->first();
@@ -225,22 +225,22 @@ inline mana_predicate::iterator * mana_predicate::first() const {
     }
 }
 
-inline void mana_predicate::add(mana_filter * v) {
+inline void mana_predicate::add(ManaFilter * v) {
     filters.push_back(v);
 }
 
-inline mana_filter * mana_predicate::back() {
+inline ManaFilter * mana_predicate::back() {
     return filters.back();
 }
 
 inline mana_predicate::mana_predicate() : filters() {}
 
-inline mana_message::~mana_message() {
+inline ManaMessage::~ManaMessage() {
     for (attribute_map::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
 	if (i->second) delete(i->second);
 }
 
-inline mana_filter::~mana_filter() {
+inline ManaFilter::~ManaFilter() {
     for (constraint_map::const_iterator i = constraints.begin();
 	 i != constraints.end(); ++i)
 	if (i->second) delete(i->second);

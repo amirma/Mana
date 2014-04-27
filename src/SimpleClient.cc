@@ -28,7 +28,7 @@ SimpleClient::SimpleClient(const string& str, const string& url, const string& b
 
 SimpleClient::~SimpleClient() {}
 
-void SimpleClient::handle_notification(const mana::mana_message& m) {
+void SimpleClient::handle_notification(const mana::ManaMessage& m) {
     cout << endl << "Application received notification: ";
     for(auto& attr : m)
     	cout << attr.name().begin << " ";
@@ -62,14 +62,14 @@ void SimpleClient::stop() {
     siena::int_t val = 5;
     mana_op_value* sov = new mana_op_value(siena::eq_id, val);
     siena::string_t cst = "const1";
-    mana_filter fltr;
+    ManaFilter fltr;
     fltr.add(cst, sov);
     context_->subscribe(fltr);
 
     //or publish something:
     mana_value* sv = new mana_value(static_cast<siena::int_t>(10));
     siena::string_t cst = "const1";
-    mana_message msg;
+    ManaMessage msg;
     msg.add(cst, sv);
     context_->publish(msg);
  *
