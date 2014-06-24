@@ -26,19 +26,19 @@ class Subscriber {
         try {
             cout << endl << "Starting subscriber client...";
             string rem_url = "ka:127.0.0.1:2350";
-            string loc_url = "ka:127.0.0.1:3352";
+            string loc_url = "ka:127.0.0.1:3361";
             auto hndlr = std::bind(&Subscriber::handle_notification, this, std::placeholders::_1);
-            context_ = make_shared<mana::ManaContext>("node-sub", loc_url, rem_url, hndlr);
+            context_ = make_shared<mana::ManaContext>("subscriber", loc_url, rem_url, hndlr);
             context_->start();
 
             // first subscription
             mana::ManaFilter f1;
-            f1.add("const1", mana::ops<int>::eq(), 5);
+            f1.add("cpu usage", mana::ops<int>::eq(), 100);
             context_->subscribe(f1);
 
             //second subscription
             mana::ManaFilter f2;
-            f2.add("const2", mana::ops<const char*>::eq(), "Mr. Bean").add("age", mana::ops<int>::eq(), 30);
+            f2.add("node_id", mana::ops<const char*>::eq(), "server1.example.com").add("temperature", mana::ops<int>::gt(), 36);
             context_->subscribe(f2);
 
             //wait for notifications...
@@ -54,7 +54,7 @@ class Subscriber {
     private:
 
         shared_ptr<mana::ManaContext> context_;
-}; // class Subscriber
+};
 
 
 int main() {

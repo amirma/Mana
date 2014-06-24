@@ -8,3 +8,6 @@ set(LIBRARIES sff boost_system pthread protobuf profiler mana)
 
 add_executable (subscriber subscriber.cc)
 target_link_libraries (subscriber ${LIBRARIES})
+
+add_executable (publisher publisher.cc)
+target_link_libraries (publisher ${LIBRARIES})
